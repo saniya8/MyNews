@@ -1,6 +1,19 @@
 # Team-102-5
 
 
+## Team Details
+Team Number: 5
+
+Team Members:
+Jason Kelly - j35kelly@uwaterloo.ca
+Michael Ye - m49ye@uwaterloo.ca
+Oliver Neish - oneish@uwaterloo.ca
+Saniya Kulkarni - s27kulka@uwaterloo.ca
+
+Link to team contract: XXXX
+
+
+
 
 ## Getting started
 
