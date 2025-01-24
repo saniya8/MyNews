@@ -15,4 +15,4 @@
 ## Project Links
 
 * [Team Contract](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/home)
-* [Team Contract](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Project-Proposal)
+* [Project Proposal](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Project-Proposal)
