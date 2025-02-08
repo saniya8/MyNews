@@ -14,6 +14,45 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.mynews.ui.theme.MyNewsTheme
+import com.example.mynews.utils.*
+import com.example.mynews.ui.theme.*
+import dagger.hilt.android.AndroidEntryPoint
+
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //window.statusBarColor = gray.toArgb()
+        //window.navigationBarColor = gray.toArgb()
+        setContent {
+            MyNewsTheme {
+                Navigation()
+            }
+        }
+    }
+}
+
+
+
+
+/* Pre-creating login screen: this showed the nav bar of Social, Home, Goals, and clicking on
+the buttons changed the text on the screen to the corresponding button
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
+import com.example.mynews.ui.theme.MyNewsTheme
 
 data class NewsArticle(
     val id: String,                   // Unique identifier
@@ -129,3 +168,6 @@ fun MainScreen() {
         }
     }
 }
+
+
+ */
