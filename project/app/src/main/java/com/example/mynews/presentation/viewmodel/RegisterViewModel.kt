@@ -13,6 +13,7 @@ import com.example.mynews.presentation.state.RegisterState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.util.Log
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
@@ -53,34 +54,38 @@ class RegisterViewModel @Inject constructor(
             isPasswordRepeatedShown = !registerState.isPasswordRepeatedShown
         )
     }
-    fun onRegisterClick(){
 
-        registerState = registerState.copy(isLoading = true)
+    // version 2 - works with version 2 of register in AuthRepositoryImpl
+    fun onRegisterClick() {
         viewModelScope.launch {
-            registerState = try{
+            registerState = registerState.copy(isLoading = true)
+            try {
                 val registerResult = authRepository.register(
                     email = registerState.emailInput,
                     username = registerState.usernameInput,
                     password = registerState.passwordInput
                 )
-                if (!registerResult) {
+
+                if (registerResult) {
+                    registerState = registerState.copy(
+                        isSuccessfullyRegistered = true,
+                        isLoading = false
+                    )
+                } else {
                     showErrorDialog = true
                     registerState = registerState.copy(
                         errorMessageRegisterProcess = "Could not register",
                         isLoading = false
                     )
                 }
-                registerState.copy(isSuccessfullyRegistered = registerResult)
-            }catch(e: Exception){
-                registerState.copy(
+            } catch (e: Exception) {
+                showErrorDialog = true
+                registerState = registerState.copy(
                     errorMessageRegisterProcess = "Could not register",
-                    isLoading = false)
-            }finally {
-                registerState = registerState.copy(isLoading = false)
+                    isLoading = false
+                )
             }
         }
-
-
     }
 
     private fun checkInputValidation(){

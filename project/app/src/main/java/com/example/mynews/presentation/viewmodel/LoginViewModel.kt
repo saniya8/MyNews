@@ -1,5 +1,6 @@
 package com.example.mynews.presentation.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,12 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.domain.model.LoginInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
-//import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
 import com.example.mynews.presentation.state.LoginState
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -39,31 +42,34 @@ class LoginViewModel @Inject constructor(
         loginState = loginState.copy(isPasswordShown = !loginState.isPasswordShown)
     }
 
-
-    fun onLoginClick(){
-
-        loginState = loginState.copy(isLoading = true)
+    // version 4 - works with version 4 of login in AuthRepositoryImpl
+    fun onLoginClick() {
         viewModelScope.launch {
-            loginState = try{
+            loginState = loginState.copy(isLoading = true)
+            try {
                 val loginResult = authRepository.login(
                     email = loginState.emailInput,
                     password = loginState.passwordInput
                 )
-                if (!loginResult) {
+
+                if (loginResult) {
+                    loginState = loginState.copy(
+                        isSuccessfullyLoggedIn = true,
+                        isLoading = false
+                    )
+                } else {
                     showErrorDialog = true
                     loginState = loginState.copy(
                         errorMessageLoginProcess = "Could not login",
                         isLoading = false
-                    )}
-                loginState.copy(isSuccessfullyLoggedIn = loginResult)
-            }catch(e: Exception){
+                    )
+                }
+            } catch (e: Exception) {
                 showErrorDialog = true
-                loginState.copy(
+                loginState = loginState.copy(
                     errorMessageLoginProcess = "Could not login",
                     isLoading = false
                 )
-            } finally {
-                loginState = loginState.copy(isLoading = false)
             }
         }
     }

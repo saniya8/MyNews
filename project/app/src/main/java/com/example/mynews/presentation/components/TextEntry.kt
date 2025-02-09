@@ -24,7 +24,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.mynews.ui.theme.Purple40
+import com.example.mynews.ui.theme.*
 
 
 @Composable
@@ -114,7 +114,7 @@ fun TextEntryModulePreview(){
         leadingIcon = Icons.Default.Email,
         textValue = "Text Input",
         textColour = Color.Black,
-        cursorColour = Purple40,
+        cursorColour = NavyBlue,
         onValueChanged = {},
         trailingIcon = Icons.Filled.RemoveRedEye,
         onTrailingIconClick = {},

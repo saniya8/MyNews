@@ -1,5 +1,6 @@
 package com.example.mynews
 
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,21 +18,28 @@ import com.example.mynews.ui.theme.MyNewsTheme
 import com.example.mynews.utils.*
 import com.example.mynews.ui.theme.*
 import dagger.hilt.android.AndroidEntryPoint
+import com.google.firebase.auth.FirebaseAuth
+import android.util.Log
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //window.statusBarColor = gray.toArgb()
-        //window.navigationBarColor = gray.toArgb()
+
+        Log.d("MainActivity", "Starting MainActivity")
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        Log.d("MainActivity", "Current user: ${currentUser?.email ?: "No user logged in"}")
+
         setContent {
             MyNewsTheme {
-                Navigation()
+                RootNavigationGraph(navController = rememberNavController())
             }
         }
     }
 }
+
 
 
 

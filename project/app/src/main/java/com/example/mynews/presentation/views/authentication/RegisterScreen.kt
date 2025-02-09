@@ -28,8 +28,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.mynews.presentation.components.*
 import com.example.mynews.ui.theme.*
+import android.util.Log
 
-// CITE: https://www.youtube.com/watch?v=aCjOmyd_62U&t=500s
+// Source: https://www.youtube.com/watch?v=aCjOmyd_62U&t=0s&ab_channel=KApps
 
 @Composable
 fun RegisterScreen(
@@ -41,6 +42,7 @@ fun RegisterScreen(
     NavDestinationHelper(
         shouldNavigate = {
             registerViewModel.registerState.isSuccessfullyRegistered
+
         },
         destination = {
             onRegisterSuccessNavigation()
@@ -76,8 +78,8 @@ fun RegisterScreen(
             contentAlignment = Alignment.Center
         ){
             HeaderBackground(
-                leftColor = Purple40,
-                rightColor = Pink40,
+                leftColor = CaptainBlue,
+                rightColor = CaptainBlue,
                 modifier = Modifier
                     .fillMaxSize()
             )
@@ -131,7 +133,7 @@ fun RegisterScreen(
                 .padding(top = 200.dp)
                 .fillMaxWidth(0.9f)
                 .shadow(5.dp, RoundedCornerShape(15.dp))
-                .background(Pink40, RoundedCornerShape(15.dp))
+                .background(CaptainBlue, RoundedCornerShape(15.dp))
                 .padding(10.dp, 15.dp, 10.dp, 5.dp)
                 .align(Alignment.TopCenter)
         )
@@ -152,7 +154,7 @@ fun RegisterScreen(
                         onNavigateToLoginScreen()
                     },
                 text = "Login",
-                color = Purple40,
+                color = BrightBlue,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.body2
             )
@@ -192,8 +194,8 @@ fun RegisterContainer(
             hint = "Enter valid email",
             leadingIcon = Icons.Default.Email,
             textValue = emailValue(),
-            textColour = Color.Gray,
-            cursorColour = Purple40,
+            textColour = Color.White,
+            cursorColour = BlueGrey,
             onValueChanged = onEmailChanged,
             trailingIcon = null,
             onTrailingIconClick = null
@@ -206,8 +208,8 @@ fun RegisterContainer(
             hint = "Choose a username",
             leadingIcon = Icons.Default.AccountCircle,
             textValue = usernameValue(),
-            textColour = Color.Gray,
-            cursorColour = Purple40,
+            textColour = Color.White,
+            cursorColour = BlueGrey,
             onValueChanged = onUsernameChanged,
             trailingIcon = null,
             onTrailingIconClick = null
@@ -220,8 +222,8 @@ fun RegisterContainer(
             hint = "Enter Password",
             leadingIcon = Icons.Default.VpnKey,
             textValue = passwordValue(),
-            textColour = Color.Gray,
-            cursorColour = Purple40,
+            textColour = Color.White,
+            cursorColour = BlueGrey,
             onValueChanged = onPasswordChanged,
             keyboardType = KeyboardType.Password,
             visualTransformation = if (isPasswordShown()) {
@@ -239,8 +241,8 @@ fun RegisterContainer(
             hint = "Enter password again",
             leadingIcon = Icons.Default.VpnKey,
             textValue = passwordRepeatedValue(),
-            textColour = Color.Gray,
-            cursorColour = Purple40,
+            textColour = Color.White,
+            cursorColour = BlueGrey,
             onValueChanged = onPasswordRepeatedChanged,
             keyboardType = KeyboardType.Password,
             visualTransformation = if (isPasswordRepeatedShown()) {
@@ -258,8 +260,8 @@ fun RegisterContainer(
         ) {
             AuthButton(
                 text = "Register",
-                backgroundColour = Purple40,
-                contentColour = Color.White,
+                backgroundColour = Lavender,
+                contentColour = CaptainBlue,
                 enabled = buttonEnabled(),
                 modifier = Modifier
                     .fillMaxWidth()

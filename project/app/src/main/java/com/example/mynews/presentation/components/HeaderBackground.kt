@@ -9,8 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.mynews.ui.theme.Purple40
-import com.example.mynews.ui.theme.Pink40
+import com.example.mynews.ui.theme.*
 
 @Composable
 fun HeaderBackground(
@@ -37,8 +36,8 @@ fun HeaderBackground(
 @Composable
 fun HeaderBackgroundPreview() {
     HeaderBackground(
-        leftColor = Pink40,
-        rightColor = Purple40,
+        leftColor = CaptainBlue,
+        rightColor = NavyBlue,
         modifier = Modifier
             .fillMaxSize()
     )

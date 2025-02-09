@@ -27,7 +27,8 @@ import com.example.mynews.presentation.viewmodel.LoginViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.mynews.ui.theme.*
 
-// CITE: https://www.youtube.com/watch?v=aCjOmyd_62U&t=500s
+// Source: https://www.youtube.com/watch?v=aCjOmyd_62U&t=0s&ab_channel=KApps
+
 @Composable
 fun LoginScreen(
     onLoginSuccessNavigation: () -> Unit,
@@ -73,8 +74,8 @@ fun LoginScreen(
             contentAlignment = Alignment.Center
         ){
             HeaderBackground(
-                leftColor = Pink40,
-                rightColor = Purple40,
+                leftColor = CaptainBlue,
+                rightColor = CaptainBlue,
                 modifier = Modifier
                     .fillMaxSize()
             )
@@ -113,7 +114,7 @@ fun LoginScreen(
                 .padding(top = 200.dp)
                 .fillMaxWidth(0.9f)
                 .shadow(5.dp, RoundedCornerShape(15.dp))
-                .background(Pink40, RoundedCornerShape(15.dp))
+                .background(CaptainBlue, RoundedCornerShape(15.dp))
                 .padding(10.dp, 15.dp, 10.dp, 5.dp)
                 .align(Alignment.TopCenter)
         )
@@ -125,7 +126,7 @@ fun LoginScreen(
         ){
             Text(
                 "No account yet?",
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.body2,
             )
             Text(
                 "Register",
@@ -134,7 +135,7 @@ fun LoginScreen(
                     .clickable {
                         onNavigateToRegisterScreen()
                     },
-                color = Purple40,
+                color = BrightBlue,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.body2
             )
@@ -167,8 +168,8 @@ fun LoginContainer(
             description = "Email address",
             hint = "Enter valid email",
             textValue = emailValue(),
-            textColour = Color.Gray,
-            cursorColour = Purple40,
+            textColour = Color.White,
+            cursorColour = BlueGrey,
             onValueChanged = onEmailChanged,
             trailingIcon = null,
             onTrailingIconClick = null,
@@ -180,8 +181,8 @@ fun LoginContainer(
             description = "Password",
             hint = "Enter password",
             textValue = passwordValue(),
-            textColour = Color.Gray,
-            cursorColour = Purple40,
+            textColour = Color.White,
+            cursorColour = BlueGrey,
             onValueChanged = onPasswordChanged,
             trailingIcon = Icons.Default.RemoveRedEye,
             onTrailingIconClick = {
@@ -200,8 +201,8 @@ fun LoginContainer(
         ){
             AuthButton(
                 text = "Login",
-                backgroundColour = Purple40,
-                contentColour = Color.White,
+                backgroundColour = Lavender,
+                contentColour = CaptainBlue,
                 enabled = buttonEnabled(),
                 modifier = Modifier
                     .fillMaxWidth()
