@@ -12,13 +12,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.example.mynews.presentation.viewmodel.SettingsViewModel
 
-
 @Composable
 fun HomeScreen(
-    onLogoutClicked: () -> Unit
+    onLogoutClicked: () -> Unit,
+    onGoalsClicked: () -> Unit,
+    onSocialClicked: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -39,6 +41,12 @@ fun HomeScreen(
             */
             Button(onClick = { onLogoutClicked() }) {
                 Text("Logout")
+            }
+            Button(onClick = { onGoalsClicked() }) {
+                Text("Goals")
+            }
+            Button(onClick = { onSocialClicked() }) {
+                Text("Social")
             }
         }
     }

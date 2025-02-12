@@ -27,6 +27,8 @@ import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.repositories.UserRepository
 import com.example.mynews.presentation.views.home.HomeScreen
 import android.util.Log
+import androidx.navigation.navigation
+import com.example.mynews.presentation.views.GoalsScreen
 
 // RootNavGraph is the main navigation that manages overall navigation of the app
 // based on if the user is or isn't logged in
@@ -113,10 +115,22 @@ fun RootNavigationGraph(navController: NavHostController) {
                         navController.navigate(Graph.AUTHENTICATION) {
                             popUpTo(Graph.ROOT) {inclusive = true}
                         }
+                    },
+                    onGoalsClicked = {
+                        println("Goals Button Clicked from Root")
+                        navController.navigate(Graph.GOALS)
+                    },
+                    onSocialClicked = {
+                        println("Goals Button Clicked from Root")
+                        navController.navigate(Graph.SOCIAL)
                     }
-
-
                 )
+            }
+
+            navigation(startDestination = AppScreenRoutes.GoalsScreen.route, route = Graph.GOALS) {
+                composable(AppScreenRoutes.GoalsScreen.route) {
+                    GoalsScreen()
+                }
             }
         }
     }
@@ -126,5 +140,7 @@ object Graph {
     const val ROOT = "root_graph"
     const val AUTHENTICATION = "auth_graph"
     const val HOME = "home_graph"
+    const val GOALS = "goals_graph"
+    const val SOCIAL = "social_graph"
     const val SETTINGS = "settings_graph"
 }

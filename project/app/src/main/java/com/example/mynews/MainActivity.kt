@@ -32,9 +32,16 @@ class MainActivity : ComponentActivity() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         Log.d("MainActivity", "Current user: ${currentUser?.email ?: "No user logged in"}")
 
+        val isUserLoggedIn = currentUser != null
+
         setContent {
             MyNewsTheme {
-                RootNavigationGraph(navController = rememberNavController())
+                val navController = rememberNavController()
+                if (false/*isUserLoggedIn*/) { // TODO: I think the goal is to eventually have it function this way. Waiting on navbar component
+                    HomeNavGraph(navController)
+                } else {
+                    RootNavigationGraph(navController)
+                }
             }
         }
     }
