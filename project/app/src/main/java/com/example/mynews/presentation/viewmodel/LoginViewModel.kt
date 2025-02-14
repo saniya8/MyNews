@@ -10,12 +10,10 @@ import com.example.mynews.domain.model.LoginInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
 import com.example.mynews.presentation.state.LoginState
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
+
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(

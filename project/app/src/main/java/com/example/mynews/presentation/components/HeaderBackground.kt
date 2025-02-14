@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.mynews.ui.theme.*
 
+// Purpose: MyNews header on the LoginScreen
+
 @Composable
 fun HeaderBackground(
     leftColor: Color,

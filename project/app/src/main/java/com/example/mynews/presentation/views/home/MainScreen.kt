@@ -3,15 +3,12 @@ package com.example.mynews.presentation.views.home
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.navigation.NavHostController
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SocialDistance
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -26,10 +23,7 @@ import com.example.mynews.utils.HomeNavGraph
 
 
 @Composable
-//fun MainScreen(navController: NavHostController = rememberNavController(),
-//               onLogoutClicked: () -> Unit) {
 
-// FIX
 fun MainScreen(rootNavController: NavHostController, onLogoutClicked: () -> Unit) {
 
     val navController = rememberNavController() // local controller for bottom nav
@@ -73,8 +67,7 @@ fun MainScreen(rootNavController: NavHostController, onLogoutClicked: () -> Unit
         Box(
             modifier = (Modifier.padding(bottom = paddingValues.calculateBottomPadding()))
         ) {
-            //HomeNavGraph(navController = navController)
-            HomeNavGraph(rootNavController = rootNavController, navController = navController) // FIX
+            HomeNavGraph(rootNavController = rootNavController, navController = navController)
 
         }
     }

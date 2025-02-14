@@ -187,7 +187,7 @@ fun RegisterContainer(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(15.dp)
     ) {
-        TextEntryModule(
+        FieldEntry(
             modifier = Modifier
                 .fillMaxWidth(),
             description = "Email address",
@@ -201,7 +201,7 @@ fun RegisterContainer(
             onTrailingIconClick = null
         )
 
-        TextEntryModule(
+        FieldEntry(
             modifier = Modifier
                 .fillMaxWidth(),
             description = "Username",
@@ -215,7 +215,7 @@ fun RegisterContainer(
             onTrailingIconClick = null
         )
 
-        TextEntryModule(
+        FieldEntry(
             modifier = Modifier
                 .fillMaxWidth(),
             description = "Password",
@@ -234,7 +234,7 @@ fun RegisterContainer(
                 onTrailingPasswordIconClick()
             }
         )
-        TextEntryModule(
+        FieldEntry(
             modifier = Modifier
                 .fillMaxWidth(),
             description = "Password repeated",

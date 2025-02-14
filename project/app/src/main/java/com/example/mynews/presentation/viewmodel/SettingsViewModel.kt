@@ -13,7 +13,6 @@ import com.example.mynews.domain.model.User
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.repositories.UserRepository
 
-// View model for the (eventual) settings screen (Settings.kt that will eventually be made in views folder)
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -30,9 +29,6 @@ class SettingsViewModel @Inject constructor(
     private val _username = MutableStateFlow<String?>("")
     val username: StateFlow<String?> = _username
 
-    private val _members = MutableStateFlow<List<User?>>(emptyList())
-    val members: StateFlow<List<User?>> = _members
-
     fun logout() {
         viewModelScope.launch {
             val success = authRepository.logout()
@@ -40,9 +36,6 @@ class SettingsViewModel @Inject constructor(
             Log.d("LogoutDebug", "Logout success: $success")
         }
     }
-
-
-
 
     fun getUsername(userId: String) {
         viewModelScope.launch {

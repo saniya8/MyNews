@@ -2,7 +2,6 @@ package com.example.mynews.data
 
 
 import android.util.Log
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -16,7 +15,6 @@ import com.example.mynews.presentation.viewmodel.DeleteAccountResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 
 // Implementation of the AuthRepository interface in .com.example.mynews/domain/repositories
 
@@ -123,32 +121,6 @@ class AuthRepositoryImpl (
 
      */
 
-    // version 2 - test - not working
-
-    /*
-    override suspend fun logout(): Boolean {
-        try {
-            val firebaseUser = FirebaseAuth.getInstance().currentUser
-            firebaseUser?.let { user ->
-                val userId = user.uid
-                // Update isLoggedIn field to false in Firestore
-                firestore.collection("users").document(userId)
-                    .update("loggedIn", false)
-                    .await()
-                //return true
-            }
-            //Log.e("AuthRepository", "No user logged in.")
-            //return false
-            FirebaseAuth.getInstance().signOut()
-            return true;
-        } catch (e: Exception) {
-            Log.e("AuthRepository", "Error logging out user", e)
-            return false
-        }
-    }
-
-     */
-
     // version 3 - working but might have to integrate stuff from version 1 back in
     override suspend fun logout(): Boolean {
         return try {
@@ -160,7 +132,6 @@ class AuthRepositoryImpl (
             false
         }
     }
-
 
 
     // test later - might need Coroutine Scope
@@ -193,7 +164,7 @@ class AuthRepositoryImpl (
         }
     }
 
-    // test later - - might need Coroutine Scope
+    // test later - might need Coroutine Scope
     override suspend fun getLoginState(): Boolean {
         try {
             val currentUser = auth.currentUser

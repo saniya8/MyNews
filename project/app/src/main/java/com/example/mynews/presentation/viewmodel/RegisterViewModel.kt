@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.domain.model.RegisterInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
-//import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
 import com.example.mynews.presentation.state.RegisterState
 import dagger.hilt.android.lifecycle.HiltViewModel

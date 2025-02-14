@@ -162,7 +162,7 @@ fun LoginContainer(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(15.dp)
     ){
-        TextEntryModule(
+        FieldEntry(
             modifier = Modifier
                 .fillMaxWidth(),
             description = "Email address",
@@ -175,7 +175,7 @@ fun LoginContainer(
             onTrailingIconClick = null,
             leadingIcon = Icons.Default.Email
         )
-        TextEntryModule(
+        FieldEntry(
             modifier = Modifier
                 .fillMaxWidth(),
             description = "Password",

@@ -1,6 +1,5 @@
 package com.example.mynews.utils
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -25,12 +23,7 @@ import com.example.mynews.data.AuthRepositoryImpl
 import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.repositories.UserRepository
-import com.example.mynews.presentation.views.home.HomeScreen
 import android.util.Log
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.navigation
-import com.example.mynews.presentation.views.Achievement
-import com.example.mynews.presentation.views.GoalsScreen
 import com.example.mynews.presentation.views.home.MainScreen
 
 // RootNavGraph is the main navigation that manages overall navigation of the app
@@ -83,14 +76,6 @@ fun RootNavigationGraph(navController: NavHostController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                /*
-                Image(
-                    painter = painterResource(id = /* insert link here */),
-                    contentDescription = "Splash Screen", // Provide a content description
-                    modifier = Modifier.size(200.dp) // Adjust size as needed
-                )
-
-                 */
                 CircularProgressIndicator(
                     modifier = Modifier.size(25.dp)
                 )
@@ -112,69 +97,12 @@ fun RootNavigationGraph(navController: NavHostController) {
                         FirebaseAuth.getInstance().signOut()
                         loggedInState.value = false
 
-                        //navController.navigate("login_route") {
-                        //    popUpTo("home_route") { inclusive = true }
-                        //}
                         navController.navigate(Graph.AUTHENTICATION) {
                             popUpTo(Graph.ROOT) {inclusive = true}
                         }
                     }
-//                    onGoalsClicked = {
-//                        println("Goals Button Clicked from Root")
-//                        navController.navigate(Graph.GOALS)
-//                    },
-//                    onSocialClicked = {
-//                        println("Goals Button Clicked from Root")
-//                        navController.navigate(Graph.SOCIAL)
-//                    }
                 )
-
-                /* commenting out for now - testing TESTMainScreen.kt
-                HomeScreen(
-                    onLogoutClicked = {
-
-                        FirebaseAuth.getInstance().signOut()
-                        loggedInState.value = false
-
-                        //navController.navigate("login_route") {
-                        //    popUpTo("home_route") { inclusive = true }
-                        //}
-                        navController.navigate(Graph.AUTHENTICATION) {
-                            popUpTo(Graph.ROOT) {inclusive = true}
-                        }
-                    }
-//                    onGoalsClicked = {
-//                        println("Goals Button Clicked from Root")
-//                        navController.navigate(Graph.GOALS)
-//                    },
-//                    onSocialClicked = {
-//                        println("Goals Button Clicked from Root")
-//                        navController.navigate(Graph.SOCIAL)
-//                    }
-                )
-
-                 */
-
-
-
-
-
-
-
-
             }
-
-
-            /* commenting out for now - testing TESTMainScreen.kt
-            navigation(startDestination = AppScreenRoutes.GoalsScreen.route, route = Graph.GOALS) {
-                composable(AppScreenRoutes.GoalsScreen.route) {
-                    GoalsScreen(streakDays = 4, achievements = listOf())
-                }
-            }
-
-             */
-
-
         }
     }
 }

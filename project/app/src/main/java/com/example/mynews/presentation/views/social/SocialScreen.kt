@@ -1,4 +1,4 @@
-package com.example.mynews.presentation.views
+package com.example.mynews.presentation.views.social
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,13 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun SocialScreen() {
-    // Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-    //   Column(horizontalAlignment = Alignment.CenterHorizontally)
-    //   Box(
-    //       modifier = Modifier
-    //           .size(width = 200.dp, height = 100.dp)
-    //           .background(Color.Red)
-    //   )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -41,7 +35,7 @@ fun SocialScreen() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // First Rectangle
+        // first rectangle
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -54,23 +48,23 @@ fun SocialScreen() {
                 modifier = Modifier
                     .size(40.dp)
                     .background(Color(0xFF2E3D83), CircleShape)
-                    //     .absoluteOffset(x = (-20).dp) // Move circle outside to the left
+                    //     .absoluteOffset(x = (-20).dp) // move circle outside to the left
                     .align(Alignment.TopStart)
             ) {
                 Text(
                     text = "JK",
                     modifier = Modifier
-                        .align(Alignment.Center) // Center text inside the rectangle
-                        .padding(1.dp), // Optional padding to avoid text touching the edges
+                        .align(Alignment.Center) // center text inside rectangle
+                        .padding(1.dp), // padding so text does not touch edges
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             }
-            // Column to place two lines of text with space between them
+            // column to place two lines of text with space between them
             Column(
                 modifier = Modifier
-                    .align(Alignment.Center) // Center the Column inside the Box
+                    .align(Alignment.Center) // center Column inside Box
                     .padding(4.dp),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Top
@@ -81,7 +75,7 @@ fun SocialScreen() {
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
-                Spacer(modifier = Modifier.height(8.dp)) // Space between the texts
+                Spacer(modifier = Modifier.height(8.dp)) // space between the texts
                 Text(
                     text = "How to Improve your Productivity",
                     fontSize = 18.sp,
@@ -94,14 +88,14 @@ fun SocialScreen() {
                 modifier = Modifier
                     .size(250.dp, 40.dp)
                     .background(Color(0xF5FDF0DB), RoundedCornerShape(8.dp))
-                    .align(Alignment.BottomEnd) // Position it at the bottom-right corner
-                    .padding(8.dp) // Add some padding if needed
+                    .align(Alignment.BottomEnd) // position it at the bottom-right corner
+                    .padding(8.dp)
             ) {
                 Text(
                     text = "\"Great morning read to start the day\"",
                     modifier = Modifier
-                        .align(Alignment.Center) // Center text inside the rectangle
-                        .padding(1.dp), // Optional padding to avoid text touching the edges
+                        .align(Alignment.Center) // center text inside the rectangle
+                        .padding(1.dp),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
@@ -132,8 +126,8 @@ fun SocialScreen() {
                 Text(
                     text = "SK",
                     modifier = Modifier
-                        .align(Alignment.Center) // Center text inside the rectangle
-                        .padding(1.dp), // Optional padding to avoid text touching the edges
+                        .align(Alignment.Center)
+                        .padding(1.dp),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -143,7 +137,7 @@ fun SocialScreen() {
             // Column to place two lines of text with space between them
             Column(
                 modifier = Modifier
-                    .align(Alignment.Center) // Center the Column inside the Box
+                    .align(Alignment.Center)
                     .padding(4.dp),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Top
@@ -154,7 +148,7 @@ fun SocialScreen() {
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
-                Spacer(modifier = Modifier.height(8.dp)) // Space between the texts
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "The Future of Technology: Diving In",
                     fontSize = 18.sp,
@@ -168,14 +162,14 @@ fun SocialScreen() {
                 modifier = Modifier
                     .size(250.dp, 40.dp)
                     .background(Color(0xF5FDF0DB), RoundedCornerShape(8.dp))
-                    .align(Alignment.BottomEnd) // Position it at the bottom-right corner
-                    .padding(8.dp) // Add some padding if needed
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp)
             ) {
                 Text(
                     text = "\"Thought-provoking and insightful\"",
                     modifier = Modifier
-                        .align(Alignment.Center) // Center text inside the rectangle
-                        .padding(1.dp), // Optional padding to avoid text touching the edges
+                        .align(Alignment.Center)
+                        .padding(1.dp),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
@@ -206,8 +200,8 @@ fun SocialScreen() {
                     Text(
                         text = "MY",
                         modifier = Modifier
-                            .align(Alignment.Center) // Center text inside the rectangle
-                            .padding(1.dp), // Optional padding to avoid text touching the edges
+                            .align(Alignment.Center)
+                            .padding(1.dp),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -217,7 +211,7 @@ fun SocialScreen() {
                 // Column to place two lines of text with space between them
                 Column(
                     modifier = Modifier
-                        .align(Alignment.Center) // Center the Column inside the Box
+                        .align(Alignment.Center)
                         .padding(4.dp),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.Top
@@ -228,7 +222,7 @@ fun SocialScreen() {
                         fontWeight = FontWeight.Normal,
                         color = Color.Black
                     )
-                    Spacer(modifier = Modifier.height(8.dp)) // Space between the texts
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Understanding the Basics of Kotlin",
                         fontSize = 18.sp,
@@ -242,14 +236,14 @@ fun SocialScreen() {
                     modifier = Modifier
                         .size(250.dp, 40.dp)
                         .background(Color(0xF5FDF0DB), RoundedCornerShape(8.dp))
-                        .align(Alignment.BottomEnd) // Position it at the bottom-right corner
-                        .padding(8.dp) // Add some padding if needed
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = "\"I have no idea what is going on\"",
                         modifier = Modifier
-                            .align(Alignment.Center) // Center text inside the rectangle
-                            .padding(1.dp), // Optional padding to avoid text touching the edges
+                            .align(Alignment.Center)
+                            .padding(1.dp),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Normal,
                         color = Color.Black

@@ -1,6 +1,5 @@
 package com.example.mynews.presentation.components
 
-import android.widget.Button
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mynews.ui.theme.*
+
+// Purpose: Authentication Button on the LoginScreen and RegisterScreen
 
 @Composable
 fun AuthButton(
@@ -38,12 +39,12 @@ fun AuthButton(
 
         enabled = enabled
     ) {
-        if(isLoading) { // Currently loading, waiting for backend result
+        if(isLoading) { // loading, waiting for result
             CircularProgressIndicator(
                 color = contentColour,
                 modifier = Modifier.size(20.dp),
             )
-        } else { // Not loading
+        } else { // not loading
             Text(
                 text = text,
                 style = MaterialTheme.typography.body1,

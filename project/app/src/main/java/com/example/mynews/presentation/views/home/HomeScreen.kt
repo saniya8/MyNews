@@ -4,14 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.navigation.NavHostController
-import com.google.firebase.auth.FirebaseAuth
-import com.example.mynews.presentation.viewmodel.SettingsViewModel
-
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,7 +32,6 @@ import androidx.navigation.compose.rememberNavController
 fun HomeScreen(
     navController: NavHostController = rememberNavController(),
     /*onLogoutClicked: () -> Unit*/) {
-
 
     // Sample data for articles
     val articles = listOf(
@@ -96,10 +90,12 @@ fun HomeScreen(
             }
         }
 
-        // old logout button (pre on settings screen)
-       // Button(onClick = { onLogoutClicked() }) {
-      //      Text("Logout")
-      //  }
+        // Old logout button (pre on settings screen)
+        /*
+        Button(onClick = { onLogoutClicked() }) {
+            Text("Logout")
+        }
+         */
 
     }
 }

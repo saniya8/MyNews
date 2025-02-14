@@ -20,4 +20,4 @@
 
 ## Releases
 
-* [Version 0.1 Release](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Version-0.1-Release)
+* [Version 0.10 Release](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Version-0.10-Release)
