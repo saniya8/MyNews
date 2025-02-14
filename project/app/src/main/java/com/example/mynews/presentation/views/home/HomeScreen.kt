@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun HomeScreen(onLogoutClicked: () -> Unit) {
+
+
     // Sample data for articles
     val articles = listOf(
         "Article 1: How to Improve Your Productivity",
@@ -83,12 +85,19 @@ fun HomeScreen(onLogoutClicked: () -> Unit) {
 
         // Scrollable list of articles
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            //modifier = Modifier.fillMaxSize()
+            modifier = Modifier.weight(1f)
         ) {
             items(articles) { article ->
                 ArticleRow(article)
             }
         }
+
+        Button(onClick = { onLogoutClicked() }) {
+            Text("Logout")
+        }
+
+
     }
 }
 
