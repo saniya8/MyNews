@@ -272,7 +272,9 @@ fun RegisterContainer(
             )
             Text(
                 errorHint() ?: "",
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.caption,
+                color = Color.White
+
             )
         }
     }

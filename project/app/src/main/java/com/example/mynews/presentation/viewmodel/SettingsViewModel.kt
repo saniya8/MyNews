@@ -37,8 +37,12 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val success = authRepository.logout()
             _logoutState.value = success
+            Log.d("LogoutDebug", "Logout success: $success")
         }
     }
+
+
+
 
     fun getUsername(userId: String) {
         viewModelScope.launch {

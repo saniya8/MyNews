@@ -31,9 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun HomeScreen(onLogoutClicked: () -> Unit) {
+fun HomeScreen(
+    navController: NavHostController = rememberNavController(),
+    /*onLogoutClicked: () -> Unit*/) {
 
 
     // Sample data for articles
@@ -93,10 +96,10 @@ fun HomeScreen(onLogoutClicked: () -> Unit) {
             }
         }
 
-        Button(onClick = { onLogoutClicked() }) {
-            Text("Logout")
-        }
-
+        // old logout button (pre on settings screen)
+       // Button(onClick = { onLogoutClicked() }) {
+      //      Text("Logout")
+      //  }
 
     }
 }

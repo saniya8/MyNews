@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.navigation
 import com.example.mynews.presentation.views.Achievement
 import com.example.mynews.presentation.views.GoalsScreen
+import com.example.mynews.presentation.views.home.MainScreen
 
 // RootNavGraph is the main navigation that manages overall navigation of the app
 // based on if the user is or isn't logged in
@@ -103,6 +104,32 @@ fun RootNavigationGraph(navController: NavHostController) {
         ) {
             authNavGraph(navController = navController)
             composable(route = Graph.HOME) {
+
+                MainScreen(
+                    rootNavController = navController, // FIX
+                    onLogoutClicked = {
+
+                        FirebaseAuth.getInstance().signOut()
+                        loggedInState.value = false
+
+                        //navController.navigate("login_route") {
+                        //    popUpTo("home_route") { inclusive = true }
+                        //}
+                        navController.navigate(Graph.AUTHENTICATION) {
+                            popUpTo(Graph.ROOT) {inclusive = true}
+                        }
+                    }
+//                    onGoalsClicked = {
+//                        println("Goals Button Clicked from Root")
+//                        navController.navigate(Graph.GOALS)
+//                    },
+//                    onSocialClicked = {
+//                        println("Goals Button Clicked from Root")
+//                        navController.navigate(Graph.SOCIAL)
+//                    }
+                )
+
+                /* commenting out for now - testing TESTMainScreen.kt
                 HomeScreen(
                     onLogoutClicked = {
 
@@ -125,13 +152,29 @@ fun RootNavigationGraph(navController: NavHostController) {
 //                        navController.navigate(Graph.SOCIAL)
 //                    }
                 )
+
+                 */
+
+
+
+
+
+
+
+
             }
 
+
+            /* commenting out for now - testing TESTMainScreen.kt
             navigation(startDestination = AppScreenRoutes.GoalsScreen.route, route = Graph.GOALS) {
                 composable(AppScreenRoutes.GoalsScreen.route) {
                     GoalsScreen(streakDays = 4, achievements = listOf())
                 }
             }
+
+             */
+
+
         }
     }
 }
