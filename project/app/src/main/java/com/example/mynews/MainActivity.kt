@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyNewsTheme {
                 val navController = rememberNavController()
-                if (false/*isUserLoggedIn*/) { // TODO: I think the goal is to eventually have it function this way. Waiting on navbar component
+                if (true/*isUserLoggedIn*/) { // TODO: I think the goal is to eventually have it function this way. Waiting on navbar component
                     HomeNavGraph(navController)
                 } else {
                     RootNavigationGraph(navController)

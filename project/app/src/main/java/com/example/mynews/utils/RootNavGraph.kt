@@ -27,7 +27,9 @@ import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.repositories.UserRepository
 import com.example.mynews.presentation.views.home.HomeScreen
 import android.util.Log
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.navigation
+import com.example.mynews.presentation.views.Achievement
 import com.example.mynews.presentation.views.GoalsScreen
 
 // RootNavGraph is the main navigation that manages overall navigation of the app
@@ -102,8 +104,6 @@ fun RootNavigationGraph(navController: NavHostController) {
             authNavGraph(navController = navController)
             composable(route = Graph.HOME) {
                 HomeScreen(
-
-
                     onLogoutClicked = {
 
                         FirebaseAuth.getInstance().signOut()
@@ -115,21 +115,21 @@ fun RootNavigationGraph(navController: NavHostController) {
                         navController.navigate(Graph.AUTHENTICATION) {
                             popUpTo(Graph.ROOT) {inclusive = true}
                         }
-                    },
-                    onGoalsClicked = {
-                        println("Goals Button Clicked from Root")
-                        navController.navigate(Graph.GOALS)
-                    },
-                    onSocialClicked = {
-                        println("Goals Button Clicked from Root")
-                        navController.navigate(Graph.SOCIAL)
                     }
+//                    onGoalsClicked = {
+//                        println("Goals Button Clicked from Root")
+//                        navController.navigate(Graph.GOALS)
+//                    },
+//                    onSocialClicked = {
+//                        println("Goals Button Clicked from Root")
+//                        navController.navigate(Graph.SOCIAL)
+//                    }
                 )
             }
 
             navigation(startDestination = AppScreenRoutes.GoalsScreen.route, route = Graph.GOALS) {
                 composable(AppScreenRoutes.GoalsScreen.route) {
-                    GoalsScreen()
+                    GoalsScreen(streakDays = 4, achievements = listOf())
                 }
             }
         }

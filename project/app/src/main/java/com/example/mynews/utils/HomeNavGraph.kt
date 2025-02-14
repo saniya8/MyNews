@@ -2,6 +2,7 @@ package com.example.mynews.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -10,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mynews.data.UserRepositoryImpl
+import com.example.mynews.presentation.views.Achievement
 import com.example.mynews.presentation.views.GoalsScreen
 import com.example.mynews.presentation.views.SocialScreen
 import com.example.mynews.presentation.views.home.HomeScreen
@@ -32,13 +34,11 @@ fun HomeNavGraph(navController: NavHostController) {
         ) {
             composable(AppScreenRoutes.HomeScreen.route) {
                 HomeScreen(
-                    onLogoutClicked = { /* Handle logout */ },
-                    onGoalsClicked = { navController.navigate(AppScreenRoutes.GoalsScreen.route) },
-                    onSocialClicked = { navController.navigate(AppScreenRoutes.SocialScreen.route) }
+                    onLogoutClicked = { /* Handle logout */ }
                 )
             }
             composable(AppScreenRoutes.GoalsScreen.route) {
-                GoalsScreen()
+                GoalsScreen(streakDays = 5, achievements = listOf())
             }
             composable(AppScreenRoutes.SocialScreen.route) {
                 SocialScreen()
