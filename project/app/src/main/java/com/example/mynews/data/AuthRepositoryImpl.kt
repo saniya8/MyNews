@@ -121,7 +121,9 @@ class AuthRepositoryImpl (
 
      */
 
+
     // version 3 - working but might have to integrate stuff from version 1 back in
+    /*
     override suspend fun logout(): Boolean {
         return try {
             FirebaseAuth.getInstance().signOut() // Only sign out the user
@@ -132,6 +134,34 @@ class AuthRepositoryImpl (
             false
         }
     }
+
+     */
+
+    // version 4 - testing - version 3 + integrating stuff back from version 1
+
+    override suspend fun logout(): Boolean {
+        return try {
+            val firebaseUser = FirebaseAuth.getInstance().currentUser
+
+            firebaseUser?.let { user ->
+                val userId = user.uid
+                firestore.collection("users").document(userId)
+                    .update("loggedIn", false)
+                    .await()  // Wait for Firestore update before signing out
+                Log.d("AuthRepository", "User $userId logged out and Firestore updated")
+            }
+
+            FirebaseAuth.getInstance().signOut()
+            Log.d("AuthRepository", "User signed out successfully")
+            true
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Error logging out user", e)
+            false
+        }
+    }
+
+
+
 
 
     // test later - might need Coroutine Scope
