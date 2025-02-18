@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mynews.data.UserRepositoryImpl
+import com.example.mynews.presentation.viewmodel.NewsViewModel
 import com.example.mynews.presentation.views.goals.GoalsScreen
 import com.example.mynews.presentation.views.social.SocialScreen
 import com.example.mynews.presentation.views.home.HomeScreen
@@ -26,7 +27,9 @@ sealed class AppScreenRoutes(val route: String) {
 // HomeNavGraph - pre-attempt to fix the sign in and navigation
 @Composable
 
-fun HomeNavGraph(rootNavController: NavHostController, navController: NavHostController) {
+fun HomeNavGraph(rootNavController: NavHostController,
+                 navController: NavHostController,
+                 newsViewModel: NewsViewModel) {
 
     NavHost(
         navController = navController,
@@ -34,7 +37,7 @@ fun HomeNavGraph(rootNavController: NavHostController, navController: NavHostCon
         startDestination = AppScreenRoutes.HomeScreen.route
     ) {
         composable(AppScreenRoutes.HomeScreen.route) {
-            HomeScreen()
+            HomeScreen(newsViewModel = newsViewModel)
         }
         composable(AppScreenRoutes.GoalsScreen.route) {
             GoalsScreen(streakDays = 4, achievements = listOf())

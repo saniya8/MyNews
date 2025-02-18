@@ -92,6 +92,8 @@ fun RootNavigationGraph(navController: NavHostController) {
 
                 MainScreen(
                     rootNavController = navController, // FIX
+
+                    /*
                     onLogoutClicked = {
 
                         FirebaseAuth.getInstance().signOut()
@@ -101,6 +103,10 @@ fun RootNavigationGraph(navController: NavHostController) {
                             popUpTo(Graph.ROOT) {inclusive = true}
                         }
                     }
+
+                     */
+
+
                 )
             }
         }

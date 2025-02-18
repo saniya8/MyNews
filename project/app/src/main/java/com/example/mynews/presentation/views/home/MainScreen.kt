@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mynews.utils.AuthScreen
@@ -19,12 +20,15 @@ import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.components.BottomNavBar
 import com.example.mynews.domain.model.BottomNavBarItem
 import com.example.mynews.utils.HomeNavGraph
+import com.example.mynews.presentation.viewmodel.NewsViewModel
 
 
 
 @Composable
 
-fun MainScreen(rootNavController: NavHostController, onLogoutClicked: () -> Unit) {
+fun MainScreen(rootNavController: NavHostController,
+               newsViewModel: NewsViewModel = hiltViewModel(), // newsViewModel instantiated here to have one instance while app running
+               /*onLogoutClicked: () -> Unit*/) {
 
     val navController = rememberNavController() // local controller for bottom nav
 
@@ -67,7 +71,9 @@ fun MainScreen(rootNavController: NavHostController, onLogoutClicked: () -> Unit
         Box(
             modifier = (Modifier.padding(bottom = paddingValues.calculateBottomPadding()))
         ) {
-            HomeNavGraph(rootNavController = rootNavController, navController = navController)
+            HomeNavGraph(rootNavController = rootNavController,
+                         navController = navController,
+                         newsViewModel = newsViewModel)
 
         }
     }

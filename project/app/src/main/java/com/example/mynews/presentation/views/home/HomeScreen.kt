@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,9 +51,15 @@ fun todayDateText() : String {
 @Composable
 fun HomeScreen(
     navController: NavHostController = rememberNavController(),
-    newsViewModel: NewsViewModel = hiltViewModel(), // keep here so newsViewModel persists between navigation
+    newsViewModel: NewsViewModel, // keep here so newsViewModel persists between navigation
     /*onLogoutClicked: () -> Unit*/
 ) {
+
+    // Runs once when HomeScreen is created, and each time parameter changes
+    // Unit never changes, so runs once when HomeScreen is created
+    LaunchedEffect(Unit) {
+        newsViewModel.fetchNewsTopHeadlines()
+    }
 
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
