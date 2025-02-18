@@ -17,23 +17,86 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
+import com.example.mynews.presentation.viewmodel.NewsViewModel
+import com.example.mynews.presentation.viewmodel.SettingsViewModel
+import com.example.mynews.ui.theme.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import com.example.mynews.presentation.views.home.NewsScreen
+import com.example.mynews.utils.AppScreenRoutes
+
+
+fun todayDateText() : String {
+    val today = LocalDate.now()
+    val formattedDate = today.format(DateTimeFormatter.ofPattern("MMMM d")) // "e.g., February 17"
+    return formattedDate;
+}
+
 
 @Composable
 fun HomeScreen(
     navController: NavHostController = rememberNavController(),
-    /*onLogoutClicked: () -> Unit*/) {
+    newsViewModel: NewsViewModel = hiltViewModel(), // keep here so newsViewModel persists between navigation
+    /*onLogoutClicked: () -> Unit*/
+) {
+
+
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Column (
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+
+            // Heading
+            Text(text = "My News",
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                fontWeight = FontWeight.Bold,
+                color = CaptainBlue,
+                fontSize = 25.sp,
+                fontFamily = FontFamily.SansSerif
+            )
+
+            // Spacing
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Today's date
+            Text(text = todayDateText(),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                //fontWeight = FontWeight.Bold,
+                color = CaptainBlue,
+                fontSize = 20.sp,
+                fontFamily = FontFamily.SansSerif
+            )
+
+            NewsScreen(newsViewModel)
+
+        }
+
+    }
+
+
+    /*
+
+    // DEMO 1 SKELETON
+
 
     // Sample data for articles
+
     val articles = listOf(
         "Article 1: How to Improve Your Productivity",
         "Article 2: The Future of Technology",
@@ -98,6 +161,11 @@ fun HomeScreen(
          */
 
     }
+
+     */
+
+
+
 }
 
 @Composable
