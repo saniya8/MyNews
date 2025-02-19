@@ -77,8 +77,20 @@ fun ArticleItem(article: Article) {
 
             Log.d("CoilDebug", "Loading image URL: ${article.urlToImage}")
 
+
             val placeholderImage : String = "https://s.france24.com/media/display/e6279b3c-db08-11ee-b7f5-005056bf30b7/w:1024/p:16x9/news_en_1920x1080.jpg"
-            AsyncImage(model = article.urlToImage?: placeholderImage,
+
+            val articleImageUrl = if (article.urlToImage?.startsWith("https") == true) {
+                // use the article.urlToImage only if it is non-null and starts with "https"
+                // so image is retrieved correctly
+                article.urlToImage
+            } else {
+                // if article.urlToImage is null, or if article.urlToImage is not null but
+                // doesn't start with "https", then use the placeholder image
+                placeholderImage
+            }
+
+            AsyncImage(model = articleImageUrl /*article.urlToImage?: placeholderImage*/,
                 contentDescription = "Article Image",
                 modifier = Modifier.size(80.dp)
                     .aspectRatio(1f),
