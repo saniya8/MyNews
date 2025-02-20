@@ -16,4 +16,6 @@ object RetrofitInstance {
     }
 
     val newsApi : NewsApi = getInstance().create(NewsApi::class.java)
+
+
 }

@@ -14,4 +14,13 @@ interface NewsApi {
         @Header("User-Agent") userAgent: String = "Mozilla/5.0" // DO NOT DELETE - to trick API that request is coming from browser
     ) : Response<NewsResponse>
 
+    @GET("top-headlines")
+    suspend fun getTopHeadlinesByCategory(
+        @Query("language") language : String,
+        @Query("category") category : String,
+        @Header("X-Api-Key") apiKey : String,
+        @Header("User-Agent") userAgent: String = "Mozilla/5.0" // DO NOT DELETE - to trick API that request is coming from browser
+    ) : Response<NewsResponse>
+
+
 }

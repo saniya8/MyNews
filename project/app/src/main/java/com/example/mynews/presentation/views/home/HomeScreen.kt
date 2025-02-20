@@ -92,12 +92,14 @@ fun HomeScreen(
     // testing to check that selectedCategory.value actually updates
     LaunchedEffect(selectedCategory.value) {
         Log.d("CategorySelection", "Selected Category: ${selectedCategory.value}")
+        newsViewModel.fetchNewsTopHeadlinesByCategory(selectedCategory.value)
     }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(
+                newsViewModel = newsViewModel,
                 drawerState = drawerState,
                 scope = scope,
                 selectedCategory = selectedCategory.value, // Pass selected category
@@ -161,12 +163,16 @@ fun HomeScreen(
 
 @Composable
 fun DrawerContent(
+    newsViewModel: NewsViewModel,
     drawerState: DrawerState,
     scope: CoroutineScope,
     selectedCategory: String?, // Receive selected category from HomeScreen
     onCategorySelected: (String?) -> Unit // Function to update selection
 ) {
-    val categories = listOf("Business", "Entertainment", "General", "Health", "Science", "Sports", "Technology")
+    // excluding General since General is just the same as the regular news that you
+    // pull from API
+    // categories provided in the documentation
+    val categories = listOf("Business", "Entertainment", "Health", "Science", "Sports", "Technology")
 
     LazyColumn(
         modifier = Modifier
