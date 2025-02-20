@@ -56,16 +56,18 @@ class NewsViewModel @Inject constructor(): ViewModel() {
     // - Close app but do not swipe to clear it from memory
 
 
-    fun fetchNewsTopHeadlines() {
+    // for initial news display
+    fun fetchTopHeadlines(forceFetch: Boolean = false) {
 
-        if (hasFetchedNews) return // Prevents duplicate API requests
+        if (hasFetchedNews && !forceFetch) return // Prevents duplicate API requests
         hasFetchedNews = true
         val language = "en"
 
         viewModelScope.launch {
             // getTopHeadlines is a suspend function, therefore will take time
             // to load, therefore wrap it in a coroutine using viewModelScope.launch
-            val response = newsApi.getTopHeadlines(language, Constant.apiKey)
+            val response = newsApi.getTopHeadlines(language = language,
+                                                   apiKey = Constant.apiKey)
 
             // response represents entire HTTP response:
             // response.code() - status code
@@ -102,20 +104,25 @@ class NewsViewModel @Inject constructor(): ViewModel() {
         }
     }
 
-    fun fetchNewsTopHeadlinesByCategory(category: String?) {
+
+    // for filtering
+    fun fetchTopHeadlinesByCategory(category: String?) {
 
         val language = "en"
 
         viewModelScope.launch {
-            // getTopHeadlines is a suspend function, therefore will take time
+            // getTopHeadlinesByCategory is a suspend function, therefore will take time
             // to load, therefore wrap it in a coroutine using viewModelScope.launch
 
             // value of response depends on the category value
             val response =
                 if(category == null) {
-                    newsApi.getTopHeadlines(language, Constant.apiKey)
+                    newsApi.getTopHeadlines(language = language,
+                                            apiKey = Constant.apiKey)
                 } else { // category is not null
-                    newsApi.getTopHeadlinesByCategory(language, category, Constant.apiKey)
+                    newsApi.getTopHeadlinesByCategory(language = language,
+                                                      category = category,
+                                                      apiKey = Constant.apiKey)
                 }
 
             if(response.isSuccessful) {
@@ -131,6 +138,34 @@ class NewsViewModel @Inject constructor(): ViewModel() {
 
 
 
+        }
+
+    }
+
+    // for searching
+    fun fetchEverythingBySearch(searchQuery : String) {
+
+        val language = "en"
+
+        viewModelScope.launch {
+
+            // getEverythingBySearch is a suspend function, therefore will take time
+            // to load, therefore wrap it in a coroutine using viewModelScope.launch
+
+            val response = newsApi.getEverythingBySearch(language = language,
+                                                         q = searchQuery,
+                                                         apiKey = Constant.apiKey)
+
+            if(response.isSuccessful) {
+                val newsResponse = response.body()
+                // Assign articles to the mutable live data _articles
+                newsResponse?.articles?.let {
+                    _articles.postValue(it)
+                }
+
+            } else {
+                Log.i("NewsAPI Response Failure By Category: ", response.message())
+            }
         }
 
     }

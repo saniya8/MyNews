@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter
 import com.example.mynews.presentation.views.home.NewsScreen
 import com.example.mynews.utils.AppScreenRoutes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -60,12 +61,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.launch
-
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 
 
 fun todayDateText() : String {
@@ -74,24 +84,37 @@ fun todayDateText() : String {
     return formattedDate;
 }
 
+// TODO: FIX search query not persisting between navigation changes
+
 @Composable
 fun HomeScreen(
     navController: NavHostController = rememberNavController(),
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
-    selectedCategory: MutableState<String?>
+    selectedCategory: MutableState<String?>,
+    searchQuery: MutableState<String>
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
     val scope = rememberCoroutineScope() // Required for controlling the drawer
 
 
     LaunchedEffect(Unit) {
-        newsViewModel.fetchNewsTopHeadlines()
+        newsViewModel.fetchTopHeadlines()
     }
 
-    // testing to check that selectedCategory.value actually updates
+    // when selectedCategory.value change, it should fetch the top headlines by the category
     LaunchedEffect(selectedCategory.value) {
         Log.d("CategorySelection", "Selected Category: ${selectedCategory.value}")
-        newsViewModel.fetchNewsTopHeadlinesByCategory(selectedCategory.value)
+        newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value)
+    }
+
+    // when the searchQuery.value changes, ONLY if become empty should it fetch the top headlines
+    LaunchedEffect(searchQuery.value) {
+        Log.i("SearchQuery Value", "In Launched Effect for SearchQuery: ${searchQuery.value}")
+        Log.i("SearchQuery Value", "Value is: ${searchQuery.value}")
+        Log.i("SearchQuery Value", "isEmpty is: ${searchQuery.value.isEmpty()}")
+        if (searchQuery.value.isEmpty()) {
+            newsViewModel.fetchTopHeadlines(forceFetch = true) // Re-fetch when search is cleared
+        }
     }
 
     ModalNavigationDrawer(
@@ -101,13 +124,15 @@ fun HomeScreen(
                 newsViewModel = newsViewModel,
                 drawerState = drawerState,
                 scope = scope,
-                selectedCategory = selectedCategory.value, // Pass selected category
-                onCategorySelected = { newCategory ->
-                    selectedCategory.value = newCategory // Update selected category state
-                }
+                selectedCategory = selectedCategory, //.value, // Pass selected category
+                searchQuery = searchQuery,
+                //onCategorySelected = { newCategory ->
+                //    selectedCategory.value = newCategory // Update selected category state
+                //}
             )
         }
     ) {
+        // Box is to be able to swipe right to open drawer
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -121,11 +146,11 @@ fun HomeScreen(
         ) {
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
-                topBar = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                        Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
-                    }
-                }
+                //topBar = { // moving this button to be next to the search bar
+                //    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                //        Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
+                //    }
+                // }
             ) { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -153,6 +178,14 @@ fun HomeScreen(
                         fontFamily = FontFamily.SansSerif
                     )
 
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    SearchBar(newsViewModel = newsViewModel,
+                              drawerState = drawerState,
+                              scope = scope,
+                              selectedCategory = selectedCategory,
+                              searchQuery = searchQuery)
+
                     NewsScreen(newsViewModel) // Display news
                 }
             }
@@ -161,12 +194,113 @@ fun HomeScreen(
 }
 
 @Composable
+fun SearchBar(newsViewModel: NewsViewModel,
+              drawerState: DrawerState,
+              scope: CoroutineScope,
+              selectedCategory: MutableState<String?>,
+              searchQuery: MutableState<String>
+) {
+
+    Row (
+        modifier = Modifier.fillMaxWidth()
+            //.height(50.dp) // Height for testing
+            //.background(Color(0xFFFFC0CB)) // Light Pink Color for testing
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically
+
+    ) {
+
+        // Search icon
+        //IconButton(
+        //    onClick = {} // creating icon button to leave this as an option
+        //) {
+        //    Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
+        //}
+
+        // Search bar
+
+        /*
+        OutlinedTextField(
+            modifier = Modifier.padding(8.dp)
+                .height(48.dp)
+                .border(1.dp, Color.Gray, CircleShape)
+                .clip(CircleShape),
+            value = searchQuery.value,
+            onValueChange = {searchQuery.value = it}
+        )
+
+         */
+
+        OutlinedTextField(
+            value = searchQuery.value,
+            onValueChange = {
+                searchQuery.value = it
+                //if (it.isEmpty()) {
+                //    newsViewModel.fetchTopHeadlines()
+                //} // else - should have to click the trailingIcon button (so it doesn't
+                  // keep giving results for every incremental value change - too many
+                  // fetch requests
+            },
+            modifier = Modifier
+                .padding(8.dp)
+                .height(50.dp) // Slightly increased height
+                //.fillMaxWidth()
+                .weight(1f) // this instead of fillMaxWidth makes the search
+                // bar fill the remaining width, but then it looks weird
+                // because the My News and Date at the top look off centered
+                // even though they are not
+                .clip(CircleShape), // Clip to rounded edges
+            shape = CircleShape, // Ensures rounded edges
+            textStyle = TextStyle(fontSize = 16.sp), // Adjust font size if needed
+            singleLine = true, // Prevents multiline input
+            maxLines = 1,
+            trailingIcon = {
+                IconButton(
+                    onClick = { // only search onClick
+                        if(searchQuery.value.isNotEmpty()) {
+                            if (selectedCategory.value != null) { // if any categories are selected
+                                selectedCategory.value = null; // clear any category selections
+                                // TODO: FIX this duplicate API call
+                                // check that it's not null because if it was null and
+                                // you set it to null again, it would trigger
+                                // LaunchedEffect(selectedCategory.value) which would
+                                // unnecessarily trigger another API call
+                            }
+                            newsViewModel.fetchEverythingBySearch(searchQuery.value)
+                        }
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
+                }
+            }
+
+
+            //placeholder = { Text("Search...") }, // Optional placeholder text
+        )
+
+        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+            Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
+        }
+
+
+
+
+
+
+
+    }
+
+}
+
+@Composable
 fun DrawerContent(
     newsViewModel: NewsViewModel,
     drawerState: DrawerState,
     scope: CoroutineScope,
-    selectedCategory: String?, // Receive selected category from HomeScreen
-    onCategorySelected: (String?) -> Unit // Function to update selection
+    //selectedCategory: String?, // Receive selected category from HomeScreen
+    selectedCategory: MutableState<String?>,
+    searchQuery: MutableState<String>
+    //onCategorySelected: (String?) -> Unit // Function to update selection
 ) {
     // excluding General since General is just the same as the regular news that you
     // pull from API
@@ -215,14 +349,21 @@ fun DrawerContent(
         // Multiple selection of categories = too many API calls and too complex since
         // API does not allow passing multiple categories
         items(categories) { category ->
-            val isSelected = selectedCategory == category
+            val isSelected = selectedCategory.value == category
             val backgroundColor = if (isSelected) Color(0xFF90CAF9) else Color(0xFFBBDEFB) // Subtle contrast
             val borderColor = if (isSelected) Color(0xFF64B5F6) else Color.Transparent // Light blue border when selected
 
             Button(
                 onClick = {
+
+                    if(searchQuery.value.isNotEmpty()) { // if there is a search query
+                        searchQuery.value = ""; // clear the search query
+                        // TODO: FIX this duplicate API call
+                    }
+
                     val newCategory = if (isSelected) null else category // Toggle selection
-                    onCategorySelected(newCategory) // Notify HomeScreen of change
+                    //onCategorySelected(newCategory)
+                    selectedCategory.value = newCategory // Notify HomeScreen of change
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -236,156 +377,6 @@ fun DrawerContent(
     }
 }
 
-
-
-/*
-
-// version 1 - pre making category buttons look pretty (bright purple here)
-@Composable
-fun HomeScreen(
-    navController: NavHostController = rememberNavController(),
-    newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
-) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
-    val scope = rememberCoroutineScope() // Required for controlling the drawer
-
-    LaunchedEffect(Unit) {
-        newsViewModel.fetchNewsTopHeadlines()
-    }
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        // drawerContent is the UI content for the sidebar
-        drawerContent = {
-            DrawerContent(drawerState, scope)
-        }
-    ) {
-
-        // body of ModalNavigationDrawer is where the main UI content for the screen goes
-
-
-        // Box wraps the rest of the UI content so that swiping left to open filter content work
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures { _, dragAmount ->
-                        if (dragAmount > 50) { // Detect swipe right
-                            scope.launch { drawerState.open() }
-                        }
-                    }
-                }
-        ) {
-
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = {
-                    // Add a hamburger menu button in the top-left
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                        Icon(Icons.Default.Tune, contentDescription = "Menu")
-                    }
-                }
-            ) { innerPadding ->
-                Column(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()
-                ) {
-                    // Heading
-                    Text(
-                        text = "My News",
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        fontWeight = FontWeight.Bold,
-                        color = CaptainBlue,
-                        fontSize = 25.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
-
-                    // Spacing
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Today's date
-                    Text(
-                        text = todayDateText(),
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = CaptainBlue,
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
-
-                    NewsScreen(newsViewModel) // Display news
-                }
-            } // end of scaffold
-        } // end of box
-
-    } // end of body
-}
-
-@Composable
-fun DrawerContent(drawerState: DrawerState, scope: CoroutineScope) {
-    val categories = listOf("Business", "Entertainment", "General", "Health", "Science", "Sports", "Technology")
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxHeight()
-            .width(250.dp)
-            .background(Color.LightGray)
-            .padding(16.dp)
-    ) {
-
-        // Using LazyColumn so sidebar becomes vertically scrollable
-
-        // Everything in LazyColumn needs to be wrapped in item
-        item {
-            // Row for Close (X) Button, aligned to the top-right
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                IconButton(onClick = { scope.launch { drawerState.close() } }) {
-                    Icon(Icons.Default.Close, contentDescription = "Close Drawer")
-                }
-            }
-        }
-
-
-        item {
-            // Title
-            Text(
-                text = "Filter My News",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Add category options here (later for filtering)
-        item {
-            // Category Heading
-            Text(
-                text = "Category",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-
-        // Generate buttons dynamically for each category
-        items(categories) { category ->
-            Button(
-                onClick = { /* TODO: Implement filtering logic later */ },
-                shape = RoundedCornerShape(20.dp), // Rounded rectangle buttons
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-            ) {
-                Text(text = category)
-            }
-        }
-    }
-}
-
- */
 
 
 

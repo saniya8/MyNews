@@ -35,6 +35,7 @@ fun MainScreen(rootNavController: NavHostController,
     val navController = rememberNavController() // local controller for bottom nav
 
     val selectedCategory = rememberSaveable { mutableStateOf<String?>(null) } // Track selected category
+    val searchQuery = rememberSaveable { mutableStateOf("")} // Track search query
 
     // selectedCategory can be null if a user deselects, in which case it should fetch
     // with just the language parameter and not the category parameter
@@ -84,7 +85,8 @@ fun MainScreen(rootNavController: NavHostController,
             HomeNavGraph(rootNavController = rootNavController,
                          navController = navController,
                          newsViewModel = newsViewModel,
-                         selectedCategory = selectedCategory)
+                         selectedCategory = selectedCategory,
+                         searchQuery = searchQuery)
 
         }
     }

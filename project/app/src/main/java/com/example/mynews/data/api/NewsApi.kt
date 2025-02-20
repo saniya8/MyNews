@@ -22,5 +22,15 @@ interface NewsApi {
         @Header("User-Agent") userAgent: String = "Mozilla/5.0" // DO NOT DELETE - to trick API that request is coming from browser
     ) : Response<NewsResponse>
 
+    @GET("everything")
+    suspend fun getEverythingBySearch(
+        @Query("language") language : String,
+        @Query("q") q : String,
+        @Header("X-Api-Key") apiKey : String,
+        @Header("User-Agent") userAgent: String = "Mozilla/5.0" // DO NOT DELETE - to trick API that request is coming from browser
+    ) : Response<NewsResponse>
+
+
+
 
 }

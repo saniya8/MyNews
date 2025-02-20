@@ -31,7 +31,8 @@ sealed class AppScreenRoutes(val route: String) {
 fun HomeNavGraph(rootNavController: NavHostController,
                  navController: NavHostController,
                  newsViewModel: NewsViewModel,
-                 selectedCategory: MutableState<String?>) {
+                 selectedCategory: MutableState<String?>,
+                 searchQuery: MutableState<String>) {
 
     NavHost(
         navController = navController,
@@ -39,7 +40,9 @@ fun HomeNavGraph(rootNavController: NavHostController,
         startDestination = AppScreenRoutes.HomeScreen.route
     ) {
         composable(AppScreenRoutes.HomeScreen.route) {
-            HomeScreen(newsViewModel = newsViewModel, selectedCategory = selectedCategory)
+            HomeScreen(newsViewModel = newsViewModel,
+                       selectedCategory = selectedCategory,
+                       searchQuery = searchQuery)
         }
         composable(AppScreenRoutes.GoalsScreen.route) {
             GoalsScreen(streakDays = 4, achievements = listOf())
