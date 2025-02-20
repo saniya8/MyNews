@@ -2,6 +2,7 @@ package com.example.mynews.utils
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,7 +30,8 @@ sealed class AppScreenRoutes(val route: String) {
 
 fun HomeNavGraph(rootNavController: NavHostController,
                  navController: NavHostController,
-                 newsViewModel: NewsViewModel) {
+                 newsViewModel: NewsViewModel,
+                 selectedCategory: MutableState<String?>) {
 
     NavHost(
         navController = navController,
@@ -37,7 +39,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
         startDestination = AppScreenRoutes.HomeScreen.route
     ) {
         composable(AppScreenRoutes.HomeScreen.route) {
-            HomeScreen(newsViewModel = newsViewModel)
+            HomeScreen(newsViewModel = newsViewModel, selectedCategory = selectedCategory)
         }
         composable(AppScreenRoutes.GoalsScreen.route) {
             GoalsScreen(streakDays = 4, achievements = listOf())

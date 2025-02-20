@@ -62,6 +62,7 @@ import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.launch
 
@@ -77,13 +78,11 @@ fun todayDateText() : String {
 fun HomeScreen(
     navController: NavHostController = rememberNavController(),
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
+    selectedCategory: MutableState<String?>
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
     val scope = rememberCoroutineScope() // Required for controlling the drawer
-    val selectedCategory = remember { mutableStateOf<String?>(null) } // Track selected category
 
-    // selectedCategory can be null if a user deselects, in which case it should fetch
-    // with just the language parameter and not the category parameter
 
     LaunchedEffect(Unit) {
         newsViewModel.fetchNewsTopHeadlines()

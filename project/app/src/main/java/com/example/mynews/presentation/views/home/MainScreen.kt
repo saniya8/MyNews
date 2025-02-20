@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -31,6 +33,14 @@ fun MainScreen(rootNavController: NavHostController,
                /*onLogoutClicked: () -> Unit*/) {
 
     val navController = rememberNavController() // local controller for bottom nav
+
+    val selectedCategory = rememberSaveable { mutableStateOf<String?>(null) } // Track selected category
+
+    // selectedCategory can be null if a user deselects, in which case it should fetch
+    // with just the language parameter and not the category parameter
+    // use rememberSaveable instead of remember for selectedCategory since rememberSaveable stores
+    // state in bundle so it survives configuration changes (like navigation) so even if user
+    // navigates to different tabs, their filtering remains
 
     Scaffold(
         bottomBar = {
@@ -73,7 +83,8 @@ fun MainScreen(rootNavController: NavHostController,
         ) {
             HomeNavGraph(rootNavController = rootNavController,
                          navController = navController,
-                         newsViewModel = newsViewModel)
+                         newsViewModel = newsViewModel,
+                         selectedCategory = selectedCategory)
 
         }
     }
