@@ -1,5 +1,6 @@
 package com.example.mynews.presentation.views.home
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,10 +27,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.mynews.utils.AppScreenRoutes
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 
 @Composable
 fun NewsScreen(
+    navController: NavHostController,
     newsViewModel: NewsViewModel,
 ) {
 
@@ -49,7 +55,8 @@ fun NewsScreen(
                 //Text(text = article.title) // for testing
                 //Text(text = article.urlToImage) // for testing
                 //Text(text = "----------------") // for testing
-                ArticleItem(article)
+                ArticleItem(navController = navController,
+                            article = article)
 
             }
 
@@ -64,10 +71,26 @@ fun NewsScreen(
 
 
 @Composable
-fun ArticleItem(article: Article) {
+fun ArticleItem(
+    navController: NavHostController,
+    article: Article
+){
     Card(
         modifier = Modifier.padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        onClick = {
+            //val articleJson = Json.encodeToString(article) // convert to JSON
+            //Log.d("Serialization Debug", "Encoded JSON: $articleJson")
+            //val encodedJson = Uri.encode(articleJson)
+            //navController.navigate("${AppScreenRoutes.NewsArticleScreen.route}/$articleJson")
+
+            //navController.navigate(AppScreenRoutes.NewsArticleScreen.route)
+
+            val encodedUrl = Uri.encode(article.url) // Encode to handle special characters
+            navController.navigate(AppScreenRoutes.NewsArticleScreen.createRoute(encodedUrl))
+
+
+        }
     ){
         Row(
             modifier = Modifier.fillMaxWidth()

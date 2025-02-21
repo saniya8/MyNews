@@ -1,5 +1,7 @@
 package com.example.mynews.data.api
 
+import kotlinx.serialization.Serializable
+
 data class NewsResponse(
     val articles: List<Article>,
     val status: String,

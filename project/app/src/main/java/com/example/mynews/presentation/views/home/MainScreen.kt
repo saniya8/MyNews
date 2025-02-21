@@ -72,9 +72,27 @@ fun MainScreen(rootNavController: NavHostController,
 
                     ),
                     navController = navController,
+
+                    // works
+                    // except: does not persist NewsArticleScreen between navigations
+                    //onItemClick = {
+                    //    navController.navigate(it.route)
+                    //}
+
+                    // works
+                    // and: persists NewsArticleScreen between navigations
                     onItemClick = {
-                        navController.navigate(it.route)
+                        navController.navigate(it.route) {
+                            launchSingleTop = true
+                            restoreState = true // Restores previous state when returning to tab
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true // Saves previous screen state
+                            }
+                        }
                     }
+
+
+
                 )
             }
         }

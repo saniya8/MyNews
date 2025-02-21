@@ -13,11 +13,13 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
-
+import androidx.navigation.NavHostController
 
 
 @Composable
-fun SocialScreen() {
+fun SocialScreen(
+    navController: NavHostController
+){
 
     Column(
         modifier = Modifier

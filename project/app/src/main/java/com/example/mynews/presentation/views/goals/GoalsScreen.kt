@@ -26,9 +26,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun GoalsScreen(streakDays: Int, achievements: List<Achievement>) {
+fun GoalsScreen(
+    navController: NavHostController,
+    streakDays: Int, // later remove this, it should be stored in and retrieved from firestore data collection
+    achievements: List<Achievement> // later remove this, it should be stored in and retrieved from firestore data collection
+){
         val sampleAchievements = listOf(
         Achievement("1 Week Streak"),
         Achievement("5 Friends Added"),

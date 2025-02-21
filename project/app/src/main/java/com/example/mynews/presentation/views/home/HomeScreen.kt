@@ -98,7 +98,7 @@ fun todayDateText() : String {
 
 @Composable
 fun HomeScreen(
-    navController: NavHostController = rememberNavController(),
+    navController: NavHostController /*= rememberNavController()*/,
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
     selectedCategory: MutableState<String?>,
     searchQuery: MutableState<String>
@@ -244,7 +244,8 @@ fun HomeScreen(
                               selectedCategory = selectedCategory,
                               searchQuery = searchQuery)
 
-                    NewsScreen(newsViewModel) // Display news
+                    NewsScreen(navController = navController,
+                               newsViewModel = newsViewModel) // Display news
                 }
             }
         }
