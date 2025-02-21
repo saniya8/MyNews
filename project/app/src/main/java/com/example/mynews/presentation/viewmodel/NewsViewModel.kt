@@ -106,13 +106,23 @@ class NewsViewModel @Inject constructor(): ViewModel() {
 
 
     // for filtering
-    fun fetchTopHeadlinesByCategory(category: String?) {
+    fun fetchTopHeadlinesByCategory(category: String) {
+
+        // if category is null, then requires fetching top headlines (since category
+        // being null means category was deselected or never selected)
+        // that is handled in LaunchedEffect(selectedCategory.value) in HomeScreen.kt
+        // so if this function is called, category cannot be null
 
         val language = "en"
 
         viewModelScope.launch {
             // getTopHeadlinesByCategory is a suspend function, therefore will take time
             // to load, therefore wrap it in a coroutine using viewModelScope.launch
+
+            /*
+
+            // this was code when handling category == null
+            // now handling that in HomeScreen.kt
 
             // value of response depends on the category value
             val response =
@@ -124,6 +134,15 @@ class NewsViewModel @Inject constructor(): ViewModel() {
                                                       category = category,
                                                       apiKey = Constant.apiKey)
                 }
+
+             */
+
+
+            val response = newsApi.getTopHeadlinesByCategory(
+                            language = language,
+                            category = category,
+                            apiKey = Constant.apiKey
+                            )
 
             if(response.isSuccessful) {
                 val newsResponse = response.body()

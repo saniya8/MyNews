@@ -84,7 +84,17 @@ fun todayDateText() : String {
     return formattedDate;
 }
 
-// TODO: FIX search query not persisting between navigation changes
+//TODO: non urgent - fix duplicate api calls
+
+// Right now in the code, the category/search filter is maintained between navigation (as desired)
+// However, ONLY when the HomeScreen is recreated (aka when navigating back into HomeScreen tab),
+// there are duplicate API calls due to the LaunchedEffects. This does NOT affect what the user
+// sees - from user POV, between navigations to and from home tab, when getting back to home
+// tab, filter looks correct. However, it does cause few unnecessary duplicate API calls in the
+// backend. This is fine since it works and doesn't do too many duplicate calls.
+// Only try to optimize this if there is time/need to do so
+// (e.g., by moving code from LaunchedEffect(selectedCategory.value) and LaunchedEffect(searchQuery.value)
+// to their respective composables onClick/onValueChange)
 
 @Composable
 fun HomeScreen(
@@ -99,24 +109,22 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
 
-        // Only fetch top headlines when Home Screen created if there is NO search query
-        // and NO selected category
-        //if (searchQuery.value.isEmpty() && selectedCategory.value == null) {
-        //    newsViewModel.fetchTopHeadlines()
-        //} else if (searchQuery.value.isNotEmpty()) { // selectedCategory.value should be null since mutually exclusive
-        //    newsViewModel.fetchEverythingBySearch(searchQuery.value)
-        //}
-
         Log.i("FlickerBug", "In LaunchedEffect(Unit)")
         Log.i("FlickerBug", "searchQuery: ${searchQuery.value}")
         Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
 
 
+        // searchQuery.value and selectedCategory.value
+        // isNotEmpty && != null -> not possible, currently mutually exclusive
+        // isEmpty && == null -> possible, fetch top headlines - in all three LaunchedEffects
+        // isNotEmpty && null -> possible, fetch everything by search - in LaunchedEffect(Unit)
+        // isEmpty && != null -> possible, fetch top headlines by category - in LaunchedEffect(S
 
 
-        // add this back
 
-        if (searchQuery.value.isNotEmpty() && selectedCategory.value == null) { // selectedCategory.value should be null since mutually exclusive
+        if (searchQuery.value.isNotEmpty() && selectedCategory.value == null) {
+            // when recreating home screen, if there is a search query, it should load search
+            // results (without requiring user to click search bar)
             Log.i("FlickerBug", "Fetching everything by search")
             newsViewModel.fetchEverythingBySearch(searchQuery.value)
         } else if (searchQuery.value.isEmpty() && selectedCategory.value == null) {
@@ -124,42 +132,24 @@ fun HomeScreen(
             Log.i("FlickerBug", "Fetching top headlines")
         }
 
-
-
-
-
-        //newsViewModel.fetchTopHeadlines()
-
-        //when {
-        //    searchQuery.value.isNotEmpty() -> newsViewModel.fetchEverythingBySearch(searchQuery.value)
-        //    selectedCategory.value != null -> newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value)
-        //    else -> newsViewModel.fetchTopHeadlines()
-        //}
-
-        /*if (searchQuery.value.isNotEmpty()) {
-            newsViewModel.fetchEverythingBySearch(searchQuery.value)
-        } else {
-            newsViewModel.fetchTopHeadlines()
-        }
-
-         */
-
         Log.i("FlickerBug", "----------------------")
     }
 
     // when selectedCategory.value change, it should fetch the top headlines by the category
     LaunchedEffect(selectedCategory.value) {
 
-
         Log.i("FlickerBug", "In LaunchedEffect(selectedCategory)")
         Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
-        if (selectedCategory.value == null && searchQuery.value.isEmpty()) {
+
+        val category = selectedCategory.value // store a local stable copy
+
+        if (category == null && searchQuery.value.isEmpty()) {
             // used to fetch top headlines if user deselects their selected cateogry
             // note: on initial creation of home screen, this will result in duplicate api
             // call, one in LaunchedEffect(Unit) and one here
             newsViewModel.fetchTopHeadlines(forceFetch = true)
-        } else if (selectedCategory.value != null && searchQuery.value.isEmpty()) {
-            newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value)
+        } else if (category != null && searchQuery.value.isEmpty()) {
+            newsViewModel.fetchTopHeadlinesByCategory(category)
         }
         Log.i("FlickerBug", "----------------------")
     }
