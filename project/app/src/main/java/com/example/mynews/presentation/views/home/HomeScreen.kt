@@ -98,13 +98,70 @@ fun HomeScreen(
 
 
     LaunchedEffect(Unit) {
-        newsViewModel.fetchTopHeadlines()
+
+        // Only fetch top headlines when Home Screen created if there is NO search query
+        // and NO selected category
+        //if (searchQuery.value.isEmpty() && selectedCategory.value == null) {
+        //    newsViewModel.fetchTopHeadlines()
+        //} else if (searchQuery.value.isNotEmpty()) { // selectedCategory.value should be null since mutually exclusive
+        //    newsViewModel.fetchEverythingBySearch(searchQuery.value)
+        //}
+
+        Log.i("FlickerBug", "In LaunchedEffect(Unit)")
+        Log.i("FlickerBug", "searchQuery: ${searchQuery.value}")
+        Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
+
+
+
+
+        // add this back
+
+        if (searchQuery.value.isNotEmpty() && selectedCategory.value == null) { // selectedCategory.value should be null since mutually exclusive
+            Log.i("FlickerBug", "Fetching everything by search")
+            newsViewModel.fetchEverythingBySearch(searchQuery.value)
+        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null) {
+            newsViewModel.fetchTopHeadlines()
+            Log.i("FlickerBug", "Fetching top headlines")
+        }
+
+
+
+
+
+        //newsViewModel.fetchTopHeadlines()
+
+        //when {
+        //    searchQuery.value.isNotEmpty() -> newsViewModel.fetchEverythingBySearch(searchQuery.value)
+        //    selectedCategory.value != null -> newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value)
+        //    else -> newsViewModel.fetchTopHeadlines()
+        //}
+
+        /*if (searchQuery.value.isNotEmpty()) {
+            newsViewModel.fetchEverythingBySearch(searchQuery.value)
+        } else {
+            newsViewModel.fetchTopHeadlines()
+        }
+
+         */
+
+        Log.i("FlickerBug", "----------------------")
     }
 
     // when selectedCategory.value change, it should fetch the top headlines by the category
     LaunchedEffect(selectedCategory.value) {
-        Log.d("CategorySelection", "Selected Category: ${selectedCategory.value}")
-        newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value)
+
+
+        Log.i("FlickerBug", "In LaunchedEffect(selectedCategory)")
+        Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
+        if (selectedCategory.value == null && searchQuery.value.isEmpty()) {
+            // used to fetch top headlines if user deselects their selected cateogry
+            // note: on initial creation of home screen, this will result in duplicate api
+            // call, one in LaunchedEffect(Unit) and one here
+            newsViewModel.fetchTopHeadlines(forceFetch = true)
+        } else if (selectedCategory.value != null && searchQuery.value.isEmpty()) {
+            newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value)
+        }
+        Log.i("FlickerBug", "----------------------")
     }
 
     // when the searchQuery.value changes, ONLY if become empty should it fetch the top headlines
@@ -112,9 +169,20 @@ fun HomeScreen(
         Log.i("SearchQuery Value", "In Launched Effect for SearchQuery: ${searchQuery.value}")
         Log.i("SearchQuery Value", "Value is: ${searchQuery.value}")
         Log.i("SearchQuery Value", "isEmpty is: ${searchQuery.value.isEmpty()}")
-        if (searchQuery.value.isEmpty()) {
+
+        Log.i("FlickerBug", "In LaunchedEffect(searchQuery.value)")
+        Log.i("FlickerBug", "searchQuery: ${searchQuery.value}")
+        if (searchQuery.value.isEmpty() && selectedCategory.value == null) {
+            // used to fetch top headlines if user clears their search
+            // note: on initial creation of home screen, this will result in duplicate api
+            // call, one in LaunchedEffect(Unit) and one here and one in LaunchedEffect(selectedCategory)
+            // try: move this to the onValueChange if the value length is 0
             newsViewModel.fetchTopHeadlines(forceFetch = true) // Re-fetch when search is cleared
-        }
+        } // if it's not empty,
+        // if within home screen and click search icon, then it fetches everything by search on click
+        // if going back to home screen (new instance of home screen created), then it
+        // fetches everything by search in LaunchedEffect(Unit)
+        Log.i("FlickerBug", "----------------------")
     }
 
     ModalNavigationDrawer(
