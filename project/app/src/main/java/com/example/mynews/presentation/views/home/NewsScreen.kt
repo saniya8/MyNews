@@ -2,6 +2,8 @@ package com.example.mynews.presentation.views.home
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.mynews.data.api.Article
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -133,11 +136,30 @@ fun ArticleItem(
                     maxLines = 3
                 )
 
-                // Show the source
-                Text(text = article.source.name,
-                    maxLines = 1,
-                    fontSize = 14.sp
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Adds space between the two Text objects
+                ) {
+                    // Show the source
+                    Text(text = article.source.name,
+                        maxLines = 1,
+                        fontSize = 14.sp
+                    )
+
+                    Text(
+                        text = "Condensed Article",
+                        modifier = Modifier.clickable {
+                            // Navigate to the CondensedNewsArticleScreen with article content
+                            navController.navigate(
+                                AppScreenRoutes.CondensedNewsArticleScreen.createRoute(
+                                    "Sample text to be replaced by condensed article content eventually"
+                                )
+                            )
+                        },
+                        color = Color.Blue,
+                        fontSize = 14.sp
+                    )
+                }
 
             }
         }

@@ -16,6 +16,7 @@ import com.example.mynews.presentation.views.goals.GoalsScreen
 import com.example.mynews.presentation.views.social.SocialScreen
 import com.example.mynews.presentation.views.home.HomeScreen
 import com.example.mynews.presentation.views.home.NewsArticleScreen
+import com.example.mynews.presentation.views.home.CondensedNewsArticleScreen
 // added for navbar
 import com.example.mynews.presentation.views.settings.SettingsScreen
 import kotlinx.serialization.json.Json
@@ -31,6 +32,10 @@ sealed class AppScreenRoutes(val route: String) {
     //object NewsArticleScreen : AppScreenRoutes("news_article_screen")
     object NewsArticleScreen : AppScreenRoutes("news_article_screen/{articleUrl}") {
         fun createRoute(articleUrl: String) = "news_article_screen/$articleUrl"
+    }
+
+    object CondensedNewsArticleScreen : AppScreenRoutes("condensed_news_article_screen/{articleContent}") {
+        fun createRoute(articleContent: String) = "condensed_news_article_screen/$articleContent"
     }
 
 }
@@ -87,6 +92,15 @@ fun HomeNavGraph(rootNavController: NavHostController,
         //    val article = Json.decodeFromString<Article>(jsonArticle) // Convert JSON back to object
         //    NewsArticleScreen(navController = navController, article = article)
         //}
+
+        composable(
+            route = AppScreenRoutes.CondensedNewsArticleScreen.route,
+            arguments = listOf(navArgument("articleContent") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val articleContent = backStackEntry.arguments?.getString("articleContent") ?: ""
+            CondensedNewsArticleScreen(articleContent = articleContent)
+        }
+
 
 
         composable(AppScreenRoutes.SettingsScreen.route) {
