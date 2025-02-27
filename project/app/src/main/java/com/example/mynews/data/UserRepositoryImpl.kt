@@ -46,4 +46,24 @@ class UserRepositoryImpl (
             false
         }
     }
+
+    override suspend fun updateUserFriends(userId: String, friends: List<String>): Boolean {
+        return try {
+            firestore.collection("users").document(userId).update("friends", friends).await()
+            true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating user friends", e)
+            false
+        }
+    }
+
+    override suspend fun getUserFriends(userId: String): List<String> {
+        return try {
+            val document = firestore.collection("users").document(userId).get().await()
+            document.get("friends") as? List<String> ?: emptyList()
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error fetching user friends", e)
+            emptyList()
+        }
+    }
 }

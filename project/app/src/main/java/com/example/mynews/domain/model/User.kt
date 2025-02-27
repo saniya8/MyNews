@@ -4,6 +4,7 @@ data class User (
     val email: String = "",
     val uid: String = "",
     val username: String = "",
-    val loggedIn: Boolean = false
+    val loggedIn: Boolean = false,
+    val friends: List<String> = emptyList()
 )
 
