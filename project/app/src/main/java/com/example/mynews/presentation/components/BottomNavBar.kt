@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mynews.domain.model.BottomNavBarItem
 import com.example.mynews.ui.theme.*
+import com.example.mynews.utils.AppScreenRoutes
 
 // Purpose: bottom navigation bar that is shared among multiple screens
 
@@ -32,7 +33,14 @@ fun BottomNavBar (
         elevation = 5.dp
     ) {
         items.forEach { item ->
-            val selected = item.route == backStackEntry.value?.destination?.route
+            //val selected = item.route == backStackEntry.value?.destination?.route
+            // The screen and its subscreens will keep the tab highlighted if selected
+            // E.g. if HomeScreen is selected, then even after navigating to
+            // NewsArticleScreen, home tab will still be highlighted
+            val selected = item.route == backStackEntry.value?.destination?.route ||
+                    (item.route == AppScreenRoutes.HomeScreen.route && backStackEntry.value?.destination?.route == AppScreenRoutes.NewsArticleScreen.route)
+
+
             BottomNavigationItem(
                 selected = selected,
                 onClick = { onItemClick(item) },

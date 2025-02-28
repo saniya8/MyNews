@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mynews.utils.AppScreenRoutes
@@ -79,7 +81,9 @@ fun ArticleItem(
     article: Article
 ){
     Card(
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier
+            .padding(8.dp)
+            .height(110.dp), // fixing image
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         onClick = {
             //val articleJson = Json.encodeToString(article) // convert to JSON
@@ -121,6 +125,7 @@ fun ArticleItem(
             AsyncImage(model = articleImageUrl /*article.urlToImage?: placeholderImage*/,
                 contentDescription = "Article Image",
                 modifier = Modifier.size(80.dp)
+                    .size(80.dp) // fixing image to fixed square size
                     .aspectRatio(1f),
                 contentScale = ContentScale.Crop
             )
@@ -133,7 +138,8 @@ fun ArticleItem(
                 // Show the article title
                 Text(text = article.title,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 3
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis // Cuts off text with "..."
                 )
 
                 Row(
