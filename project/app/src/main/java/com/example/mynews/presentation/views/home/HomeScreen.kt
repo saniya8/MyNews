@@ -23,7 +23,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -64,9 +63,11 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.launch
@@ -76,6 +77,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.Alignment
 
 
 fun todayDateText() : String {
@@ -215,17 +217,109 @@ fun HomeScreen(
                         .padding(innerPadding)
                         .fillMaxSize()
                 ) {
-                    // Heading
-                    Text(
-                        text = "My News",
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        fontWeight = FontWeight.Bold,
-                        color = CaptainBlue,
-                        fontSize = 25.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+
+                    /*
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                            //.padding(horizontal = 16.dp, vertical = 8.dp), // Adjust padding for alignment
+                        horizontalArrangement = Arrangement.SpaceBetween, // Space title & icon apart
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+
+                        /*
+                        // Heading
+                        Text(
+                            text = "My News",
+                            //modifier = Modifier.align(Alignment.CenterHorizontally),
+                            modifier = Modifier.weight(1f), // Pushes icon to the right, centers text
+                            textAlign = TextAlign.Center, // Ensures text itself is centered
+                            fontWeight = FontWeight.Bold,
+                            color = CaptainBlue,
+                            fontSize = 25.sp,
+                            fontFamily = FontFamily.SansSerif
+                        )
+
+                        // Saved Articles Icon (Click to navigate to SavedArticlesScreen)
+                        IconButton(onClick = {
+                            //navController.navigate(AppScreenRoutes.SavedArticlesScreen.route)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Bookmark,
+                                contentDescription = "Saved Articles",
+                                tint = CaptainBlue // Match title color
+                            )
+                        }
+
+                         */
+
+                        // Empty Spacer to push "My News" to the exact center
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // "My News" exactly centered
+                        Text(
+                            text = "My News",
+                            fontWeight = FontWeight.Bold,
+                            color = CaptainBlue,
+                            fontSize = 25.sp,
+                            fontFamily = FontFamily.SansSerif,
+                            textAlign = TextAlign.Center
+                        )
+
+                        // Another Spacer to balance space on both sides
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // Saved Articles Icon (pinned to the right)
+                        IconButton(onClick = {
+                            //navController.navigate(AppScreenRoutes.SavedArticlesScreen.route)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Bookmark,
+                                contentDescription = "Saved Articles",
+                                tint = CaptainBlue
+                            )
+                        }
+
+
+
+                    }
+
+                     */
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            //.padding(horizontal = 16.dp)
+                    ) {
+                        // "My News" - Exactly centered
+                        Text(
+                            text = "My News",
+                            fontWeight = FontWeight.Bold,
+                            color = CaptainBlue,
+                            fontSize = 25.sp,
+                            fontFamily = FontFamily.SansSerif,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+
+                        // Saved Articles Icon - Pinned to the top right
+                        IconButton(
+                            onClick = { navController.navigate(AppScreenRoutes.SavedArticlesScreen.route)
+                            },
+                            modifier = Modifier.align(Alignment.TopEnd) // Ensures it stays in the top-right
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Bookmark,
+                                //imageVector = Icons.Outlined.BookmarkBorder,
+                                contentDescription = "Saved Articles",
+                                tint = CaptainBlue
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     // Today's date
                     Text(

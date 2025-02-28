@@ -6,19 +6,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.navigation.NavHostController
+import com.example.mynews.data.api.Article
 import com.example.mynews.utils.AppScreenRoutes
 
 @Composable
-fun CondensedNewsArticleScreen(
+fun SavedArticlesScreen(
     navController: NavHostController,
-    articleContent: String
+    //article: Article
 ){
 
     Box (
@@ -47,7 +47,7 @@ fun CondensedNewsArticleScreen(
         ) {
             // Display the article content received as a parameter
             Text(
-                text = articleContent,
+                text = "On saved article screen",
                 style = TextStyle(
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
