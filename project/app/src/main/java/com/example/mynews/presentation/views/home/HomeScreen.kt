@@ -108,6 +108,9 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
     val scope = rememberCoroutineScope() // Required for controlling the drawer
 
+    fun openDrawer() {
+        scope.launch { drawerState.open() }
+    }
 
     LaunchedEffect(Unit) {
 
@@ -338,8 +341,13 @@ fun HomeScreen(
                               selectedCategory = selectedCategory,
                               searchQuery = searchQuery)
 
-                    NewsScreen(navController = navController,
-                               newsViewModel = newsViewModel) // Display news
+
+                    NewsScreen(
+                        navController = navController,
+                        newsViewModel = newsViewModel,
+                        openDrawer = ::openDrawer,
+                    ) // Display news
+
                 }
             }
         }

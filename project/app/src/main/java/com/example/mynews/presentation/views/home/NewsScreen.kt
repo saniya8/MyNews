@@ -42,8 +42,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +68,7 @@ import kotlinx.coroutines.launch
 fun NewsScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
+    openDrawer: () -> Unit,
 ) {
 
     // Observe the articles
@@ -70,19 +76,24 @@ fun NewsScreen(
 
     Column(
         modifier = Modifier.fillMaxSize()
+    )
 
-    ) {
+    {
 
         // LazyColumn is used to display a vertically scrolling list of items
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+
         ) {
             items(articles) {article ->
                 //Text(text = article.title) // for testing
                 //Text(text = article.urlToImage) // for testing
                 //Text(text = "----------------") // for testing
                 ArticleItem(navController = navController,
-                            article = article)
+                            article = article,
+                            openDrawer = openDrawer,
+                            )
 
             }
 
@@ -99,7 +110,8 @@ fun NewsScreen(
 @Composable
 fun ArticleItem(
     navController: NavHostController,
-    article: Article
+    article: Article,
+    openDrawer: () -> Unit,
 ){
 
     //val swipeOffset = remember { Animatable(0f) }
@@ -194,9 +206,25 @@ fun ArticleItem(
                         },
                         onHorizontalDrag = { _, dragAmount ->
                             scope.launch {
-                                swipeOffset.snapTo(
-                                    (swipeOffset.value + dragAmount).coerceIn(-itemWidth.value, 0f)
-                                )
+
+                                // only handle right-to-left swipes
+                                if (dragAmount < 0) {
+                                    swipeOffset.snapTo(
+                                        (swipeOffset.value + dragAmount).coerceIn(
+                                            -itemWidth.value,
+                                            0f
+                                        )
+                                    )
+                                } else if (swipeOffset.value == 0f && dragAmount > 50) {
+                                    // ✅ LEFT-TO-RIGHT: Open drawer ONLY if swipe starts at zero and is strong enough
+                                    Log.d("GestureDebug", "Swiped RIGHT on article → Opening Drawer")
+                                    openDrawer()
+                                }
+                                else {
+                                    // ✅ LEFT-TO-RIGHT: Just reset position (DO NOT open drawer)
+                                    Log.d("GestureDebug", "Swiped RIGHT on article (Resetting) → No Drawer")
+                                    swipeOffset.animateTo(0f)
+                                }
                             }
                         }
                     )
