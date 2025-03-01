@@ -91,6 +91,7 @@ fun NewsScreen(
                 //Text(text = article.urlToImage) // for testing
                 //Text(text = "----------------") // for testing
                 ArticleItem(navController = navController,
+                            newsViewModel = newsViewModel,
                             article = article,
                             openDrawer = openDrawer,
                             )
@@ -110,6 +111,7 @@ fun NewsScreen(
 @Composable
 fun ArticleItem(
     navController: NavHostController,
+    newsViewModel: NewsViewModel,
     article: Article,
     openDrawer: () -> Unit,
 ){
@@ -156,7 +158,10 @@ fun ArticleItem(
                 tint = Color.Blue, // Color for the save icon
                 modifier = Modifier
                     //.align(Alignment.Center)
-                    .alpha((-swipeOffset.value / itemWidth.value).coerceIn(0f, 1f)) // Only visible when swiping
+                    .size(40.dp)
+                    .alpha((-swipeOffset.value / itemWidth.value)
+                    .coerceIn(0f, 1f)) // Only visible when swiping
+
             )
         }
 
@@ -197,6 +202,8 @@ fun ArticleItem(
                                 if (swipeOffset.value < -0.4f * itemWidth.value) {
                                     // If swiped past threshold → Save article & reset position
                                     Log.d("SavedArticles", "Swiped LEFT on article: ${article.title}")
+
+                                    newsViewModel.saveArticle(article)
                                     swipeOffset.animateTo(0f) // Reset to original position after saving
                                 } else {
                                     // Snap back if not swiped enough
@@ -216,12 +223,12 @@ fun ArticleItem(
                                         )
                                     )
                                 } else if (swipeOffset.value == 0f && dragAmount > 50) {
-                                    // ✅ LEFT-TO-RIGHT: Open drawer ONLY if swipe starts at zero and is strong enough
+                                    // LEFT-TO-RIGHT: Open drawer ONLY if swipe starts at zero and is strong enough
                                     Log.d("GestureDebug", "Swiped RIGHT on article → Opening Drawer")
                                     openDrawer()
                                 }
                                 else {
-                                    // ✅ LEFT-TO-RIGHT: Just reset position (DO NOT open drawer)
+                                    // LEFT-TO-RIGHT: Just reset position (DO NOT open drawer)
                                     Log.d("GestureDebug", "Swiped RIGHT on article (Resetting) → No Drawer")
                                     swipeOffset.animateTo(0f)
                                 }
