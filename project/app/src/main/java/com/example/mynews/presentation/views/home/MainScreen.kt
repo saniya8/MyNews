@@ -21,6 +21,7 @@ import com.example.mynews.utils.AuthScreen
 import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.components.BottomNavBar
 import com.example.mynews.domain.model.BottomNavBarItem
+import com.example.mynews.presentation.viewmodel.FriendsViewModel
 import com.example.mynews.utils.HomeNavGraph
 import com.example.mynews.presentation.viewmodel.NewsViewModel
 import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
@@ -31,6 +32,7 @@ import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
 fun MainScreen(rootNavController: NavHostController,
                newsViewModel: NewsViewModel = hiltViewModel(), // newsViewModel instantiated here to have one instance while app running
                savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
+               friendsViewModel: FriendsViewModel = hiltViewModel(),
                /*onLogoutClicked: () -> Unit*/) {
 
     val navController = rememberNavController() // local controller for bottom nav
@@ -105,6 +107,7 @@ fun MainScreen(rootNavController: NavHostController,
                          navController = navController,
                          newsViewModel = newsViewModel,
                          savedArticlesViewModel = savedArticlesViewModel,
+                         friendsViewModel = friendsViewModel,
                          selectedCategory = selectedCategory,
                          searchQuery = searchQuery)
 

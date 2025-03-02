@@ -56,6 +56,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
                  navController: NavHostController,
                  newsViewModel: NewsViewModel,
                  savedArticlesViewModel: SavedArticlesViewModel,
+                 friendsViewModel: FriendsViewModel,
                  selectedCategory: MutableState<String?>,
                  searchQuery: MutableState<String>) {
 
@@ -79,8 +80,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
 
         composable(AppScreenRoutes.SocialScreen.route) {
             SocialScreen(navController = navController,
-                friendsViewModel = FriendsViewModel(
-                    userRepository = UserRepositoryImpl(FirebaseFirestore.getInstance())))
+                         friendsViewModel = friendsViewModel,)
         }
 
         //composable(AppScreenRoutes.NewsArticleScreen.route) {
