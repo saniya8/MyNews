@@ -66,4 +66,15 @@ class UserRepositoryImpl (
             emptyList()
         }
     }
+
+    // Fetch all users from Firestore
+    override suspend fun getAllUsers(): List<String> {
+        return try {
+            val snapshot = firestore.collection("users").get().await()
+            snapshot.documents.map { it.id } // Assuming usernames are document IDs
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error fetching users", e)
+            emptyList()
+        }
+    }
 }

@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FriendsViewModel @Inject constructor(
     private val userRepository: UserRepository,  // Repository to handle user data
-    private val authRepository: AuthRepository   // Repository to handle authentication
+   // private val authRepository: AuthRepository   // Repository to handle authentication
 ) : ViewModel() {
 
     private val _friends = MutableLiveData<List<String>>()
@@ -25,6 +25,9 @@ class FriendsViewModel @Inject constructor(
 
     private val _username = MutableStateFlow<String?>("")
     val username: StateFlow<String?> = _username
+
+    private val _users = MutableLiveData<List<String>>()
+    val users: LiveData<List<String>> = _users
 
     fun fetchFriends() {
         viewModelScope.launch {
@@ -39,6 +42,18 @@ class FriendsViewModel @Inject constructor(
                 _friends.postValue(friendsList)
             } catch (e: Exception) {
                 Log.e("FriendsViewModel", "Error fetching friends", e)
+            }
+        }
+    }
+
+    // Fetch all users from the repository
+    fun fetchAllUsers() {
+        viewModelScope.launch {
+            try {
+                val allUsers = userRepository.getAllUsers() // Fetch all usernames
+                _users.postValue(allUsers)
+            } catch (e: Exception) {
+                Log.e("FriendsViewModel", "Error fetching all users", e)
             }
         }
     }

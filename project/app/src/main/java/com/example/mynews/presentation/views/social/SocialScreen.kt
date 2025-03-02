@@ -13,244 +13,191 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button // check this
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavHostController
-
+import com.example.mynews.presentation.viewmodel.FriendsViewModel
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
+import com.example.mynews.domain.repositories.UserRepository
 
 @Composable
 fun SocialScreen(
-    navController: NavHostController
-){
+    navController: NavHostController,
+    friendsViewModel: FriendsViewModel
+) {
+    val users by friendsViewModel.users.observeAsState(emptyList())
+    val searchQuery = remember { mutableStateOf("") }
+
+    // Fetch all users when the screen is first displayed
+    LaunchedEffect(Unit) {
+        friendsViewModel.fetchAllUsers()
+    }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize()
     ) {
         Text(
-            text = "Friend Activity",
+            text = "Find Friends",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
-            color = Color.Black
+            modifier = Modifier.padding(16.dp)
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        FriendsSearchBar(
+            friendsViewModel = friendsViewModel,
+            searchQuery = searchQuery,
+            friendsList = users,
+            onFriendAction = { friend, isAdding ->
+                if (isAdding) {
+                    friendsViewModel.addFriend(friend)
+                } else {
+                    // Handle removing a friend if needed TODO
+                }
+            }
+        )
 
-        // first rectangle
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(Color(0xFFD8E6FF), RoundedCornerShape(16.dp))
-
+        // User List
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp)
         ) {
-            // Circle Icon Top Right
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color(0xFF2E3D83), CircleShape)
-                    //     .absoluteOffset(x = (-20).dp) // move circle outside to the left
-                    .align(Alignment.TopStart)
-            ) {
-                Text(
-                    text = "JK",
-                    modifier = Modifier
-                        .align(Alignment.Center) // center text inside rectangle
-                        .padding(1.dp), // padding so text does not touch edges
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-            // column to place two lines of text with space between them
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center) // center Column inside Box
-                    .padding(4.dp),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top
-            ) {
-                Text(
-                    text = "Recently Read",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(8.dp)) // space between the texts
-                Text(
-                    text = "How to Improve your Productivity",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
-            // Rectangle Comment Bottom Left
-            Box(
-                modifier = Modifier
-                    .size(250.dp, 40.dp)
-                    .background(Color(0xF5FDF0DB), RoundedCornerShape(8.dp))
-                    .align(Alignment.BottomEnd) // position it at the bottom-right corner
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = "\"Great morning read to start the day\"",
-                    modifier = Modifier
-                        .align(Alignment.Center) // center text inside the rectangle
-                        .padding(1.dp),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black
+            items(users) { user ->
+                UserItem(
+                    username = user,
+                    onAddFriend = {
+                        friendsViewModel.addFriend(user)
+                    }
                 )
             }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(60.dp))
+@Composable
+fun UserItem(
+    username: String,
+    onAddFriend: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = username,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f)
+        )
 
-
-
-        // Rectangle 2
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(Color(0xFFD8E6FF), RoundedCornerShape(16.dp))
-
+        Button(
+            onClick = onAddFriend,
+            modifier = Modifier.padding(start = 8.dp)
         ) {
-            // Circle Icon Top Right
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color(0xFF2E3D83), CircleShape)
-                    //     .absoluteOffset(x = (-20).dp) // Move circle outside to the left
-                    .align(Alignment.TopStart)
-            ) {
-                Text(
-                    text = "SK",
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(1.dp),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-
-            // Column to place two lines of text with space between them
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(4.dp),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top
-            ) {
-                Text(
-                    text = "Liked",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "The Future of Technology: Diving In",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
-
-            // Rectangle Comment Bottom Left
-            Box(
-                modifier = Modifier
-                    .size(250.dp, 40.dp)
-                    .background(Color(0xF5FDF0DB), RoundedCornerShape(8.dp))
-                    .align(Alignment.BottomEnd)
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = "\"Thought-provoking and insightful\"",
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(1.dp),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black
-                )
-            }
+            Text("Add")
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(60.dp))
+@Composable
+fun FriendsSearchBar(
+    friendsViewModel: FriendsViewModel,
+    searchQuery: MutableState<String>,
+    friendsList: List<String>,
+    onFriendAction: (String, Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Search bar
+        OutlinedTextField(
+            value = searchQuery.value,
+            onValueChange = { searchQuery.value = it },
+            modifier = Modifier
+                .weight(1f) // Allow the search bar to take the full width
+                .clip(CircleShape),
+            shape = CircleShape, // Ensures rounded edges
+            textStyle = TextStyle(fontSize = 16.sp),
+            singleLine = true,
+            maxLines = 1,
+            placeholder = { Text("Search for friends...") },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        if (searchQuery.value.isNotEmpty()) {
+                            // Trigger friend search logic here
+                            // Update the displayed list based on the search query
+                            friendsViewModel.fetchAllUsers()
+                            //friendsViewModel.filterFriends(searchQuery.value)
+                        }
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
+                }
+            }
+        )
+    }
 
-
-
-            // Rectangle 3
-            Box(
+    // Display the filtered friends list
+    LazyColumn {
+        items(friendsList.filter { it.contains(searchQuery.value, ignoreCase = true) }) { friend ->
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .background(Color(0xFFD8E6FF), RoundedCornerShape(16.dp))
-
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Circle Icon Top Right
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color(0xFF2E3D83), CircleShape)
-                        //     .absoluteOffset(x = (-20).dp) // Move circle outside to the left
-                        .align(Alignment.TopStart)
-                ) {
-                    Text(
-                        text = "MY",
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(1.dp),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
+                Text(
+                    text = friend,
+                    modifier = Modifier.weight(1f)
+                )
 
-                // Column to place two lines of text with space between them
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(4.dp),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top
+                // Add/Remove button
+                IconButton(
+                    onClick = {
+                        val isAdding = !friendsList.contains(friend)
+                        onFriendAction(friend, isAdding) // True for adding, false for removing
+                    }
                 ) {
-                    Text(
-                        text = "Commented",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Understanding the Basics of Kotlin",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                }
-
-                // Rectangle Comment Bottom Left
-                Box(
-                    modifier = Modifier
-                        .size(250.dp, 40.dp)
-                        .background(Color(0xF5FDF0DB), RoundedCornerShape(8.dp))
-                        .align(Alignment.BottomEnd)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = "\"I have no idea what is going on\"",
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(1.dp),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color.Black
+                    Icon(
+                        imageVector = if (friendsList.contains(friend)) Icons.Default.Remove else Icons.Default.Add,
+                        contentDescription = "Add/Remove Friend"
                     )
                 }
             }
         }
     }
+}

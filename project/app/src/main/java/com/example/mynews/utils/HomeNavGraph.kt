@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.data.api.Article
+import com.example.mynews.presentation.viewmodel.FriendsViewModel
 import com.example.mynews.presentation.viewmodel.NewsViewModel
 import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
 import com.example.mynews.presentation.views.goals.GoalsScreen
@@ -77,7 +78,9 @@ fun HomeNavGraph(rootNavController: NavHostController,
         }
 
         composable(AppScreenRoutes.SocialScreen.route) {
-            SocialScreen(navController = navController)
+            SocialScreen(navController = navController,
+                friendsViewModel = FriendsViewModel(
+                    userRepository = UserRepositoryImpl(FirebaseFirestore.getInstance())))
         }
 
         //composable(AppScreenRoutes.NewsArticleScreen.route) {
