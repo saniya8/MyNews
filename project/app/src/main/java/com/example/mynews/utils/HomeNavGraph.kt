@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.data.api.Article
 import com.example.mynews.presentation.viewmodel.NewsViewModel
+import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
 import com.example.mynews.presentation.views.goals.GoalsScreen
 import com.example.mynews.presentation.views.social.SocialScreen
 import com.example.mynews.presentation.views.home.HomeScreen
@@ -31,8 +32,8 @@ sealed class AppScreenRoutes(val route: String) {
     object SettingsScreen: AppScreenRoutes("settings_screen")
     // Additional Routes
     //object NewsArticleScreen : AppScreenRoutes("news_article_screen")
-    object NewsArticleScreen : AppScreenRoutes("news_article_screen/{articleUrl}") {
-        fun createRoute(articleUrl: String) = "news_article_screen/$articleUrl"
+    object NewsArticleScreen : AppScreenRoutes("news_article_screen/{articleUrl}/{origin}") {
+        fun createRoute(articleUrl: String, origin: String) = "news_article_screen/$articleUrl/$origin"
     }
 
     object CondensedNewsArticleScreen : AppScreenRoutes("condensed_news_article_screen/{articleContent}") {
@@ -53,6 +54,7 @@ sealed class AppScreenRoutes(val route: String) {
 fun HomeNavGraph(rootNavController: NavHostController,
                  navController: NavHostController,
                  newsViewModel: NewsViewModel,
+                 savedArticlesViewModel: SavedArticlesViewModel,
                  selectedCategory: MutableState<String?>,
                  searchQuery: MutableState<String>) {
 
@@ -64,6 +66,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
         composable(AppScreenRoutes.HomeScreen.route) {
             HomeScreen(navController = navController,
                        newsViewModel = newsViewModel,
+                       savedArticlesViewModel = savedArticlesViewModel,
                        selectedCategory = selectedCategory,
                        searchQuery = searchQuery)
         }
@@ -82,10 +85,13 @@ fun HomeNavGraph(rootNavController: NavHostController,
         //}
 
         composable(route = AppScreenRoutes.NewsArticleScreen.route,
-                   arguments = listOf(navArgument("articleUrl") { type = NavType.StringType })
+                   arguments = listOf(navArgument("articleUrl") { type = NavType.StringType },
+                                      navArgument("origin") { type = NavType.StringType }
+                   )
         ) { backStackEntry ->
             val articleUrl = backStackEntry.arguments?.getString("articleUrl") ?: ""
-            NewsArticleScreen(navController = navController, articleUrl = articleUrl)
+            val origin = backStackEntry.arguments?.getString("origin") ?: AppScreenRoutes.HomeScreen.route // default to home
+            NewsArticleScreen(navController = navController, articleUrl = articleUrl, origin = origin)
         }
 
 
@@ -108,7 +114,9 @@ fun HomeNavGraph(rootNavController: NavHostController,
         }
 
         composable(AppScreenRoutes.SavedArticlesScreen.route) {
-            SavedArticlesScreen(navController = navController)
+            SavedArticlesScreen(navController = navController,
+                                newsViewModel = newsViewModel,
+                                savedArticlesViewModel = savedArticlesViewModel,)
         }
 
         composable(AppScreenRoutes.SettingsScreen.route) {

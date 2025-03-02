@@ -23,13 +23,14 @@ import com.example.mynews.presentation.components.BottomNavBar
 import com.example.mynews.domain.model.BottomNavBarItem
 import com.example.mynews.utils.HomeNavGraph
 import com.example.mynews.presentation.viewmodel.NewsViewModel
-
+import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
 
 
 @Composable
 
 fun MainScreen(rootNavController: NavHostController,
                newsViewModel: NewsViewModel = hiltViewModel(), // newsViewModel instantiated here to have one instance while app running
+               savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
                /*onLogoutClicked: () -> Unit*/) {
 
     val navController = rememberNavController() // local controller for bottom nav
@@ -103,6 +104,7 @@ fun MainScreen(rootNavController: NavHostController,
             HomeNavGraph(rootNavController = rootNavController,
                          navController = navController,
                          newsViewModel = newsViewModel,
+                         savedArticlesViewModel = savedArticlesViewModel,
                          selectedCategory = selectedCategory,
                          searchQuery = searchQuery)
 

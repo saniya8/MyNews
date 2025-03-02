@@ -1,6 +1,7 @@
 package com.example.mynews.presentation.views.home
 
 import android.graphics.Bitmap
+import android.util.Log
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -46,7 +47,8 @@ import com.example.mynews.utils.AppScreenRoutes
 fun NewsArticleScreen(
     navController: NavHostController,
     //article : Article
-    articleUrl: String
+    articleUrl: String,
+    origin: String,
 ){
 
     var isLoading by remember { mutableStateOf(true) } // track loading state
@@ -61,7 +63,13 @@ fun NewsArticleScreen(
                 detectHorizontalDragGestures { _, dragAmount ->
                     if (dragAmount > 50) { // Detect swipe right to go back
                         //navController.popBackStack()
-                        navController.popBackStack(AppScreenRoutes.HomeScreen.route, false)
+                        if (origin == "HomeScreen") {
+                            navController.popBackStack(AppScreenRoutes.HomeScreen.route, false)
+                        } else if (origin == "SavedArticlesScreen") {
+                            navController.popBackStack(AppScreenRoutes.SavedArticlesScreen.route, false)
+                        } else {
+                            Log.d("NewsArticleScreen", "Origination error: did not originate from HomeScreen or SavedArticlesScreen")
+                        }
                     }
                 }
             }

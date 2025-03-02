@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
 import com.example.mynews.utils.AppScreenRoutes
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -68,11 +69,15 @@ import kotlinx.coroutines.launch
 fun NewsScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
+    savedArticlesViewModel: SavedArticlesViewModel,
+    articles: List<Article>,
+    origin: String,
     openDrawer: () -> Unit,
 ) {
 
     // Observe the articles
-    val articles by newsViewModel.articles.observeAsState(emptyList())
+    // now doing this individually in HomeScreen and SavedArticlesScreen
+    //val articles by newsViewModel.articles.observeAsState(emptyList())
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -92,7 +97,9 @@ fun NewsScreen(
                 //Text(text = "----------------") // for testing
                 ArticleItem(navController = navController,
                             newsViewModel = newsViewModel,
+                            savedArticlesViewModel = savedArticlesViewModel,
                             article = article,
+                            origin = origin,
                             openDrawer = openDrawer,
                             )
 
@@ -112,7 +119,9 @@ fun NewsScreen(
 fun ArticleItem(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
+    savedArticlesViewModel: SavedArticlesViewModel,
     article: Article,
+    origin: String,
     openDrawer: () -> Unit,
 ){
 
@@ -196,45 +205,61 @@ fun ArticleItem(
                 .fillMaxWidth()
                 .offset { IntOffset(swipeOffset.value.roundToInt(), 0) }
                 .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            scope.launch {
-                                if (swipeOffset.value < -0.4f * itemWidth.value) {
-                                    // If swiped past threshold → Save article & reset position
-                                    Log.d("SavedArticles", "Swiped LEFT on article: ${article.title}")
 
-                                    newsViewModel.saveArticle(article)
-                                    swipeOffset.animateTo(0f) // Reset to original position after saving
-                                } else {
-                                    // Snap back if not swiped enough
-                                    swipeOffset.animateTo(0f)
-                                }
-                            }
-                        },
-                        onHorizontalDrag = { _, dragAmount ->
-                            scope.launch {
+                    //Log.d("NewsScreen", "SwipeLocation: $swipeLocation for article: ${article.title}")
 
-                                // only handle right-to-left swipes
-                                if (dragAmount < 0) {
-                                    swipeOffset.snapTo(
-                                        (swipeOffset.value + dragAmount).coerceIn(
-                                            -itemWidth.value,
-                                            0f
+                    if (origin == "HomeScreen") {
+                        detectHorizontalDragGestures(
+                            onDragEnd = {
+                                scope.launch {
+                                    if (swipeOffset.value < -0.4f * itemWidth.value) {
+                                        // If swiped past threshold → Save article & reset position
+                                        Log.d(
+                                            "SavedArticles",
+                                            "Swiped LEFT on article: ${article.title}"
                                         )
-                                    )
-                                } else if (swipeOffset.value == 0f && dragAmount > 50) {
-                                    // LEFT-TO-RIGHT: Open drawer ONLY if swipe starts at zero and is strong enough
-                                    Log.d("GestureDebug", "Swiped RIGHT on article → Opening Drawer")
-                                    openDrawer()
+
+                                        savedArticlesViewModel.saveArticle(article)
+                                        swipeOffset.animateTo(0f) // Reset to original position after saving
+                                    } else {
+                                        // Snap back if not swiped enough
+                                        swipeOffset.animateTo(0f)
+                                    }
                                 }
-                                else {
-                                    // LEFT-TO-RIGHT: Just reset position (DO NOT open drawer)
-                                    Log.d("GestureDebug", "Swiped RIGHT on article (Resetting) → No Drawer")
-                                    swipeOffset.animateTo(0f)
+                            },
+                            onHorizontalDrag = { _, dragAmount ->
+                                scope.launch {
+
+                                    // only handle right-to-left swipes
+                                    if (dragAmount < 0) {
+                                        swipeOffset.snapTo(
+                                            (swipeOffset.value + dragAmount).coerceIn(
+                                                -itemWidth.value,
+                                                0f
+                                            )
+                                        )
+                                    } else if (swipeOffset.value == 0f && dragAmount > 50) {
+                                        // LEFT-TO-RIGHT: Open drawer ONLY if swipe starts at zero and is strong enough
+                                        Log.d(
+                                            "GestureDebug",
+                                            "Swiped RIGHT on article → Opening Drawer"
+                                        )
+                                        openDrawer()
+                                    } else {
+                                        // LEFT-TO-RIGHT: Just reset position (DO NOT open drawer)
+                                        Log.d(
+                                            "GestureDebug",
+                                            "Swiped RIGHT on article (Resetting) → No Drawer"
+                                        )
+                                        swipeOffset.animateTo(0f)
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
+
+                    // else if swipeLocation == "SavedArticlesScreen"
+                    // else error
                 }
 
 
@@ -253,8 +278,26 @@ fun ArticleItem(
                 //navController.navigate(AppScreenRoutes.NewsArticleScreen.route)
 
                 val encodedUrl = Uri.encode(article.url) // Encode to handle special characters
-                navController.navigate(AppScreenRoutes.NewsArticleScreen.createRoute(encodedUrl))
 
+                if (origin == "HomeScreen" || origin == "SavedArticlesScreen") {
+                    navController.navigate(
+                        AppScreenRoutes.NewsArticleScreen.createRoute(
+                            encodedUrl,
+                            origin
+                        )
+                    )
+                } else {
+                    Log.d("NewsScreen", "On click, origin is neither HomeScreen nor SavedArticlesScreen")
+                }
+                /*
+                if (origin == "HomeScreen") {
+                    navController.navigate(AppScreenRoutes.NewsArticleScreen.createRoute(encodedUrl, AppScreenRoutes.HomeScreen.route))
+                } else if (origin == "SavedArticlesScreen") {
+                    navController.navigate(AppScreenRoutes.NewsArticleScreen.createRoute(encodedUrl, AppScreenRoutes.SavedArticlesScreen.route))
+                } else {
+                    Log.d("NewsScreen", "On click, origin is neither HomeScreen nor SavedArticlesScreen")
+                }
+                */
 
             }
         ) {

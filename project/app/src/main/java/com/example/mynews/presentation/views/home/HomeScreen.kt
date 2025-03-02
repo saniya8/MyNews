@@ -74,10 +74,12 @@ import kotlinx.coroutines.launch
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.Alignment
+import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
 
 
 fun todayDateText() : String {
@@ -102,9 +104,12 @@ fun todayDateText() : String {
 fun HomeScreen(
     navController: NavHostController /*= rememberNavController()*/,
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
+    savedArticlesViewModel: SavedArticlesViewModel,
     selectedCategory: MutableState<String?>,
     searchQuery: MutableState<String>
 ) {
+
+    val articles by newsViewModel.articles.observeAsState(emptyList())
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
     val scope = rememberCoroutineScope() // Required for controlling the drawer
 
@@ -309,9 +314,12 @@ fun HomeScreen(
 
                         // Saved Articles Icon - Pinned to the top right
                         IconButton(
-                            onClick = { navController.navigate(AppScreenRoutes.SavedArticlesScreen.route)
+                            onClick = {
+                                navController.navigate(AppScreenRoutes.SavedArticlesScreen.route) {
+                                }
                             },
-                            modifier = Modifier.align(Alignment.TopEnd) // Ensures it stays in the top-right
+                            modifier = Modifier
+                                .align(Alignment.TopEnd) // Ensures it stays in the top-right
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Bookmark,
@@ -335,7 +343,7 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    SearchBar(newsViewModel = newsViewModel,
+                    SearchAndFilter(newsViewModel = newsViewModel,
                               drawerState = drawerState,
                               scope = scope,
                               selectedCategory = selectedCategory,
@@ -345,6 +353,9 @@ fun HomeScreen(
                     NewsScreen(
                         navController = navController,
                         newsViewModel = newsViewModel,
+                        savedArticlesViewModel = savedArticlesViewModel,
+                        articles = articles,
+                        origin = "HomeScreen",
                         openDrawer = ::openDrawer,
                     ) // Display news
 
@@ -355,7 +366,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun SearchBar(newsViewModel: NewsViewModel,
+fun SearchAndFilter(newsViewModel: NewsViewModel,
               drawerState: DrawerState,
               scope: CoroutineScope,
               selectedCategory: MutableState<String?>,

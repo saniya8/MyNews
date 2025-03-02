@@ -196,6 +196,9 @@ class NewsViewModel @Inject constructor(
 
     // saving article in firestore collection
 
+    /*
+
+     // moved to SavedArticlesViewModel
     fun saveArticle(article: Article) {
 
         viewModelScope.launch { // firestore operations are async so need this
@@ -272,5 +275,7 @@ class NewsViewModel @Inject constructor(
         }
 
     }
+
+     */
 
 }
