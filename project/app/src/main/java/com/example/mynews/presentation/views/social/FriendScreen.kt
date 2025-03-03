@@ -46,83 +46,104 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import com.example.mynews.domain.repositories.UserRepository
-import kotlinx.coroutines.delay
-
-//import com.example.mynews.presentation.views.social.FriendScreen
 
 @Composable
-fun SocialScreen(
-    navController: NavHostController,
-    friendsViewModel: FriendsViewModel
+fun UserItem(
+    username: String,
+    onAddFriend: () -> Unit
 ) {
-    val users by friendsViewModel.users.observeAsState(emptyList())
-    val friends by friendsViewModel.friends.observeAsState(emptyList())
-    val filteredUsers = remember { mutableStateOf(users) }
-    val searchQuery = remember { mutableStateOf("") }
-
-    LaunchedEffect(Unit) {
-        friendsViewModel.fetchAllUsers()
-        friendsViewModel.fetchFriends()
-    }
-
-    LaunchedEffect(searchQuery.value) {
-        delay(300) // Wait for 300ms before updating the filtered list
-        filteredUsers.value = users.filter { user ->
-            user.contains(searchQuery.value, ignoreCase = true)
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Find Friends",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp)
+            text = username,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f)
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        FriendsSearchBar(searchQuery = searchQuery)
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Username List
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+        Button(
+            onClick = onAddFriend,
+            modifier = Modifier.padding(start = 8.dp)
         ) {
-            // users or filtered users
-            if (filteredUsers.value.isEmpty()) {
-                item {
-                    Text(
-                        text = "No users found",
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    )
+            Text("Add")
+        }
+    }
+}
+
+@Composable
+fun FriendsSearchBar(
+    searchQuery: MutableState<String>,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = searchQuery.value,
+            onValueChange = { query ->
+                searchQuery.value = query
+            },
+            modifier = Modifier
+                .weight(1f)
+                .clip(CircleShape),
+            shape = CircleShape,
+            textStyle = TextStyle(fontSize = 16.sp),
+            singleLine = true,
+            maxLines = 1,
+            placeholder = { Text("Search for friends...") },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        // TODO maybe
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
                 }
-            } else {
-                items(filteredUsers.value) { user ->
-                    UserItem(
-                        username = user,
-                        onAddFriend = {
-                            friendsViewModel.addFriend(user)
-                        }
+            }
+        )
+    }
+}
+
+@Composable
+fun AddedFriendsList(
+    friends: List<String>
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Added Friends",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        if (friends.isEmpty()) {
+            Text(
+                text = "No friends added yet",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+        } else {
+            LazyColumn {
+                items(friends) { friend ->
+                    Text(
+                        text = friend,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(vertical = 4.dp)
                     )
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        AddedFriendsList(listOf("Joe", "Jane"))
-        // AddedFriendsList(friends = friends)
     }
 }
