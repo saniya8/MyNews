@@ -16,8 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FriendsViewModel @Inject constructor(
-    private val userRepository: UserRepository,  // Repository to handle user data
-   // private val authRepository: AuthRepository   // Repository to handle authentication
+    private val userRepository: UserRepository,
+   // private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _friends = MutableLiveData<List<String>>()
