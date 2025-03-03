@@ -124,7 +124,7 @@ fun ArticleItem(
     origin: String,
     openDrawer: () -> Unit,
 ){
-
+    val encodedUrl = Uri.encode(article.url)
     //val swipeOffset = remember { Animatable(0f) }
     //val itemWidth = remember { mutableStateOf(0f) }
     //val threshold = 0.4f // 40% of the item's width
@@ -277,7 +277,6 @@ fun ArticleItem(
 
                 //navController.navigate(AppScreenRoutes.NewsArticleScreen.route)
 
-                val encodedUrl = Uri.encode(article.url) // Encode to handle special characters
 
                 if (origin == "HomeScreen" || origin == "SavedArticlesScreen") {
                     navController.navigate(
@@ -365,7 +364,7 @@ fun ArticleItem(
                                 // Navigate to the CondensedNewsArticleScreen with article content
                                 navController.navigate(
                                     AppScreenRoutes.CondensedNewsArticleScreen.createRoute(
-                                        "Sample text to be replaced by condensed article content eventually"
+                                        encodedUrl
                                     )
                                 )
                             },

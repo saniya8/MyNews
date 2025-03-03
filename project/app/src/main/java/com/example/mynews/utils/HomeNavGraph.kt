@@ -37,8 +37,8 @@ sealed class AppScreenRoutes(val route: String) {
         fun createRoute(articleUrl: String, origin: String) = "news_article_screen/$articleUrl/$origin"
     }
 
-    object CondensedNewsArticleScreen : AppScreenRoutes("condensed_news_article_screen/{articleContent}") {
-        fun createRoute(articleContent: String) = "condensed_news_article_screen/$articleContent"
+    object CondensedNewsArticleScreen : AppScreenRoutes("condensed_news_article_screen/{articleUrl}") {
+        fun createRoute(articleUrl: String) = "condensed_news_article_screen/$articleUrl"
     }
 
     object SavedArticlesScreen : AppScreenRoutes("saved_articles_screen")
@@ -110,10 +110,10 @@ fun HomeNavGraph(rootNavController: NavHostController,
 
         composable(
             route = AppScreenRoutes.CondensedNewsArticleScreen.route,
-            arguments = listOf(navArgument("articleContent") { type = NavType.StringType })
+            arguments = listOf(navArgument("articleUrl") { type = NavType.StringType })
         ) { backStackEntry ->
-            val articleContent = backStackEntry.arguments?.getString("articleContent") ?: ""
-            CondensedNewsArticleScreen(navController = navController, articleContent = articleContent)
+            val articleUrl = backStackEntry.arguments?.getString("articleUrl") ?: ""
+            CondensedNewsArticleScreen(navController = navController, articleUrl = articleUrl)
         }
 
         composable(AppScreenRoutes.SavedArticlesScreen.route) {
