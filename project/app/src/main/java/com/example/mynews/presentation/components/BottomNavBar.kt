@@ -37,9 +37,18 @@ fun BottomNavBar (
             // The screen and its subscreens will keep the tab highlighted if selected
             // E.g. if HomeScreen is selected, then even after navigating to
             // NewsArticleScreen, home tab will still be highlighted
+
+            /*
             val selected = item.route == backStackEntry.value?.destination?.route ||
                     (item.route == AppScreenRoutes.HomeScreen.route && backStackEntry.value?.destination?.route == AppScreenRoutes.NewsArticleScreen.route)
 
+
+             */
+
+            val selected = item.route == backStackEntry.value?.destination?.route ||
+                    (item.route == AppScreenRoutes.HomeScreen.route &&
+                                   (backStackEntry.value?.destination?.route == AppScreenRoutes.NewsArticleScreen.route ||
+                                    backStackEntry.value?.destination?.route == AppScreenRoutes.SavedArticlesScreen.route))
 
             BottomNavigationItem(
                 selected = selected,
