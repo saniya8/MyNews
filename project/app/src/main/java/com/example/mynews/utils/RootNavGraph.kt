@@ -24,7 +24,7 @@ import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.repositories.UserRepository
 import android.util.Log
-import com.example.mynews.presentation.views.home.MainScreen
+import com.example.mynews.presentation.views.general.MainScreen
 
 // RootNavGraph is the main navigation that manages overall navigation of the app
 // based on if the user is or isn't logged in

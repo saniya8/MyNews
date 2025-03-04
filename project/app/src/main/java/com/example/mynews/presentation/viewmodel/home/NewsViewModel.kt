@@ -1,46 +1,23 @@
-package com.example.mynews.presentation.viewmodel
+package com.example.mynews.presentation.viewmodel.home
 
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.Constant
 import com.example.mynews.data.api.Article
-import com.example.mynews.data.api.RetrofitInstance
-import com.example.mynews.domain.repositories.AuthRepository
-import com.example.mynews.domain.repositories.UserRepository
-import com.google.firebase.firestore.FirebaseFirestore
 //import com.kwabenaberko.newsapilib.NewsApiClient
 //import com.kwabenaberko.newsapilib.models.request.TopHeadlinesRequest
 //import com.kwabenaberko.newsapilib.models.response.ArticleResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import com.example.mynews.domain.repositories.NewsRepository
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val newsRepository: NewsRepository
 ): ViewModel() {
-
-    // NOT WORKING: runs when NewsViewModel is initialized (
-    // NewsViewModel is initialized once in MainScreen.kt, and its existence
-    // - Persists while switching between tabs
-    // - Persists if you swipe out of app and then go back in
-    // - Is initialized when user logs in for the first time
-    // - Is initialized when user swipes out of app, clears it from memory, and then goes back into app
-    // So (as wanted)...
-    // - Fetch should not happen when switching between tabs
-    // - Fetch should not happen if user swipes out of app, then goes back in
-    // - Fetch should happen when user logs in for the first time
-    // - Fetch should happen when user swipes out of app, clears it from memory, then goes back in
-    //init { // DOES NOT WORK - workaround using hasFetchedNews and LaunchedEffect is implemented
-    //    viewModelScope.launch {
-    //        fetchNewsTopHeadlines()
-    //    }
-    //}
 
     private val _articles = MutableLiveData<List<Article>>()
     // Expose the private _articles as articles to the UI so we can observe
@@ -50,7 +27,6 @@ class NewsViewModel @Inject constructor(
     // use Retrofit here since NewsApiClient not working
 
     private var hasFetchedNews = false // tracks if API call was made
-    private val newsApi = RetrofitInstance.newsApi
 
     // Based on: hasFetchedNews usage and LaunchedEffect in MainScreen,
     // fetchNewsTopHeadlines will trigger (ie do a new request) if:
@@ -66,13 +42,11 @@ class NewsViewModel @Inject constructor(
 
         if (hasFetchedNews && !forceFetch) return // Prevents duplicate API requests
         hasFetchedNews = true
-        val language = "en"
 
         viewModelScope.launch {
             // getTopHeadlines is a suspend function, therefore will take time
             // to load, therefore wrap it in a coroutine using viewModelScope.launch
-            val response = newsApi.getTopHeadlines(language = language,
-                                                   apiKey = Constant.apiKey)
+            val response = newsRepository.getTopHeadlines()
 
             // response represents entire HTTP response:
             // response.code() - status code
@@ -118,7 +92,6 @@ class NewsViewModel @Inject constructor(
         // that is handled in LaunchedEffect(selectedCategory.value) in HomeScreen.kt
         // so if this function is called, category cannot be null
 
-        val language = "en"
 
         viewModelScope.launch {
             // getTopHeadlinesByCategory is a suspend function, therefore will take time
@@ -143,11 +116,7 @@ class NewsViewModel @Inject constructor(
              */
 
 
-            val response = newsApi.getTopHeadlinesByCategory(
-                            language = language,
-                            category = category,
-                            apiKey = Constant.apiKey
-                            )
+            val response = newsRepository.getTopHeadlinesByCategory(category)
 
             if(response.isSuccessful) {
                 val newsResponse = response.body()
@@ -169,16 +138,13 @@ class NewsViewModel @Inject constructor(
     // for searching
     fun fetchEverythingBySearch(searchQuery : String) {
 
-        val language = "en"
 
         viewModelScope.launch {
 
             // getEverythingBySearch is a suspend function, therefore will take time
             // to load, therefore wrap it in a coroutine using viewModelScope.launch
 
-            val response = newsApi.getEverythingBySearch(language = language,
-                                                         q = searchQuery,
-                                                         apiKey = Constant.apiKey)
+            val response = newsRepository.getEverythingBySearch(searchQuery)
 
             if(response.isSuccessful) {
                 val newsResponse = response.body()

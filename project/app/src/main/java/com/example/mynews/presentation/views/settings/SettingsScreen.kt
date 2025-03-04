@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.mynews.presentation.viewmodel.SettingsViewModel
+import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.utils.Graph
 import com.example.mynews.ui.theme.*
 import android.util.Log

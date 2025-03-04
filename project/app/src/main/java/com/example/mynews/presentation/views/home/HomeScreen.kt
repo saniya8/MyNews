@@ -4,20 +4,14 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,22 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.compose.rememberNavController
-import com.example.mynews.presentation.viewmodel.NewsViewModel
-import com.example.mynews.presentation.viewmodel.SettingsViewModel
+import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.ui.theme.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import com.example.mynews.presentation.views.home.NewsScreen
 import com.example.mynews.utils.AppScreenRoutes
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
@@ -53,11 +38,7 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
@@ -67,19 +48,13 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.input.pointer.pointerInput
-import kotlinx.coroutines.launch
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.Alignment
-import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 
 
 fun todayDateText() : String {
@@ -88,7 +63,6 @@ fun todayDateText() : String {
     return formattedDate;
 }
 
-//TODO: non urgent - fix duplicate api calls
 
 // Right now in the code, the category/search filter is maintained between navigation (as desired)
 // However, ONLY when the HomeScreen is recreated (aka when navigating back into HomeScreen tab),
@@ -367,10 +341,10 @@ fun HomeScreen(
 
 @Composable
 fun SearchAndFilter(newsViewModel: NewsViewModel,
-              drawerState: DrawerState,
-              scope: CoroutineScope,
-              selectedCategory: MutableState<String?>,
-              searchQuery: MutableState<String>
+                    drawerState: DrawerState,
+                    scope: CoroutineScope,
+                    selectedCategory: MutableState<String?>,
+                    searchQuery: MutableState<String>
 ) {
 
     Row (
@@ -432,7 +406,6 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
                         if(searchQuery.value.isNotEmpty()) {
                             if (selectedCategory.value != null) { // if any categories are selected
                                 selectedCategory.value = null; // clear any category selections
-                                // TODO: FIX this duplicate API call
                                 // check that it's not null because if it was null and
                                 // you set it to null again, it would trigger
                                 // LaunchedEffect(selectedCategory.value) which would
@@ -530,7 +503,6 @@ fun DrawerContent(
 
                     if(searchQuery.value.isNotEmpty()) { // if there is a search query
                         searchQuery.value = ""; // clear the search query
-                        // TODO: FIX this duplicate API call
                     }
 
                     val newCategory = if (isSelected) null else category // Toggle selection

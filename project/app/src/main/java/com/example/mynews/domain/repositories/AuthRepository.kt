@@ -1,6 +1,6 @@
 package com.example.mynews.domain.repositories
 
-import com.example.mynews.presentation.viewmodel.DeleteAccountResult
+import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
 
 interface AuthRepository {
     suspend fun login(email: String, password:String):Boolean

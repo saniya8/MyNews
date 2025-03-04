@@ -2,8 +2,6 @@ package com.example.mynews.presentation.views.home
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,16 +13,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.TextStyle
 import androidx.navigation.NavHostController
-import com.example.mynews.data.api.Article
-import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.utils.AppScreenRoutes
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import com.example.mynews.presentation.viewmodel.NewsViewModel
+import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.ui.theme.CaptainBlue
 
 @Composable
@@ -152,7 +147,12 @@ fun SavedArticlesScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "You have ${articles.size} saved articles",
+                            text =
+                            if (articles.size == 1) {
+                                "You have ${articles.size} saved article"
+                            } else { // articles.size > 1
+                                "You have ${articles.size} saved articles"
+                            },
                             fontSize = 18.sp,
                             modifier = Modifier
                                 .padding(16.dp)

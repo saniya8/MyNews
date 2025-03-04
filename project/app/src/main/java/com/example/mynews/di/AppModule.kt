@@ -9,10 +9,16 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import com.example.mynews.data.AuthRepositoryImpl
+import com.example.mynews.data.CondensedNewsArticleRepositoryImpl
+import com.example.mynews.data.NewsRepositoryImpl
+import com.example.mynews.data.SavedArticlesRepositoryImpl
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
 import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
 import com.example.mynews.data.UserRepositoryImpl
+import com.example.mynews.domain.repositories.CondensedNewsArticleRepository
+import com.example.mynews.domain.repositories.NewsRepository
+import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
 import javax.inject.Singleton
 
@@ -49,6 +55,29 @@ object AppModule {
     ):AuthRepository{
         return AuthRepositoryImpl(userRepository, firestore, auth)
     }
+
+    @Provides
+    @Singleton
+    fun provideNewsRepository(
+    ): NewsRepository {
+        return NewsRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSavedArticlesRepository(
+        firestore: FirebaseFirestore
+    ): SavedArticlesRepository {
+        return SavedArticlesRepositoryImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCondensedNewsArticleRepository(): CondensedNewsArticleRepository {
+        return CondensedNewsArticleRepositoryImpl()
+    }
+
+
 
     @Singleton
     @Provides

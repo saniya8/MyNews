@@ -1,4 +1,4 @@
-package com.example.mynews.presentation.viewmodel
+package com.example.mynews.presentation.viewmodel.authentication
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,7 +12,6 @@ import com.example.mynews.presentation.state.RegisterState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import android.util.Log
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(

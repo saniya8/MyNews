@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.mynews.presentation.components.*
-import com.example.mynews.presentation.viewmodel.LoginViewModel
+import com.example.mynews.presentation.viewmodel.authentication.LoginViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.mynews.ui.theme.*
 

@@ -1,4 +1,4 @@
-package com.example.mynews.presentation.views.home
+package com.example.mynews.presentation.views.general
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -21,10 +21,11 @@ import com.example.mynews.utils.AuthScreen
 import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.components.BottomNavBar
 import com.example.mynews.domain.model.BottomNavBarItem
-import com.example.mynews.presentation.viewmodel.FriendsViewModel
+import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
+import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import com.example.mynews.utils.HomeNavGraph
-import com.example.mynews.presentation.viewmodel.NewsViewModel
-import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.home.NewsViewModel
+import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 
 
 @Composable
@@ -33,6 +34,7 @@ fun MainScreen(rootNavController: NavHostController,
                newsViewModel: NewsViewModel = hiltViewModel(), // newsViewModel instantiated here to have one instance while app running
                savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
                friendsViewModel: FriendsViewModel = hiltViewModel(),
+               condensedNewsArticleViewModel: CondensedNewsArticleViewModel = hiltViewModel(),
                /*onLogoutClicked: () -> Unit*/) {
 
     val navController = rememberNavController() // local controller for bottom nav
@@ -108,6 +110,7 @@ fun MainScreen(rootNavController: NavHostController,
                          newsViewModel = newsViewModel,
                          savedArticlesViewModel = savedArticlesViewModel,
                          friendsViewModel = friendsViewModel,
+                         condensedNewsArticleViewModel = condensedNewsArticleViewModel,
                          selectedCategory = selectedCategory,
                          searchQuery = searchQuery)
 

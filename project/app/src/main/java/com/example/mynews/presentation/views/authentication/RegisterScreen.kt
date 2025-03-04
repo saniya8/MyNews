@@ -3,7 +3,7 @@ package com.example.mynews.presentation.views.authentication
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.mynews.presentation.viewmodel.RegisterViewModel
+import com.example.mynews.presentation.viewmodel.authentication.RegisterViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,7 +28,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.mynews.presentation.components.*
 import com.example.mynews.ui.theme.*
-import android.util.Log
 
 // Source: https://www.youtube.com/watch?v=aCjOmyd_62U&t=0s&ab_channel=KApps
 

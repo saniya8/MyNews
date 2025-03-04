@@ -10,10 +10,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mynews.data.UserRepositoryImpl
-import com.example.mynews.data.api.Article
-import com.example.mynews.presentation.viewmodel.FriendsViewModel
-import com.example.mynews.presentation.viewmodel.NewsViewModel
-import com.example.mynews.presentation.viewmodel.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
+import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
+import com.example.mynews.presentation.viewmodel.home.NewsViewModel
+import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.presentation.views.goals.GoalsScreen
 import com.example.mynews.presentation.views.social.SocialScreen
 import com.example.mynews.presentation.views.home.HomeScreen
@@ -22,7 +22,6 @@ import com.example.mynews.presentation.views.home.CondensedNewsArticleScreen
 // added for navbar
 import com.example.mynews.presentation.views.settings.SettingsScreen
 import com.example.mynews.presentation.views.home.SavedArticlesScreen
-import kotlinx.serialization.json.Json
 
 
 sealed class AppScreenRoutes(val route: String) {
@@ -57,6 +56,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
                  newsViewModel: NewsViewModel,
                  savedArticlesViewModel: SavedArticlesViewModel,
                  friendsViewModel: FriendsViewModel,
+                 condensedNewsArticleViewModel: CondensedNewsArticleViewModel,
                  selectedCategory: MutableState<String?>,
                  searchQuery: MutableState<String>) {
 
@@ -94,7 +94,9 @@ fun HomeNavGraph(rootNavController: NavHostController,
         ) { backStackEntry ->
             val articleUrl = backStackEntry.arguments?.getString("articleUrl") ?: ""
             val origin = backStackEntry.arguments?.getString("origin") ?: AppScreenRoutes.HomeScreen.route // default to home
-            NewsArticleScreen(navController = navController, articleUrl = articleUrl, origin = origin)
+            NewsArticleScreen(navController = navController,
+                              articleUrl = articleUrl,
+                              origin = origin)
         }
 
 
@@ -113,7 +115,9 @@ fun HomeNavGraph(rootNavController: NavHostController,
             arguments = listOf(navArgument("articleUrl") { type = NavType.StringType })
         ) { backStackEntry ->
             val articleUrl = backStackEntry.arguments?.getString("articleUrl") ?: ""
-            CondensedNewsArticleScreen(navController = navController, articleUrl = articleUrl)
+            CondensedNewsArticleScreen(navController = navController,
+                                       condensedNewsArticleViewModel = condensedNewsArticleViewModel,
+                                       articleUrl = articleUrl)
         }
 
         composable(AppScreenRoutes.SavedArticlesScreen.route) {

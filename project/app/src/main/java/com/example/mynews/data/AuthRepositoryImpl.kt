@@ -11,7 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.model.User
 import com.example.mynews.domain.repositories.UserRepository
-import com.example.mynews.presentation.viewmodel.DeleteAccountResult
+import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
