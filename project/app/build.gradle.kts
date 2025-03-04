@@ -113,6 +113,8 @@ dependencies {
 
     // Serialization For Navigation
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1") // works with Kotlin 2.0
+
+    // Condensed Article Dependencies For Parsing
     implementation("org.jsoup:jsoup:1.18.3")
     implementation("org.json:json:20210307")
 }

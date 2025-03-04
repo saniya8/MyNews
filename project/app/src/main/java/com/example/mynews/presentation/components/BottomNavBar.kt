@@ -48,7 +48,8 @@ fun BottomNavBar (
             val selected = item.route == backStackEntry.value?.destination?.route ||
                     (item.route == AppScreenRoutes.HomeScreen.route &&
                                    (backStackEntry.value?.destination?.route == AppScreenRoutes.NewsArticleScreen.route ||
-                                    backStackEntry.value?.destination?.route == AppScreenRoutes.SavedArticlesScreen.route))
+                                    backStackEntry.value?.destination?.route == AppScreenRoutes.SavedArticlesScreen.route ||
+                                    backStackEntry.value?.destination?.route == AppScreenRoutes.CondensedNewsArticleScreen.route       ))
 
             BottomNavigationItem(
                 selected = selected,

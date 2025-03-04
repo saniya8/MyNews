@@ -109,6 +109,73 @@ class SavedArticlesViewModel @Inject constructor(
     }
 
 
+    // deleting article in firestore collection
+    fun deleteSavedArticle(article: Article) {
+
+        viewModelScope.launch { // firestore operations are async so need this
+
+            // get current user
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            // at this point, successfully retrieved current user
+
+            val firestore = FirebaseFirestore.getInstance() // get instance to interact with firestore database
+
+            // navigate to where article should be stored in firestore
+
+            // location will be:
+            /*
+            saved_articles (Collection)
+            ├── userID (Document)
+            │   ├── articles (Sub-collection)
+            │   │   ├── URL 1 (Document) -> unique identifier for article
+            │   │   │   ├── article info 1
+                    ├── URL 2 (Document)
+            │       │   ├── article info 2
+             */
+
+            // Firestore does not allow slashes in document IDs so need to encode URL
+            val safeArticleURL = Uri.encode(article.url)
+
+            val articleLocation = firestore.collection("saved_articles")
+                .document(userID)
+                .collection("articles")
+                .document(safeArticleURL) // use URL as unique document identifier to avoid saving duplicate articles
+
+
+            try {
+
+
+                // fetch document at the article location, using await since firestore is async
+                val existingSavedArticle = articleLocation.get().await()
+
+                // article user is trying to delete article that doesn't exists in firestore collection since it was
+                // ie in firstore, in articles subcollection, at document ID being the URL, there
+                // is no article there
+                if (!existingSavedArticle.exists()) {
+                    Log.d("SavedArticlesViewModel", "Article not found, nothing to delete")
+                    return@launch
+                }
+
+                // at this point, the article the user is deleting is in firestore
+                // articleLocation already specifies the documentID as the article URL, so article
+                // is stored there
+                articleLocation.delete().await() // delete article
+                Log.d("SavedArticlesViewModel", "Article deleted successfully: ${article.title}")
+                _savedArticles.postValue(_savedArticles.value?.filter { it.url != article.url })
+            } catch (e: Exception) {
+                Log.e("SavedArticlesViewModel", "Error deleting article: ", e)
+            }
+
+        }
+
+    }
+
     // retrieve user's saved articles from firestore
 
     fun fetchSavedArticles() {

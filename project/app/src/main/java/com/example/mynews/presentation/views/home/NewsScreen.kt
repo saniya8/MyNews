@@ -36,6 +36,7 @@ import com.example.mynews.data.api.Article
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,7 +92,7 @@ fun NewsScreen(
                 .fillMaxSize()
 
         ) {
-            items(articles) {article ->
+            items(articles, key = { it.url }) {article ->
                 //Text(text = article.title) // for testing
                 //Text(text = article.urlToImage) // for testing
                 //Text(text = "----------------") // for testing
@@ -157,20 +158,39 @@ fun ArticleItem(
                 .fillMaxSize()
                 .background(Color.Transparent)
                 .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterEnd
+            contentAlignment =
+                if (origin == "HomeScreen") {
+                    Alignment.CenterEnd
+                } else {
+                    Alignment.CenterStart
+                } // icon on the right for save, left for delete
         )
 
         {
             Icon(
-                imageVector = Icons.Filled.Bookmark,
-                contentDescription = "Save",
+                imageVector =
+                    if (origin == "HomeScreen") {
+                        Icons.Filled.Bookmark
+                    } else {
+                        Icons.Filled.Delete
+                    },
+                contentDescription =
+                    if (origin == "HomeScreen") {
+                        "Save"
+                    } else {
+                        "Delete"
+                    },
                 tint = Color.Blue, // Color for the save icon
                 modifier = Modifier
                     //.align(Alignment.Center)
                     .size(40.dp)
-                    .alpha((-swipeOffset.value / itemWidth.value)
-                    .coerceIn(0f, 1f)) // Only visible when swiping
-
+                    .alpha(
+                        if (origin == "HomeScreen") {
+                            (-swipeOffset.value / itemWidth.value).coerceIn(0f, 1f)
+                        } else {
+                            (swipeOffset.value / itemWidth.value).coerceIn(0f, 1f)
+                        }
+                    ) // Only visible when swiping
             )
         }
 
@@ -215,7 +235,7 @@ fun ArticleItem(
                                     if (swipeOffset.value < -0.4f * itemWidth.value) {
                                         // If swiped past threshold → Save article & reset position
                                         Log.d(
-                                            "SavedArticles",
+                                            "NewsScreen",
                                             "Swiped LEFT on article: ${article.title}"
                                         )
 
@@ -256,6 +276,48 @@ fun ArticleItem(
                                 }
                             }
                         )
+                    } else if (origin == "SavedArticlesScreen") {
+                        detectHorizontalDragGestures(
+                            onDragEnd = {
+                                scope.launch {
+                                    if (swipeOffset.value > 0.4f * itemWidth.value) {
+                                        // If swiped past threshold → Delete article & reset position
+                                        Log.d(
+                                            "NewsScreen",
+                                            "Swiped RIGHT on article: ${article.title}"
+                                        )
+
+                                        //savedArticlesViewModel.saveArticle(article)
+                                        // CALL DELETE SAVED ARTICLE FUNCTION HERE
+                                        savedArticlesViewModel.deleteSavedArticle(article)
+                                        swipeOffset.animateTo(0f) // Reset to original position after deleting
+                                    } else {
+                                        // Snap back if not swiped enough
+                                        swipeOffset.animateTo(0f)
+                                    }
+                                }
+                            },
+
+                            onHorizontalDrag = { _, dragAmount ->
+                                scope.launch {
+
+                                    // only handle left-to-right swipes
+                                    if (dragAmount > 0) {
+                                        swipeOffset.snapTo(
+                                            (swipeOffset.value + dragAmount).coerceIn(
+                                                0f,
+                                                itemWidth.value
+                                            )
+                                        )
+                                    }
+
+                                    // for right to left swipes, do nothing
+                                }
+                            }
+                        )
+
+                    } else {
+                        Log.e("NewsScreen", "Caller was neither HomeScreen nor SavedArticlesScreen")
                     }
 
                     // else if swipeLocation == "SavedArticlesScreen"

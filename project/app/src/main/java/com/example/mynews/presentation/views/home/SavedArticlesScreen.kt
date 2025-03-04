@@ -193,31 +193,6 @@ fun SavedArticlesScreen(
 
 
 
-
-        /*
-
-        // TESTING
-
-        // Simple column layout
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp), // Padding around the entire screen
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Display the article content received as a parameter
-            Text(
-                text = "On saved article screen",
-                style = TextStyle(
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black
-                ),
-                modifier = Modifier.padding(8.dp), // Padding around the text
-            )
-        }
-
-         */
     }
 
 }
