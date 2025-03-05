@@ -15,13 +15,14 @@ import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.presentation.views.goals.GoalsScreen
-import com.example.mynews.presentation.views.social.SocialScreen
+import com.example.mynews.presentation.views.social.FriendsScreen
 import com.example.mynews.presentation.views.home.HomeScreen
 import com.example.mynews.presentation.views.home.NewsArticleScreen
 import com.example.mynews.presentation.views.home.CondensedNewsArticleScreen
 // added for navbar
 import com.example.mynews.presentation.views.settings.SettingsScreen
 import com.example.mynews.presentation.views.home.SavedArticlesScreen
+import com.example.mynews.presentation.views.social.SocialScreen
 
 
 sealed class AppScreenRoutes(val route: String) {
@@ -41,6 +42,8 @@ sealed class AppScreenRoutes(val route: String) {
     }
 
     object SavedArticlesScreen : AppScreenRoutes("saved_articles_screen")
+
+    object FriendsScreen: AppScreenRoutes("friends_screen")
 
 
 
@@ -79,13 +82,18 @@ fun HomeNavGraph(rootNavController: NavHostController,
         }
 
         composable(AppScreenRoutes.SocialScreen.route) {
-            SocialScreen(navController = navController,
-                         friendsViewModel = friendsViewModel,)
+            SocialScreen(navController = navController,)
         }
+
+
+
 
         //composable(AppScreenRoutes.NewsArticleScreen.route) {
         //    NewsArticleScreen(navController = navController)
         //}
+
+
+
 
         composable(route = AppScreenRoutes.NewsArticleScreen.route,
                    arguments = listOf(navArgument("articleUrl") { type = NavType.StringType },
@@ -137,6 +145,11 @@ fun HomeNavGraph(rootNavController: NavHostController,
                 },
                 userRepository = UserRepositoryImpl(FirebaseFirestore.getInstance()),
             )
+        }
+
+        composable(AppScreenRoutes.FriendsScreen.route) {
+            FriendsScreen(navController = navController,
+                          friendsViewModel = friendsViewModel)
         }
 
     }

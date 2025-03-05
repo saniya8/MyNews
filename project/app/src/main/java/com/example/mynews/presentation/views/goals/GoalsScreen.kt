@@ -34,6 +34,7 @@ fun GoalsScreen(
     streakDays: Int, // later remove this, it should be stored in and retrieved from firestore data collection
     achievements: List<Achievement> // later remove this, it should be stored in and retrieved from firestore data collection
 ){
+
         val sampleAchievements = listOf(
         Achievement("1 Week Streak"),
         Achievement("5 Friends Added"),

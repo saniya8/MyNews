@@ -49,7 +49,9 @@ fun BottomNavBar (
                     (item.route == AppScreenRoutes.HomeScreen.route &&
                                    (backStackEntry.value?.destination?.route == AppScreenRoutes.NewsArticleScreen.route ||
                                     backStackEntry.value?.destination?.route == AppScreenRoutes.SavedArticlesScreen.route ||
-                                    backStackEntry.value?.destination?.route == AppScreenRoutes.CondensedNewsArticleScreen.route       ))
+                                    backStackEntry.value?.destination?.route == AppScreenRoutes.CondensedNewsArticleScreen.route)) ||
+                    (item.route == AppScreenRoutes.SocialScreen.route &&
+                                    (backStackEntry.value?.destination?.route == AppScreenRoutes.FriendsScreen.route))
 
             BottomNavigationItem(
                 selected = selected,

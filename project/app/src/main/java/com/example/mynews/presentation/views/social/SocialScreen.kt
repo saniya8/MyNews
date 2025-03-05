@@ -1,102 +1,96 @@
 package com.example.mynews.presentation.views.social
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.navigation.NavHostController
-import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.PersonAddAlt1
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import kotlinx.coroutines.delay
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.mynews.ui.theme.CaptainBlue
+import com.example.mynews.utils.AppScreenRoutes
 
-//import com.example.mynews.presentation.views.social.FriendScreen
 
 @Composable
-fun SocialScreen(
-    navController: NavHostController,
-    friendsViewModel: FriendsViewModel
-) {
-    val users by friendsViewModel.users.observeAsState(emptyList())
-    val friends by friendsViewModel.friends.observeAsState(emptyList())
-    val filteredUsers = remember { mutableStateOf(users) }
-    val searchQuery = remember { mutableStateOf("") }
+fun SocialScreen(navController: NavHostController,) {
 
-    LaunchedEffect(Unit) {
-        friendsViewModel.fetchAllUsers()
-        friendsViewModel.fetchFriends()
-    }
-
-    LaunchedEffect(searchQuery.value) {
-        delay(300) // Wait for 300ms before updating the filtered list
-        filteredUsers.value = users.filter { user ->
-            user.contains(searchQuery.value, ignoreCase = true)
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Text(
-            text = "Find Friends",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        FriendsSearchBar(searchQuery = searchQuery)
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Username List
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        //topBar = { // moving this button to be next to the search bar
+        //    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+        //        Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
+        //    }
+        // }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
         ) {
-            // users or filtered users
-            if (filteredUsers.value.isEmpty()) {
-                item {
-                    Text(
-                        text = "No users found",
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    )
-                }
-            } else {
-                items(filteredUsers.value) { user ->
-                    UserItem(
-                        username = user,
-                        onAddFriend = {
-                            friendsViewModel.addFriend(user)
-                        }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                //.padding(horizontal = 16.dp)
+            ) {
+                // "My News" - Exactly centered
+                Text(
+                    text = "Friend Activity",
+                    fontWeight = FontWeight.Bold,
+                    color = CaptainBlue,
+                    fontSize = 25.sp,
+                    fontFamily = FontFamily.SansSerif,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                // Saved Articles Icon - Pinned to the top right
+                IconButton(
+                    onClick = {
+                        navController.navigate(AppScreenRoutes.FriendsScreen.route)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd) // Ensures it stays in the top-right
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PersonAddAlt1,
+                        //imageVector = Icons.Outlined.BookmarkBorder,
+                        contentDescription = "Saved Articles",
+                        tint = CaptainBlue
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        AddedFriendsList(listOf("Joe", "Jane"))
-        // AddedFriendsList(friends = friends)
     }
 }
+
+
+    /*
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Social Screen")
+    }
+
+     */
