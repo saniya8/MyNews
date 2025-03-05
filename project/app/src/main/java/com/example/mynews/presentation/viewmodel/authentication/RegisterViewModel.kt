@@ -23,6 +23,14 @@ class RegisterViewModel @Inject constructor(
     var registerState by mutableStateOf(RegisterState())
         private set
 
+    private val _isUsernameTaken = mutableStateOf(false)
+    private val _isEmailAlreadyUsed = mutableStateOf(false)
+
+    private var _isUserNameTakenErrorMessage = "Username is already taken. Please choose another one."
+    private var _isEmailAlreadyUsedErrorMessage = "An account already exists with this email."
+    private var _defaultErrorMessage = "Could not register. Please verify your internet connection and try again."
+
+
     fun onEmailInputChange(newValue: String){
         registerState = registerState.copy(emailInput = newValue)
         checkInputValidation()
@@ -57,11 +65,18 @@ class RegisterViewModel @Inject constructor(
     fun onRegisterClick() {
         viewModelScope.launch {
             registerState = registerState.copy(isLoading = true)
+
+            // reset error states before registering
+            _isUsernameTaken.value = false
+            _isEmailAlreadyUsed.value = false
+
             try {
                 val registerResult = authRepository.register(
                     email = registerState.emailInput,
                     username = registerState.usernameInput,
-                    password = registerState.passwordInput
+                    password = registerState.passwordInput,
+                    isUsernameTaken = _isUsernameTaken,
+                    isEmailAlreadyUsed = _isEmailAlreadyUsed,
                 )
 
                 if (registerResult) {
@@ -69,17 +84,21 @@ class RegisterViewModel @Inject constructor(
                         isSuccessfullyRegistered = true,
                         isLoading = false
                     )
-                } else {
+                } else { // register result returned false
                     showErrorDialog = true
                     registerState = registerState.copy(
-                        errorMessageRegisterProcess = "Could not register",
+                        errorMessageRegister = when {
+                            _isUsernameTaken.value -> _isUserNameTakenErrorMessage
+                            _isEmailAlreadyUsed.value -> _isEmailAlreadyUsedErrorMessage
+                            else -> _defaultErrorMessage
+                        },
                         isLoading = false
                     )
                 }
             } catch (e: Exception) {
                 showErrorDialog = true
                 registerState = registerState.copy(
-                    errorMessageRegisterProcess = "Could not register",
+                    errorMessageRegister = _defaultErrorMessage,
                     isLoading = false
                 )
             }

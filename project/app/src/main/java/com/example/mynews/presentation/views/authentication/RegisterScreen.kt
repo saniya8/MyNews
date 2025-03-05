@@ -53,7 +53,7 @@ fun RegisterScreen(
         AlertDialog(
             onDismissRequest = { registerViewModel.showErrorDialog = false },
             title = { Text("Registration Error") },
-            text = { Text("Could not register. Please verify that you don't have an account under this email address.\nIf you don't have an account, please verify your internet connection, and try again.") },
+            text = { Text(registerViewModel.registerState.errorMessageRegister ?: "Unknown error occurred.") },
             confirmButton = {
                 Button(
                     onClick = { registerViewModel.showErrorDialog = false },
