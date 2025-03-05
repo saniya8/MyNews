@@ -21,13 +21,26 @@ fun CondensedNewsArticleScreen(
     articleUrl: String
 ) {
     val articleText by condensedNewsArticleViewModel.articleText.collectAsState()
+    var summarizedText by remember { mutableStateOf("Loading summary...") }
+    var isLoading by remember { mutableStateOf(true) }  // Add loading state
 
+    // Reset state when the articleUrl changes
     LaunchedEffect(articleUrl) {
+        summarizedText = "Loading summary..." // Reset summarizedText when the article changes
+        isLoading = true // Start loading state when article changes
         condensedNewsArticleViewModel.fetchArticleText(articleUrl)
     }
 
+    // Recalculate summarizedText once articleText is available
+    LaunchedEffect(articleText) {
+        if (articleText.isNotEmpty()) {
+            isLoading = false
+            summarizedText = condensedNewsArticleViewModel.summarizeText(articleText, 200)
+        }
+    }
+
+    // User can swipe left to right to return back to the home screen
     Box(
-        // User can swipe left to right to return back to the home screen
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
@@ -46,9 +59,9 @@ fun CondensedNewsArticleScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Display the article content received as a parameter
+            // Display the summarizedText
             Text(
-                text = articleText,
+                text = summarizedText,
                 style = androidx.compose.ui.text.TextStyle(
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
@@ -58,4 +71,3 @@ fun CondensedNewsArticleScreen(
         }
     }
 }
-
