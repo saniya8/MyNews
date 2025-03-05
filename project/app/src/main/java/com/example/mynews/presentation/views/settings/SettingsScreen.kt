@@ -22,6 +22,7 @@ import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.utils.Graph
 import com.example.mynews.ui.theme.*
 import android.util.Log
+import androidx.compose.material3.MaterialTheme
 import com.example.mynews.domain.repositories.UserRepository
 
 @Composable
@@ -48,11 +49,13 @@ fun SettingsScreen(
      */
 
     Scaffold(
-    ) { paddingValues ->
+        modifier = Modifier.fillMaxSize(),
+        backgroundColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center
         ) {
