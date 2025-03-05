@@ -11,6 +11,6 @@ data class RegisterState(
     val errorMessageInput: String? = null,
     val isLoading: Boolean = false,
     val isSuccessfullyRegistered: Boolean = false,
-    val errorMessageRegisterProcess: String? = null
+    val errorMessageRegister: String? = null
 )
 

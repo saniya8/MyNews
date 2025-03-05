@@ -2,6 +2,7 @@ package com.example.mynews.data
 
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -12,6 +13,7 @@ import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.model.User
 import com.example.mynews.domain.repositories.UserRepository
 import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,13 +60,19 @@ class AuthRepositoryImpl (
     }
 
     // version 2 - works with version 2 of onRegisterClick in RegisterViewModel
-    override suspend fun register(email: String, username: String, password: String): Boolean {
+    override suspend fun register(email: String,
+                                  username: String,
+                                  password: String,
+                                  isUsernameTaken: MutableState<Boolean>,
+                                  isEmailAlreadyUsed: MutableState<Boolean>
+    ): Boolean {
         return withContext(Dispatchers.IO) {
             try {
 
                 Log.d("UsernameDebug", "Checking if username '$username' is taken...")
                 if (userRepository.isUsernameTaken(username)) {
                     Log.d("AuthRepository", "Username '$username' is already taken")
+                    isUsernameTaken.value = true
                     return@withContext false
                 }
 
@@ -119,6 +127,10 @@ class AuthRepositoryImpl (
                     Log.d("FirebaseAuth", "Registration succeeded, but currentUser is null")
                     return@withContext false
                 }
+            } catch (e: FirebaseAuthUserCollisionException) {
+                Log.e("AuthRepository", "Email already in use: ${e.message}")
+                isEmailAlreadyUsed.value = true
+                return@withContext false
             } catch (e: Exception) {
                 Log.e("FirebaseAuth", "Registration failed: ${e.message}", e)
                 return@withContext false

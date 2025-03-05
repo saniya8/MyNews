@@ -57,14 +57,14 @@ class LoginViewModel @Inject constructor(
                 } else {
                     showErrorDialog = true
                     loginState = loginState.copy(
-                        errorMessageLoginProcess = "Could not login",
+                        errorMessageLogin = "Could not login",
                         isLoading = false
                     )
                 }
             } catch (e: Exception) {
                 showErrorDialog = true
                 loginState = loginState.copy(
-                    errorMessageLoginProcess = "Could not login",
+                    errorMessageLogin = "Could not login",
                     isLoading = false
                 )
             }

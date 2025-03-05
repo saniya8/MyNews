@@ -8,5 +8,5 @@ data class LoginState(
     val errorMessageInput: String? = null,
     val isLoading: Boolean = false,
     val isSuccessfullyLoggedIn: Boolean = false,
-    val errorMessageLoginProcess: String? = null
+    val errorMessageLogin: String? = null
 )
