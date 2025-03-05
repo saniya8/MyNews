@@ -46,6 +46,7 @@ class SettingsViewModel @Inject constructor(
         _logoutState.value = null
     }
 
+    // TO DO: when deleting account delete from all relevant subcollections
     fun deleteAccount(password: String) {
         viewModelScope.launch {
             val result = authRepository.deleteAccount(password)

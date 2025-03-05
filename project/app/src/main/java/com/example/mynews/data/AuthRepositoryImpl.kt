@@ -15,6 +15,7 @@ import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // Implementation of the AuthRepository interface in .com.example.mynews/domain/repositories
 
@@ -58,15 +59,25 @@ class AuthRepositoryImpl (
 
     // version 2 - works with version 2 of onRegisterClick in RegisterViewModel
     override suspend fun register(email: String, username: String, password: String): Boolean {
-        try {
-            val authResult = auth.createUserWithEmailAndPassword(email, password).await()
-            val firebaseUser = authResult.user
+        return withContext(Dispatchers.IO) {
+            try {
 
-            if (firebaseUser != null) {
-                Log.d("FirebaseAuth", "User ${firebaseUser.uid} registered successfully")
+                Log.d("UsernameDebug", "Checking if username '$username' is taken...")
+                if (userRepository.isUsernameTaken(username)) {
+                    Log.d("AuthRepository", "Username '$username' is already taken")
+                    return@withContext false
+                }
 
-                // Firestore update runs in a separate coroutine (NON-BLOCKING)
-                CoroutineScope(Dispatchers.IO).launch {
+                Log.d("UsernameDebug", "Username is available. Continuing registration...")
+
+                val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+                val firebaseUser = authResult.user
+
+                if (firebaseUser != null) {
+                    Log.d("FirebaseAuth", "User ${firebaseUser.uid} registered successfully")
+
+                    // Firestore update runs in a separate coroutine (NON-BLOCKING)
+
                     try {
                         val userFromFirestore = userRepository.getUserById(firebaseUser.uid)
                         if (userFromFirestore == null) {
@@ -77,24 +88,41 @@ class AuthRepositoryImpl (
                                 email = email,
                                 loggedIn = true
                             )
-                            userRepository.addUser(newUser)
-                            Log.d("Firestore", "User ${firebaseUser.uid} added to Firestore successfully")
+
+                            // also ensures that reserveUsername waits for addUser to complete,
+                            // and then only triggers
+                            userRepository.addUser(newUser).also {
+                                userRepository.reserveUsername(username, firebaseUser.uid)
+                            }
+
+                            Log.d(
+                                "Firestore",
+                                "User ${firebaseUser.uid} added to Firestore successfully"
+                            )
                         } else {
-                            Log.d("Firestore", "User ${firebaseUser.uid} already exists in Firestore")
+                            Log.d(
+                                "Firestore",
+                                "User ${firebaseUser.uid} already exists in Firestore"
+                            )
                         }
+
+                        return@withContext true
+
                     } catch (e: Exception) {
                         Log.e("Firestore", "Failed to add user to Firestore: ${e.message}")
+                        return@withContext false
                     }
-                }
 
-                return true // Register function returns immediately, UI won't be stuck waiting for Firestore
-            } else {
-                Log.d("FirebaseAuth", "Registration succeeded, but currentUser is null")
-                return false
+
+                    //return@withContext true // Register function returns immediately, UI won't be stuck waiting for Firestore
+                } else {
+                    Log.d("FirebaseAuth", "Registration succeeded, but currentUser is null")
+                    return@withContext false
+                }
+            } catch (e: Exception) {
+                Log.e("FirebaseAuth", "Registration failed: ${e.message}", e)
+                return@withContext false
             }
-        } catch (e: Exception) {
-            Log.e("FirebaseAuth", "Registration failed: ${e.message}", e)
-            return false
         }
     }
 

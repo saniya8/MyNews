@@ -23,6 +23,46 @@ class UserRepositoryImpl (
         }
     }
 
+    override suspend fun isUsernameTaken(username: String): Boolean {
+        Log.d("UsernameDebug", "In isUsernameTaken")
+        return try {
+            val doc = firestore.collection("usernames").document(username).get().await()
+            Log.d("UsernameDebug", "Username taken? : ${doc.exists()}")
+            doc.exists() // doc.exists() is true if username is taken, false otherwise,
+        } catch (e: Exception) {
+            Log.e("UsernameDebug", "Error checking username: ${e.message}", e)
+            true // Assume taken if Firestore query fails
+        }
+    }
+
+    /*
+    override suspend fun reserveUsername(username: String, uid: String) {
+        try {
+            firestore.collection("usernames").document(username).set(mapOf("uid" to uid)).await()
+            Log.d("UsernameDebug", "Username '$username' reserved for UID: $uid")
+        } catch (e: Exception) {
+            Log.e("UsernameDebug", "Error reserving username: ${e.message}", e)
+        }
+    }
+
+     */
+
+    override suspend fun reserveUsername(username: String, uid: String) {
+        try {
+            // create the username document
+            firestore.collection("usernames").document(username).set(mapOf<String, Any>()).await()
+
+            // store the UID in the private subcollection
+            firestore.collection("usernames").document(username)
+                .collection("private").document("uid")
+                .set(mapOf("uid" to uid)).await()
+            Log.d("UsernameDebug", "Username '$username' reserved for UID: $uid")
+        } catch (e: Exception) {
+            Log.e("UsernameDebug", "Error reserving username: ${e.message}", e)
+        }
+    }
+
+
     override suspend fun getUserById(userId: String): User? {
         return try {
             val document = firestore.collection("users").document(userId).get().await()
