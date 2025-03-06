@@ -2,4 +2,5 @@ package com.example.mynews.domain.repositories
 
 interface CondensedNewsArticleRepository {
     suspend fun getArticleText(url: String): String
+    suspend fun summarizeText(text: String, wordLimit: Int): String
 }

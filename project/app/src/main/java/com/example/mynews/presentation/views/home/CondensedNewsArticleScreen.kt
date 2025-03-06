@@ -21,21 +21,17 @@ fun CondensedNewsArticleScreen(
     articleUrl: String
 ) {
     val articleText by condensedNewsArticleViewModel.articleText.collectAsState()
-    var summarizedText by remember { mutableStateOf("Loading summary...") }
-    var isLoading by remember { mutableStateOf(true) }  // Add loading state
+    val summarizedText by condensedNewsArticleViewModel.summarizedText.collectAsState()
 
     // Reset state when the articleUrl changes
     LaunchedEffect(articleUrl) {
-        summarizedText = "Loading summary..." // Reset summarizedText when the article changes
-        isLoading = true // Start loading state when article changes
         condensedNewsArticleViewModel.fetchArticleText(articleUrl)
     }
 
     // Recalculate summarizedText once articleText is available
     LaunchedEffect(articleText) {
         if (articleText.isNotEmpty()) {
-            isLoading = false
-            summarizedText = condensedNewsArticleViewModel.summarizeText(articleText, 200)
+            condensedNewsArticleViewModel.fetchSummarizedText(articleText, 200)
         }
     }
 
