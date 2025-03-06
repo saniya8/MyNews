@@ -1,10 +1,12 @@
 package com.example.mynews.presentation.viewmodel.social
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.domain.repositories.FriendsRepository
 import com.example.mynews.domain.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,19 +17,38 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FriendsViewModel @Inject constructor(
-    private val userRepository: UserRepository,
+    private val userRepository: UserRepository, // won't need this anymore
+    private val friendsRepository: FriendsRepository
    // private val authRepository: AuthRepository
 ) : ViewModel() {
 
+    // SK: later problem - add in the FriendsState to store error dialogue message
+
+    // SK: will use _isFriendNotFound to produce the correct error message in error dialog box
+    // later, similar to how done in RegisterViewModel, which makes use of RegisterState
+    private val _isFriendNotFound = mutableStateOf(false) // pass to addFriend in FriendsRepository
+
+    // SK: post to _friends when friend is added and when friend is removed
     private val _friends = MutableLiveData<List<String>>()
     val friends: LiveData<List<String>> = _friends
 
+    // SK: not sure if we still need _username and username
     private val _username = MutableStateFlow<String?>("")
     val username: StateFlow<String?> = _username
 
+    // SK: won't need _users and users if we do simple find friends screen
     private val _users = MutableLiveData<List<String>>()
     val users: LiveData<List<String>> = _users
 
+
+    // SK: rewrite this function to be identical to savedArticlesViewModel's fetchSavedArticles
+    // EXCEPT here, call,
+    // friendsRepository.getFriends(userID) { friendsList ->
+    //                Log.d("Get friend", "Successfully fetched friends")
+    //                _friends.postValue(friendsList) // ViewModel updates UI state
+    //            }
+    // reason this needs to be re-written is due to the implementation of the function in the
+    // friends repository
     fun fetchFriends() {
         viewModelScope.launch {
             try {
@@ -45,7 +66,7 @@ class FriendsViewModel @Inject constructor(
         }
     }
 
-    // Fetch all users from the repository
+    // SK: won't need this
     fun fetchAllUsers() {
         viewModelScope.launch {
             try {
@@ -57,6 +78,13 @@ class FriendsViewModel @Inject constructor(
         }
     }
 
+
+    // SK: below currentUserId, check if it's null and if so, log error and return (like in fetchFriends above)
+    // add in...
+    // val success= friendsRespository.addFriend(currentUserId, friendUsername, _isFriendNotFound)
+    // if (success) then do _friends.postValue(updatedFriends)
+    // else (i.e., !success) then log error
+    // this is very similar to savedArticlesViewModel's deleteSavedArticle function flow
     fun addFriend(friendUsername: String) {
         viewModelScope.launch {
             try {
@@ -73,6 +101,13 @@ class FriendsViewModel @Inject constructor(
         }
     }
 
+
+    // SK: below currentUserId, check if it's null and if so, log error and return (like in fetchFriends above)
+    // add in...
+    // val success= friendsRespository.removeFriend(currentUserId, friendUsername)
+    // if (success) then do _friends.postValue(updatedFriends)
+    // else (i.e., !success) then log error
+    // this is very similar to savedArticlesViewModel's deleteSavedArticle function flow
     fun removeFriend(friendUsername: String) {
         viewModelScope.launch {
             try {

@@ -82,9 +82,18 @@ fun FriendsSearchBar(
             trailingIcon = {
                 IconButton(
                     onClick = {
+                        // SK: here, it should call add friend function from FriendsViewModel
+                        // which will trigger your UI (friend items aka rectangles of friends)
+                        // to be updated, now that a new friend was added
+                        // each of these friend rectangles will have the delete button on them
+                        // which when clicked will trigger removeFriend from FriendsViewModel
+                        // and will rerender UI
+                        // UI will automatically rerender per note at the top of FriendsScreen
+                        // No additional code should be required to re-render it
                         // TODO maybe
                     }
                 ) {
+                    // SK: update this image vector to be like a plus button to add a friend
                     Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
                 }
             }

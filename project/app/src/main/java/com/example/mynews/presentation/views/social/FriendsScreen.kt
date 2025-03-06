@@ -40,11 +40,35 @@ fun FriendsScreen(
     val filteredUsers = remember { mutableStateOf(users) }
     val searchQuery = remember { mutableStateOf("") }
 
+
+
+    // SK: no other Launched Effects other than LaunchedEffect(Unit) should be needed here
+    // UI will automatically render when user's friends change ie when friend added, friend removed
+    // without the use of LaunchedEffect
+    // This was tested and worked with SavedArticles feature, so should work here
+    // Reason:
+    // in friendRepository's getFriends, addSnapshotListener is used meaning
+    // whenever users_friends subcollection is updated, firestore detects a change in real time and
+    // in the viewmodel, triggers _friends.postValue(friendsList) which updates
+    // _friends which updates friends in the view model. Since FriendsScreen
+    // is observing friends in the view model, whenever friends in view model updates,
+    // UI will be re-rendered
+
+
     LaunchedEffect(Unit) {
-        friendsViewModel.fetchAllUsers()
+        friendsViewModel.fetchAllUsers() // not needed
         friendsViewModel.fetchFriends()
     }
 
+
+
+
+    // SK: might have to change the launchedeffects here since by the simple approach,
+    // searchQuery.value changing should not trigger a delay and a filtering,
+    // nothing should happen if searchQuery.value changes
+    // it's only if the user clicks on the trailing icon (e.g., add friend icon) that the UI
+    // should update
+    // don't think below launched effect is needed at all
     LaunchedEffect(searchQuery.value) {
         delay(300) // Wait for 300ms before updating the filtered list
         filteredUsers.value = users.filter { user ->

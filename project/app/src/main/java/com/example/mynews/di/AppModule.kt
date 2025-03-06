@@ -10,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import com.example.mynews.data.AuthRepositoryImpl
 import com.example.mynews.data.CondensedNewsArticleRepositoryImpl
+import com.example.mynews.data.FriendsRepositoryImpl
 import com.example.mynews.data.NewsRepositoryImpl
 import com.example.mynews.data.SavedArticlesRepositoryImpl
 import com.example.mynews.domain.repositories.AuthRepository
@@ -17,6 +18,7 @@ import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
 import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
 import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.domain.repositories.CondensedNewsArticleRepository
+import com.example.mynews.domain.repositories.FriendsRepository
 import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
@@ -69,6 +71,14 @@ object AppModule {
         firestore: FirebaseFirestore
     ): SavedArticlesRepository {
         return SavedArticlesRepositoryImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFriendsRepository(
+        firestore: FirebaseFirestore
+    ): FriendsRepository {
+        return FriendsRepositoryImpl(firestore)
     }
 
     @Provides
