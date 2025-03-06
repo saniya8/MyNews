@@ -58,26 +58,13 @@ class FriendsViewModel @Inject constructor(
                     return@launch
                 }
 
-                val friendsList = userRepository.getUserFriends(currentUserId)
-                _friends.postValue(friendsList)
+                val friendsList = friendsRepository.getFriends(currentUserId, onResult = {} ) // TODO
+                // _friends.postValue(friendsList)
             } catch (e: Exception) {
                 Log.e("FriendsViewModel", "Error fetching friends", e)
             }
         }
     }
-
-    // SK: won't need this
-    fun fetchAllUsers() {
-        viewModelScope.launch {
-            try {
-                val allUsers = userRepository.getAllUsers() // Fetch all usernames
-                _users.postValue(allUsers)
-            } catch (e: Exception) {
-                Log.e("FriendsViewModel", "Error fetching all users", e)
-            }
-        }
-    }
-
 
     // SK: below currentUserId, check if it's null and if so, log error and return (like in fetchFriends above)
     // add in...
@@ -92,7 +79,7 @@ class FriendsViewModel @Inject constructor(
                 val currentUserId = userRepository.getCurrentUserId()
                 val updatedFriends = _friends.value.orEmpty() + friendUsername
                 if (currentUserId != null) {
-                    userRepository.updateUserFriends(currentUserId, updatedFriends)
+                    // friendsRepository.addFriend(currentUserId, friendUsername, true) // TODO
                 }
                 _friends.postValue(updatedFriends)
             } catch (e: Exception) {
@@ -115,7 +102,7 @@ class FriendsViewModel @Inject constructor(
                 // Create a new list by filtering out the friend
                 val updatedFriends = _friends.value.orEmpty().filter { it != friendUsername }
                 if (currentUserId != null) {
-                    userRepository.updateUserFriends(currentUserId, updatedFriends)
+                   // userRepository.updateUserFriends(currentUserId, updatedFriends) TODO update
                 }
                 _friends.postValue(updatedFriends)
             } catch (e: Exception) {

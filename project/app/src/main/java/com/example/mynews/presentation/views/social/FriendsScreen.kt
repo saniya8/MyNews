@@ -56,7 +56,6 @@ fun FriendsScreen(
 
 
     LaunchedEffect(Unit) {
-        friendsViewModel.fetchAllUsers() // not needed
         friendsViewModel.fetchFriends()
     }
 
@@ -147,14 +146,11 @@ fun FriendsScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                AddedFriendsList(listOf("Joe", "Jane"))
+                // uncomment once completed
                 // AddedFriendsList(friends = friends)
             }
 
         }
 
 }
-
-
-
 }

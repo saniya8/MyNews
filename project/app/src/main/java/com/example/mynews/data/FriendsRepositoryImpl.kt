@@ -126,7 +126,7 @@ class FriendsRepositoryImpl (
                 if (snapshot != null) {
                     val friendUsernames = snapshot.documents.map { it.id }
                     Log.d("Get Friends", "Successfully retrieved friends: $friendUsernames")
-                    onResult(friendUsernames) // ✅ Updates UI via ViewModel
+                    onResult(friendUsernames) // Updates UI via ViewModel
                 } else {
                     Log.d("Get Friends", "Firestore snapshot is null")
                     onResult(emptyList())

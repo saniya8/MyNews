@@ -6,5 +6,4 @@ interface FriendsRepository {
     suspend fun addFriend(currentUserID: String, friendUsername: String, isFriendNotFound: MutableState<Boolean>): Boolean
     suspend fun removeFriend(currentUserID: String, friendUid: String): Boolean
     suspend fun getFriends(currentUserID: String, onResult: (List<String>) -> Unit)
-    //suspend fun getAllUsernames(): List<String>
 }
