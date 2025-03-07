@@ -35,7 +35,7 @@ fun MainScreen(rootNavController: NavHostController,
                savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
                friendsViewModel: FriendsViewModel = hiltViewModel(),
                condensedNewsArticleViewModel: CondensedNewsArticleViewModel = hiltViewModel(),
-               /*onLogoutClicked: () -> Unit*/) {
+               ) {
 
     val navController = rememberNavController() // local controller for bottom nav
 
@@ -78,14 +78,7 @@ fun MainScreen(rootNavController: NavHostController,
                     ),
                     navController = navController,
 
-                    // works
-                    // except: does not persist NewsArticleScreen between navigations
-                    //onItemClick = {
-                    //    navController.navigate(it.route)
-                    //}
-
-                    // works
-                    // and: persists NewsArticleScreen between navigations
+                    // onItemClick below ensures screens persist between navigation
                     onItemClick = {
                         navController.navigate(it.route) {
                             launchSingleTop = true
@@ -119,31 +112,12 @@ fun MainScreen(rootNavController: NavHostController,
 }
 
 
+// currentRoute only affects the bottom navigation UI (ie which tab is highlighted), NOT
+// the actual navigation behaviour of which screen is shown -> that is in HomeNavGraph
+
 @Composable
 fun currentRoute(navController: NavHostController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination?.route
 }
 
-
-
-// currentRoute only affects the bottom navigation UI (ie which tab is highlighted), NOT
-// the actual navigation behaviour of which screen is shown -> that is in HomeNavGraph
-// so here, if on savedArticlesScreen, return the home screen
-
-// routes defined in AppScreenRoutes of HomeNavGraph
-
-/*
-@Composable
-fun currentRoute(navController: NavHostController): String? {
-    val navBackStackEntry by navController.currentBackStackEntryAsState() // the screen the user is on
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    return when (currentRoute) {
-        AppScreenRoutes.HomeScreen.route, // returns "home_screen"
-        AppScreenRoutes.SavedArticlesScreen.route -> AppScreenRoutes.HomeScreen.route // keep "Home" selected even when on SavedArticlesScreen, return home_screen
-        else -> currentRoute // return the route of the screen
-    }
-}
-
- */

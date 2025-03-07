@@ -9,6 +9,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// Implementation of the SavedArticlesRepository interface in .com.example.mynews/domain/repositories
+
 class SavedArticlesRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : SavedArticlesRepository {

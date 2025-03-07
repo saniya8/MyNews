@@ -9,15 +9,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,26 +20,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.example.mynews.data.api.Article
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
 import com.example.mynews.utils.AppScreenRoutes
 
 @Composable
 fun NewsArticleScreen(
     navController: NavHostController,
-    //article : Article
     articleUrl: String,
     origin: String,
 ){
@@ -75,32 +60,6 @@ fun NewsArticleScreen(
             }
 
     ){
-
-
-        /*
-        AndroidView(factory = { context ->
-            WebView(context).apply {
-                settings.javaScriptEnabled = true
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        isLoading = false // Hide loading indicator when page loads
-                    }
-
-                    override fun onReceivedError(
-                        view: WebView?,
-                        request: WebResourceRequest?,
-                        error: WebResourceError?
-                    ) {
-                        isLoading = false
-                        loadFailed = true // Show error message
-                    }
-
-                }
-                loadUrl(articleUrl)
-            }
-        })
-
-         */
 
         // Still have to test if the Failed to Load Article message appears correctly based off
         // of the code in AndroidView when either:
@@ -195,19 +154,4 @@ fun NewsArticleScreen(
 
     }
 
-    /* for testing - pre-implementing web-view
-    //Text(text = "News article page")
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        IconButton(onClick = { navController.popBackStack() }) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go Back")
-        }
-        Text(text = "News Article Page", fontSize = 20.sp)
-        Text(text = "URL: $articleUrl")
-        //Text(text = article.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        //Text(text = article.description, fontSize = 16.sp)
-        //Text(text = "URL IS: ${article.url}")
-
-    }
-
-     */
 }

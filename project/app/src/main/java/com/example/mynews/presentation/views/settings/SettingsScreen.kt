@@ -34,20 +34,6 @@ fun SettingsScreen(
 ) {
     val logoutState by settingsViewModel.logoutState.collectAsState()
 
-    /*
-    // Navigate to authentication screen when logged out
-    // TO DO: Test
-        LaunchedEffect(logoutState) {
-            Log.d("LogoutDebug", "LaunchedEffect triggered with logoutState: $logoutState")
-            if (logoutState == true) {
-                Log.d("LogoutDebug", "Navigating to auth screen...")
-                onNavigateToAuthScreen()
-                settingsViewModel.resetLogoutState() // Reset state after navigating
-            }
-        }
-
-     */
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         backgroundColor = MaterialTheme.colorScheme.background

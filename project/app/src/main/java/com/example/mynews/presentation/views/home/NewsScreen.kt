@@ -92,11 +92,9 @@ fun NewsScreen(
 
             }
 
-
         }
 
     }
-
 
 }
 
@@ -112,10 +110,6 @@ fun ArticleItem(
     openDrawer: () -> Unit,
 ){
     val encodedUrl = Uri.encode(article.url)
-    //val swipeOffset = remember { Animatable(0f) }
-    //val itemWidth = remember { mutableStateOf(0f) }
-    //val threshold = 0.4f // 40% of the item's width
-
 
     // Box for animation when saving article
     val swipeOffset = remember { Animatable(0f) }
@@ -128,15 +122,12 @@ fun ArticleItem(
         modifier = Modifier
             .height(cardHeight)
             .fillMaxWidth()
-            .background(Color.Transparent) // Ensure default background is transparent
+            .background(Color.Transparent)
             .onSizeChanged { itemWidth.value = it.width.toFloat()
-            //contentAlignment = Alignment.CenterEnd
-            }, // Capture item width
-        //contentAlignment = Alignment.CenterEnd
+            },
 
     ) {
         // Background Save Icon (only visible when swiping)
-
 
         Box(
             modifier = Modifier
@@ -166,9 +157,8 @@ fun ArticleItem(
                     } else {
                         "Delete"
                     },
-                tint = Color.Blue, // Color for the save icon
+                tint = Color.Blue,
                 modifier = Modifier
-                    //.align(Alignment.Center)
                     .size(40.dp)
                     .alpha(
                         if (origin == "HomeScreen") {
@@ -176,7 +166,7 @@ fun ArticleItem(
                         } else {
                             (swipeOffset.value / itemWidth.value).coerceIn(0f, 1f)
                         }
-                    ) // Only visible when swiping
+                    ) // only visible when swiping
             )
         }
 
@@ -185,29 +175,6 @@ fun ArticleItem(
 
                 .padding(8.dp)
                 .height(cardHeight) // fixing image
-                // swiping to save an article
-                /*.pointerInput(Unit) {
-                detectHorizontalDragGestures { _, dragAmount ->
-                    if (dragAmount < -50) { // Detect swipe right to left
-                        Log.d("SavedArticles", "Swiped LEFT on article: ${article}")
-                    }
-                }
-            }
-
-             */
-
-                /*
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onHorizontalDrag = { _, _ -> /* No action needed during drag */ },
-                        onDragEnd = {
-                            Log.d("SavedArticles", "Swiped LEFT on article: ${article.title}")
-                        }
-                    )
-                }
-
-                 */
-
                 .fillMaxWidth()
                 .offset { IntOffset(swipeOffset.value.roundToInt(), 0) }
                 .pointerInput(Unit) {
@@ -219,16 +186,16 @@ fun ArticleItem(
                             onDragEnd = {
                                 scope.launch {
                                     if (swipeOffset.value < -0.4f * itemWidth.value) {
-                                        // If swiped past threshold → Save article & reset position
+                                        // if swiped past threshold then save article & reset position
                                         Log.d(
                                             "NewsScreen",
                                             "Swiped LEFT on article: ${article.title}"
                                         )
 
                                         savedArticlesViewModel.saveArticle(article)
-                                        swipeOffset.animateTo(0f) // Reset to original position after saving
+                                        swipeOffset.animateTo(0f) // reset to original position after saving article
                                     } else {
-                                        // Snap back if not swiped enough
+                                        // snap back if not swiped enough
                                         swipeOffset.animateTo(0f)
                                     }
                                 }
@@ -245,14 +212,14 @@ fun ArticleItem(
                                             )
                                         )
                                     } else if (swipeOffset.value == 0f && dragAmount > 50) {
-                                        // LEFT-TO-RIGHT: Open drawer ONLY if swipe starts at zero and is strong enough
+                                        // left to right swipes: Open drawer ONLY if swipe starts at zero and is strong enough
                                         Log.d(
                                             "GestureDebug",
                                             "Swiped RIGHT on article → Opening Drawer"
                                         )
                                         openDrawer()
                                     } else {
-                                        // LEFT-TO-RIGHT: Just reset position (DO NOT open drawer)
+                                        // left to right swipes: Just reset position (DO NOT open drawer)
                                         Log.d(
                                             "GestureDebug",
                                             "Swiped RIGHT on article (Resetting) → No Drawer"
@@ -267,18 +234,16 @@ fun ArticleItem(
                             onDragEnd = {
                                 scope.launch {
                                     if (swipeOffset.value > 0.4f * itemWidth.value) {
-                                        // If swiped past threshold → Delete article & reset position
+                                        // if swiped past threshold then delete article & reset position
                                         Log.d(
                                             "NewsScreen",
                                             "Swiped RIGHT on article: ${article.title}"
                                         )
 
-                                        //savedArticlesViewModel.saveArticle(article)
-                                        // CALL DELETE SAVED ARTICLE FUNCTION HERE
                                         savedArticlesViewModel.deleteSavedArticle(article)
-                                        swipeOffset.animateTo(0f) // Reset to original position after deleting
+                                        swipeOffset.animateTo(0f) // reset to original position after deleting article
                                     } else {
-                                        // Snap back if not swiped enough
+                                        // snap back if not swiped enough
                                         swipeOffset.animateTo(0f)
                                     }
                                 }
@@ -306,25 +271,11 @@ fun ArticleItem(
                         Log.e("NewsScreen", "Caller was neither HomeScreen nor SavedArticlesScreen")
                     }
 
-                    // else if swipeLocation == "SavedArticlesScreen"
-                    // else error
                 }
-
-
-
-
-
             ,
 
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             onClick = {
-                //val articleJson = Json.encodeToString(article) // convert to JSON
-                //Log.d("Serialization Debug", "Encoded JSON: $articleJson")
-                //val encodedJson = Uri.encode(articleJson)
-                //navController.navigate("${AppScreenRoutes.NewsArticleScreen.route}/$articleJson")
-
-                //navController.navigate(AppScreenRoutes.NewsArticleScreen.route)
-
 
                 if (origin == "HomeScreen" || origin == "SavedArticlesScreen") {
                     navController.navigate(
@@ -336,15 +287,6 @@ fun ArticleItem(
                 } else {
                     Log.d("NewsScreen", "On click, origin is neither HomeScreen nor SavedArticlesScreen")
                 }
-                /*
-                if (origin == "HomeScreen") {
-                    navController.navigate(AppScreenRoutes.NewsArticleScreen.createRoute(encodedUrl, AppScreenRoutes.HomeScreen.route))
-                } else if (origin == "SavedArticlesScreen") {
-                    navController.navigate(AppScreenRoutes.NewsArticleScreen.createRoute(encodedUrl, AppScreenRoutes.SavedArticlesScreen.route))
-                } else {
-                    Log.d("NewsScreen", "On click, origin is neither HomeScreen nor SavedArticlesScreen")
-                }
-                */
 
             }
         ) {
@@ -387,19 +329,19 @@ fun ArticleItem(
                         .padding(start = 8.dp) // gap between Date at top of page and the scrollable articles
                 ) {
 
-                    // Show the article title
+                    // show the article title
                     Text(
                         text = article.title,
                         fontWeight = FontWeight.Bold,
                         maxLines = 3,
-                        overflow = TextOverflow.Ellipsis // Cuts off text with "..."
+                        overflow = TextOverflow.Ellipsis // cuts off text with "..."
                     )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp) // Adds space between the two Text objects
+                        horizontalArrangement = Arrangement.spacedBy(8.dp) // adds space between the two Text objects
                     ) {
-                        // Show the source
+                        // show the source
                         Text(
                             text = article.source.name,
                             maxLines = 1,
@@ -409,7 +351,7 @@ fun ArticleItem(
                         Text(
                             text = "Condensed Article",
                             modifier = Modifier.clickable {
-                                // Navigate to the CondensedNewsArticleScreen with article content
+                                // navigate to the CondensedNewsArticleScreen with article content
                                 Log.d("Condensed Debug", "Article clicked: ${article.title}")
                                 navController.navigate(
                                     AppScreenRoutes.CondensedNewsArticleScreen.createRoute(
@@ -426,9 +368,5 @@ fun ArticleItem(
             }
         } // end of Card
     } // end of Box
-
-
-
-
 
 }

@@ -23,6 +23,7 @@ class UserRepositoryImpl (
         }
     }
 
+    // isUsernameTaken: returns true if username is already taken by another user, false otherwise
     override suspend fun isUsernameTaken(username: String): Boolean {
         Log.d("UsernameDebug", "In isUsernameTaken")
         return try {
@@ -35,18 +36,7 @@ class UserRepositoryImpl (
         }
     }
 
-    /*
-    override suspend fun reserveUsername(username: String, uid: String) {
-        try {
-            firestore.collection("usernames").document(username).set(mapOf("uid" to uid)).await()
-            Log.d("UsernameDebug", "Username '$username' reserved for UID: $uid")
-        } catch (e: Exception) {
-            Log.e("UsernameDebug", "Error reserving username: ${e.message}", e)
-        }
-    }
-
-     */
-
+    // reserveUsername: reserves username for the user so no one else can take it
     override suspend fun reserveUsername(username: String, uid: String) {
         try {
             // create the username document

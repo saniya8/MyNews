@@ -13,6 +13,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.navigation.NavHostController
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
 import com.example.mynews.utils.AppScreenRoutes
+import kotlinx.coroutines.yield
 
 @Composable
 fun CondensedNewsArticleScreen(
@@ -25,7 +26,9 @@ fun CondensedNewsArticleScreen(
 
     // Reset state when the articleUrl changes
     LaunchedEffect(articleUrl) {
-        condensedNewsArticleViewModel.fetchArticleText(articleUrl)
+        condensedNewsArticleViewModel.clearCondensedArticleState().also {
+            condensedNewsArticleViewModel.fetchArticleText(articleUrl)
+        }
     }
 
     // Recalculate summarizedText once articleText is available

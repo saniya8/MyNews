@@ -7,8 +7,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.mynews.presentation.views.authentication.LoginScreen
 import com.example.mynews.presentation.views.authentication.RegisterScreen
-import com.example.mynews.data.UserRepositoryImpl
-
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
     navigation(

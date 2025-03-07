@@ -31,20 +31,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
-/*
-data class NewsArticle(
-    val id: String,                   // Unique identifier
-    val title: String,                // Article title
-    val author: String?,              // Author name (nullable in case it's unknown)
-    val source: String,               // News source (e.g., "BBC", "TechCrunch")
-    val publishedAt: String,          // Publication date as a string (ISO 8601 format)
-    val content: String,              // Full article content or a summary
-    val url: String,                  // Link to the full article
-    val imageUrl: String?,            // URL of the article image (nullable)
-    val categories: List<String>?,    // List of categories or tags
-    val isBookmarked: Boolean = false // Flag for user preferences
-
- */
-

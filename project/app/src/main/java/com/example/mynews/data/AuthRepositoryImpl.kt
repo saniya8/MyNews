@@ -1,6 +1,5 @@
 package com.example.mynews.data
 
-
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.tasks.await
@@ -27,7 +26,6 @@ class AuthRepositoryImpl (
     private val auth: FirebaseAuth
 ) : AuthRepository {
 
-    // version 4 - works with version 4 of onLoginClick in LoginViewModel
     override suspend fun login(email: String, password: String): Boolean {
         try {
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
@@ -36,7 +34,7 @@ class AuthRepositoryImpl (
             if (firebaseUser != null) {
                 Log.d("FirebaseAuth", "User ${firebaseUser.uid} logged in successfully")
 
-                // Firestore update runs in a separate coroutine (NON-BLOCKING)
+                // firestore update runs in a separate coroutine (NON-BLOCKING)
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         firestore.collection("users").document(firebaseUser.uid)
@@ -48,7 +46,7 @@ class AuthRepositoryImpl (
                     }
                 }
 
-                return true // Return immediately, UI won't be stuck waiting for Firestore
+                return true // return immediately, UI won't be stuck waiting for Firestore
             } else {
                 Log.d("FirebaseAuth", "Login succeeded, but currentUser is null")
                 return false
@@ -84,7 +82,7 @@ class AuthRepositoryImpl (
                 if (firebaseUser != null) {
                     Log.d("FirebaseAuth", "User ${firebaseUser.uid} registered successfully")
 
-                    // Firestore update runs in a separate coroutine (NON-BLOCKING)
+                    // firestore update runs in a separate coroutine (NON-BLOCKING)
 
                     try {
                         val userFromFirestore = userRepository.getUserById(firebaseUser.uid)
@@ -121,8 +119,6 @@ class AuthRepositoryImpl (
                         return@withContext false
                     }
 
-
-                    //return@withContext true // Register function returns immediately, UI won't be stuck waiting for Firestore
                 } else {
                     Log.d("FirebaseAuth", "Registration succeeded, but currentUser is null")
                     return@withContext false
@@ -138,44 +134,6 @@ class AuthRepositoryImpl (
         }
     }
 
-    // version 1 - original - test later - might need Coroutine Scope
-    /*
-    override suspend fun logout(): Boolean {
-        try {
-            val firebaseUser = FirebaseAuth.getInstance().currentUser
-            firebaseUser?.let { user ->
-                val userId = user.uid
-                // Update isLoggedIn field to false in Firestore
-                firestore.collection("users").document(userId)
-                    .update("loggedIn", false)
-                    .await()
-                return true
-            }
-            Log.e("AuthRepository", "No user logged in.")
-            return false
-        } catch (e: Exception) {
-            Log.e("AuthRepository", "Error logging out user", e)
-            return false
-        }
-    }
-
-     */
-
-
-    // version 3 - working but might have to integrate stuff from version 1 back in
-    /*
-    override suspend fun logout(): Boolean {
-        return try {
-            FirebaseAuth.getInstance().signOut() // Only sign out the user
-            Log.d("AuthRepository", "User signed out successfully")
-            true
-        } catch (e: Exception) {
-            Log.e("AuthRepository", "Error logging out user", e)
-            false
-        }
-    }
-
-     */
 
     // version 4 - testing - version 3 + integrating stuff back from version 1
 
@@ -201,10 +159,8 @@ class AuthRepositoryImpl (
     }
 
 
-
-
-
     // test later - might need Coroutine Scope
+    // TODO: add in removing username from firestore usernames collection
     override suspend fun deleteAccount(userPassword: String): DeleteAccountResult {
         try {
             val currentUser = auth.currentUser

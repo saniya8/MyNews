@@ -32,11 +32,6 @@ fun SocialScreen(navController: NavHostController,) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        //topBar = { // moving this button to be next to the search bar
-        //    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-        //        Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
-        //    }
-        // }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -66,7 +61,7 @@ fun SocialScreen(navController: NavHostController,) {
                         navController.navigate(AppScreenRoutes.FriendsScreen.route)
                     },
                     modifier = Modifier
-                        .align(Alignment.TopEnd) // Ensures it stays in the top-right
+                        .align(Alignment.TopEnd) // ensure it stays in the top right
                 ) {
                     Icon(
                         imageVector = Icons.Default.PersonAddAlt1,
@@ -82,15 +77,3 @@ fun SocialScreen(navController: NavHostController,) {
     }
 }
 
-
-    /*
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Social Screen")
-    }
-
-     */

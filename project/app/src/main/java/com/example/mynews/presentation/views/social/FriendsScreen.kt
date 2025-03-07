@@ -40,8 +40,6 @@ fun FriendsScreen(
     val filteredUsers = remember { mutableStateOf(users) }
     val searchQuery = remember { mutableStateOf("") }
 
-
-
     // SK: no other Launched Effects other than LaunchedEffect(Unit) should be needed here
     // UI will automatically render when user's friends change ie when friend added, friend removed
     // without the use of LaunchedEffect
@@ -58,9 +56,6 @@ fun FriendsScreen(
     LaunchedEffect(Unit) {
         friendsViewModel.fetchFriends()
     }
-
-
-
 
     // SK: might have to change the launchedeffects here since by the simple approach,
     // searchQuery.value changing should not trigger a delay and a filtering,

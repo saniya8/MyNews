@@ -64,16 +64,6 @@ fun todayDateText() : String {
 }
 
 
-// Right now in the code, the category/search filter is maintained between navigation (as desired)
-// However, ONLY when the HomeScreen is recreated (aka when navigating back into HomeScreen tab),
-// there are duplicate API calls due to the LaunchedEffects. This does NOT affect what the user
-// sees - from user POV, between navigations to and from home tab, when getting back to home
-// tab, filter looks correct. However, it does cause few unnecessary duplicate API calls in the
-// backend. This is fine since it works and doesn't do too many duplicate calls.
-// Only try to optimize this if there is time/need to do so
-// (e.g., by moving code from LaunchedEffect(selectedCategory.value) and LaunchedEffect(searchQuery.value)
-// to their respective composables onClick/onValueChange)
-
 @Composable
 fun HomeScreen(
     navController: NavHostController /*= rememberNavController()*/,
@@ -163,14 +153,10 @@ fun HomeScreen(
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(
-                newsViewModel = newsViewModel,
                 drawerState = drawerState,
                 scope = scope,
                 selectedCategory = selectedCategory, //.value, // Pass selected category
                 searchQuery = searchQuery,
-                //onCategorySelected = { newCategory ->
-                //    selectedCategory.value = newCategory // Update selected category state
-                //}
             )
         }
     ) {
@@ -188,87 +174,12 @@ fun HomeScreen(
         ) {
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
-                //topBar = { // moving this button to be next to the search bar
-                //    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                //        Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
-                //    }
-                // }
             ) { innerPadding ->
                 Column(
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize()
                 ) {
-
-
-                    /*
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                            //.padding(horizontal = 16.dp, vertical = 8.dp), // Adjust padding for alignment
-                        horizontalArrangement = Arrangement.SpaceBetween, // Space title & icon apart
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-
-                        /*
-                        // Heading
-                        Text(
-                            text = "My News",
-                            //modifier = Modifier.align(Alignment.CenterHorizontally),
-                            modifier = Modifier.weight(1f), // Pushes icon to the right, centers text
-                            textAlign = TextAlign.Center, // Ensures text itself is centered
-                            fontWeight = FontWeight.Bold,
-                            color = CaptainBlue,
-                            fontSize = 25.sp,
-                            fontFamily = FontFamily.SansSerif
-                        )
-
-                        // Saved Articles Icon (Click to navigate to SavedArticlesScreen)
-                        IconButton(onClick = {
-                            //navController.navigate(AppScreenRoutes.SavedArticlesScreen.route)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Bookmark,
-                                contentDescription = "Saved Articles",
-                                tint = CaptainBlue // Match title color
-                            )
-                        }
-
-                         */
-
-                        // Empty Spacer to push "My News" to the exact center
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        // "My News" exactly centered
-                        Text(
-                            text = "My News",
-                            fontWeight = FontWeight.Bold,
-                            color = CaptainBlue,
-                            fontSize = 25.sp,
-                            fontFamily = FontFamily.SansSerif,
-                            textAlign = TextAlign.Center
-                        )
-
-                        // Another Spacer to balance space on both sides
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        // Saved Articles Icon (pinned to the right)
-                        IconButton(onClick = {
-                            //navController.navigate(AppScreenRoutes.SavedArticlesScreen.route)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Bookmark,
-                                contentDescription = "Saved Articles",
-                                tint = CaptainBlue
-                            )
-                        }
-
-
-
-                    }
-
-                     */
 
                     Box(
                         modifier = Modifier
@@ -356,27 +267,6 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
 
     ) {
 
-        // Search icon
-        //IconButton(
-        //    onClick = {} // creating icon button to leave this as an option
-        //) {
-        //    Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
-        //}
-
-        // Search bar
-
-        /*
-        OutlinedTextField(
-            modifier = Modifier.padding(8.dp)
-                .height(48.dp)
-                .border(1.dp, Color.Gray, CircleShape)
-                .clip(CircleShape),
-            value = searchQuery.value,
-            onValueChange = {searchQuery.value = it}
-        )
-
-         */
-
         OutlinedTextField(
             value = searchQuery.value,
             onValueChange = {
@@ -389,14 +279,14 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
             },
             modifier = Modifier
                 .padding(8.dp)
-                .height(50.dp) // Slightly increased height
+                .height(50.dp) // slightly increased height
                 //.fillMaxWidth()
                 .weight(1f) // this instead of fillMaxWidth makes the search
                 // bar fill the remaining width, but then it looks weird
                 // because the My News and Date at the top look off centered
                 // even though they are not
-                .clip(CircleShape), // Clip to rounded edges
-            shape = CircleShape, // Ensures rounded edges
+                .clip(CircleShape), // clip to rounded edges
+            shape = CircleShape, // ensures rounded edges
             textStyle = TextStyle(fontSize = 16.sp), // Adjust font size if needed
             singleLine = true, // Prevents multiline input
             maxLines = 1,
@@ -419,19 +309,12 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
                 }
             }
 
-
-            //placeholder = { Text("Search...") }, // Optional placeholder text
+            //placeholder = { Text("Search...") }, // placeholder text
         )
 
         IconButton(onClick = { scope.launch { drawerState.open() } }) {
             Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
         }
-
-
-
-
-
-
 
     }
 
@@ -439,13 +322,10 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
 
 @Composable
 fun DrawerContent(
-    newsViewModel: NewsViewModel,
     drawerState: DrawerState,
     scope: CoroutineScope,
-    //selectedCategory: String?, // Receive selected category from HomeScreen
     selectedCategory: MutableState<String?>,
     searchQuery: MutableState<String>
-    //onCategorySelected: (String?) -> Unit // Function to update selection
 ) {
     // excluding General since General is just the same as the regular news that you
     // pull from API
@@ -460,7 +340,7 @@ fun DrawerContent(
             .padding(16.dp)
     ) {
         item {
-            // Close (X) Button
+            // close (X) Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End

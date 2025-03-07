@@ -5,6 +5,6 @@ data class User (
     val uid: String = "",
     val username: String = "",
     val loggedIn: Boolean = false,
-    val friends: List<String> = emptyList()
+    //val friends: List<String> = emptyList()
 )
 

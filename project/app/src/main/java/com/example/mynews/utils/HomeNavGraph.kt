@@ -50,8 +50,6 @@ sealed class AppScreenRoutes(val route: String) {
 
 }
 
-
-// HomeNavGraph - pre-attempt to fix the sign in and navigation
 @Composable
 
 fun HomeNavGraph(rootNavController: NavHostController,
@@ -85,16 +83,6 @@ fun HomeNavGraph(rootNavController: NavHostController,
             SocialScreen(navController = navController,)
         }
 
-
-
-
-        //composable(AppScreenRoutes.NewsArticleScreen.route) {
-        //    NewsArticleScreen(navController = navController)
-        //}
-
-
-
-
         composable(route = AppScreenRoutes.NewsArticleScreen.route,
                    arguments = listOf(navArgument("articleUrl") { type = NavType.StringType },
                                       navArgument("origin") { type = NavType.StringType }
@@ -106,17 +94,6 @@ fun HomeNavGraph(rootNavController: NavHostController,
                               articleUrl = articleUrl,
                               origin = origin)
         }
-
-
-        //composable("${AppScreenRoutes.NewsArticleScreen.route}/{article}") { backStackEntry ->
-         //   val jsonArticle = backStackEntry.arguments?.getString("article") ?: ""
-           // if (jsonArticle.isNullOrEmpty()) {
-            //    Log.e("Serialization Debug", "Received null or empty article JSON")
-           //     return@composable
-            //}
-        //    val article = Json.decodeFromString<Article>(jsonArticle) // Convert JSON back to object
-        //    NewsArticleScreen(navController = navController, article = article)
-        //}
 
         composable(
             route = AppScreenRoutes.CondensedNewsArticleScreen.route,

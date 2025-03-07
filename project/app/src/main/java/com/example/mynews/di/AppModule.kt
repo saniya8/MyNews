@@ -87,8 +87,6 @@ object AppModule {
         return CondensedNewsArticleRepositoryImpl()
     }
 
-
-
     @Singleton
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth {

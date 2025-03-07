@@ -1,6 +1,5 @@
 package com.example.mynews.domain.repositories
 
-import com.example.mynews.data.api.Article
 import com.example.mynews.data.api.NewsResponse
 import retrofit2.Response
 

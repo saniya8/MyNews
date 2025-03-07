@@ -24,8 +24,6 @@ class NewsViewModel @Inject constructor(
     // articles live data in the UI
     val articles: LiveData<List<Article>> = _articles
 
-    // use Retrofit here since NewsApiClient not working
-
     private var hasFetchedNews = false // tracks if API call was made
 
     // Based on: hasFetchedNews usage and LaunchedEffect in MainScreen,
@@ -159,89 +157,5 @@ class NewsViewModel @Inject constructor(
         }
 
     }
-
-    // saving article in firestore collection
-
-    /*
-
-     // moved to SavedArticlesViewModel
-    fun saveArticle(article: Article) {
-
-        viewModelScope.launch { // firestore operations are async so need this
-
-            // get current user
-            val userID = userRepository.getCurrentUserId()
-
-            if (userID.isNullOrEmpty()) {
-                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
-                return@launch // return
-            }
-
-            // at this point, successfully retrieved current user
-
-            val firestore = FirebaseFirestore.getInstance() // get instance to interact with firestore database
-
-            // navigate to where article should be stored in firebase
-
-            // location will be:
-            /*
-            saved_articles (Collection)
-            ├── userID (Document)
-            │   ├── articles (Sub-collection)
-            │   │   ├── URL 1 (Document) -> unique identifier for article
-            │   │   │   ├── article info 1
-                    ├── URL 2 (Document)
-            │       │   ├── article info 2
-             */
-
-            // Firestore does not allow slashes in document IDs so need to encode URL
-            val safeArticleURL = Uri.encode(article.url)
-
-            val articleLocation = firestore.collection("saved_articles")
-                .document(userID)
-                .collection("articles")
-                .document(safeArticleURL) // use URL as unique document identifier to avoid saving duplicate articles
-
-            /*
-            In firestore
-            - Documents have unique IDs
-            - By using article.url as the document ID, an article can only be saved once per used
-            - If same article is saved again, firestore overwrites the existing document which is fine
-              since this prevents duplicates
-             */
-
-
-            try {
-                // although firestore prevents duplicate documents since article.url is document ID,
-                // prevent unnecessary Firestore overwrites if the article that the user saved already
-                // exists in firestore, ie was already saved previously
-
-                // fetch document at the article location, using await since firestore is async
-                val existingSavedArticle = articleLocation.get().await()
-
-                // article user is trying to save already exists in firestore collection since it was
-                // saved previously
-                // ie in firstore, in articles subcollection, at document ID being the URL, there
-                // already exists an article there
-                if (existingSavedArticle.exists()) {
-                    Log.d("NewsViewModel", "Already saved article: ${article.title}")
-                    return@launch
-                }
-
-                // at this point, the article the user is saving hasn't been saved before
-                // articleLocation already specifies the documentID as the article URL, so article
-                // is stored there
-                articleLocation.set(article).await() // save entire article
-                Log.d("NewsViewModel", "Article saved successfully: ${article.title}")
-
-            } catch (e: Exception) {
-                Log.e("NewsViewModel", "Error saving article: ", e)
-            }
-
-        }
-
-    }
-
-     */
 
 }

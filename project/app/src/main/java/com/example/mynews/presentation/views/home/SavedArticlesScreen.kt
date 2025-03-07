@@ -27,10 +27,8 @@ fun SavedArticlesScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
     savedArticlesViewModel: SavedArticlesViewModel,
-    //article: Article
 ){
 
-    // uncomment this when saved articles variable is created
     val articles by savedArticlesViewModel.savedArticles.observeAsState(emptyList())
 
     // no need for LaunchedEffect based on articles value because
@@ -46,18 +44,14 @@ fun SavedArticlesScreen(
         savedArticlesViewModel.fetchSavedArticles()
     }
 
-    // MIGHT HAVE TO CHANGE THIS BOX POINTER INPUT WHEN ADDING DELETE FUNCTION ON SAVED ARTICLE
-    // Different swiping right on saved article to delete it versus swiping right on the screen
-    // to go back to the HomeScreen
     Box (
-        // User can swipe left to right to return back to the home screen
+        // user can swipe left to right to return back to the home screen
         modifier = Modifier
             .fillMaxSize()
 
             .pointerInput(Unit) {
                 detectHorizontalDragGestures { _, dragAmount ->
-                    if (dragAmount > 50) { // Detect swipe right to go back
-                        //navController.popBackStack()
+                    if (dragAmount > 50) { // detect swipe right to go back
                         navController.popBackStack(AppScreenRoutes.HomeScreen.route, false)
                     }
                 }
@@ -67,11 +61,7 @@ fun SavedArticlesScreen(
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            //topBar = { // moving this button to be next to the search bar
-            //    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-            //        Icon(Icons.Default.Tune, contentDescription = "Filter Menu")
-            //    }
-            // }
+
         ) { innerPadding ->
 
             Column(
@@ -160,18 +150,6 @@ fun SavedArticlesScreen(
                             color = Color.Gray
                         )
 
-                        /*
-                    // Today's date
-                    Text(
-                        text = todayDateText(),
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = CaptainBlue,
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
-
-                     */
-
                         Spacer(modifier = Modifier.height(10.dp))
 
                         NewsScreen(
@@ -183,15 +161,10 @@ fun SavedArticlesScreen(
                             openDrawer = {}, // empty since no drawer on this screen
                         ) // Display news
 
-                    }
+                }
             }
 
         } // end of body of scaffold
-
-
-
-
-
 
     }
 

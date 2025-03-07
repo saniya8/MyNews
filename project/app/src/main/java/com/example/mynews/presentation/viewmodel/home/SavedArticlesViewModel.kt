@@ -77,7 +77,6 @@ class SavedArticlesViewModel @Inject constructor(
     }
 
     // retrieve user's saved articles from firestore
-
     fun fetchSavedArticles() {
 
         viewModelScope.launch{
