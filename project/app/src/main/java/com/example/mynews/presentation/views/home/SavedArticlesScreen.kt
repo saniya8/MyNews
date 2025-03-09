@@ -2,6 +2,7 @@ package com.example.mynews.presentation.views.home
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +31,7 @@ fun SavedArticlesScreen(
 ){
 
     val articles by savedArticlesViewModel.savedArticles.observeAsState(emptyList())
+    val emptyListState = rememberLazyListState()
 
     // no need for LaunchedEffect based on articles value because
     // in SavedArticlesViewModel's fetchSavedArticles, addSnapshotListener is used meaning
@@ -158,7 +160,9 @@ fun SavedArticlesScreen(
                             savedArticlesViewModel = savedArticlesViewModel,
                             articles = articles,
                             origin = "SavedArticlesScreen",
-                            openDrawer = {}, // empty since no drawer on this screen
+                            openDrawer = {}, // empty since no drawer on this screen,
+                            onLongPressRelease = {_, _ ->}, // empty callback,
+                            listState = emptyListState,
                         ) // Display news
 
                 }

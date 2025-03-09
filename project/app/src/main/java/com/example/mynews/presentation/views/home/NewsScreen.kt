@@ -33,15 +33,19 @@ import coil3.compose.AsyncImage
 import com.example.mynews.data.api.Article
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -49,7 +53,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -62,6 +71,7 @@ import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.abs
 
 
 @Composable
@@ -72,6 +82,8 @@ fun NewsScreen(
     articles: List<Article>,
     origin: String,
     openDrawer: () -> Unit,
+    onLongPressRelease: (Article, Float) -> Unit, // callback to notify HomeScreen
+    listState: LazyListState,
 ) {
 
     // Observe the articles
@@ -85,7 +97,7 @@ fun NewsScreen(
     {
 
         // LazyColumn is used to display a vertically scrolling list of items
-        LazyColumn(
+        LazyColumn( state = listState,
             modifier = Modifier
                 .fillMaxSize()
 
@@ -100,6 +112,8 @@ fun NewsScreen(
                             article = article,
                             origin = origin,
                             openDrawer = openDrawer,
+                            onLongPressRelease = onLongPressRelease, // pass callback to ArticleItem
+                            listState = listState,
                             )
 
             }
@@ -120,6 +134,8 @@ fun ArticleItem(
     article: Article,
     origin: String,
     openDrawer: () -> Unit,
+    onLongPressRelease: (Article, Float) -> Unit, // callback to notify HomeScreen
+    listState: LazyListState,
 ){
     val encodedUrl = Uri.encode(article.url)
 
@@ -129,6 +145,9 @@ fun ArticleItem(
     val scope = rememberCoroutineScope()
     val cardHeight = 130.dp
     val isTapValid = remember { mutableStateOf(true) }
+    var articleYCoord = 0f
+    var articleLayoutCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
+
 
 
     Box(
@@ -139,7 +158,7 @@ fun ArticleItem(
             .onSizeChanged { itemWidth.value = it.width.toFloat()
             },
 
-    ) {
+        ) {
         // Background Save Icon (only visible when swiping)
 
         Box(
@@ -149,27 +168,27 @@ fun ArticleItem(
                 .background(Color.Transparent)
                 .padding(horizontal = 16.dp),
             contentAlignment =
-                if (origin == "HomeScreen") {
-                    Alignment.CenterEnd
-                } else {
-                    Alignment.CenterStart
-                } // icon on the right for save, left for delete
+            if (origin == "HomeScreen") {
+                Alignment.CenterEnd
+            } else {
+                Alignment.CenterStart
+            } // icon on the right for save, left for delete
         )
 
         {
             Icon(
                 imageVector =
-                    if (origin == "HomeScreen") {
-                        Icons.Filled.Bookmark
-                    } else {
-                        Icons.Filled.Delete
-                    },
+                if (origin == "HomeScreen") {
+                    Icons.Filled.Bookmark
+                } else {
+                    Icons.Filled.Delete
+                },
                 contentDescription =
-                    if (origin == "HomeScreen") {
-                        "Save"
-                    } else {
-                        "Delete"
-                    },
+                if (origin == "HomeScreen") {
+                    "Save"
+                } else {
+                    "Delete"
+                },
                 tint = Color.Blue,
                 modifier = Modifier
                     .size(40.dp)
@@ -190,6 +209,11 @@ fun ArticleItem(
                 .height(cardHeight) // fixing image
                 .fillMaxWidth()
                 .offset { IntOffset(swipeOffset.value.roundToInt(), 0) }
+                .onGloballyPositioned { coordinates ->
+                    //articleYCoord = coordinates.positionInRoot().y // store absolute Y-position (but doesn't trigger recomposition)
+                    articleLayoutCoordinates = coordinates
+                }
+
 
 
 
@@ -293,147 +317,207 @@ fun ArticleItem(
 
                  */
 
-                // .pointerInput to handle tap, long press, and swipe
+
                 .pointerInput(Unit) {
+                    var wasLongPress = false
 
-                    var wasLongPress = false // tracks if long press was completed before the user lifted their finger
-
-                    // step 1: set up the gesture detection
-                    awaitPointerEventScope {  // starts listening for pointer (touch) events
+                    awaitPointerEventScope {
                         while (true) {
-                            val down = awaitFirstDown(requireUnconsumed = false) // waits for the first touch
-                            val downPosition = down.position // records where the touch started
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val downPosition = down.position
 
-                            var longPressTriggered = false // becomes true if long press detected
-                            var dragDistance = 0f // how far the user moved their finger
-                            val moveThreshold = 10f // minimum movement to count as a swipe
-                            var shouldBreakLoop = false // used to exit the while(true) if needed
-                            var isDragging = false // true if user strarts dragging (not just tapping)
+                            var longPressTriggered = false
+                            var dragDistance = 0f
+                            val moveThreshold = 10f
+                            var horizontalDrag = 0f
+                            var isScrollGesture = false
+                            isTapValid.value = true // Reset at start of new interaction
 
-                            // step 2: detect long press
+                            // Detect long press with improved cancellation handling
                             val longPressJob = scope.launch {
                                 try {
-                                    delay(ViewConfiguration.getLongPressTimeout().toLong()) // wait the long press duration
-                                    if (origin == "HomeScreen" && dragDistance < moveThreshold) { // if it came from home screen and barely any movement
-                                        longPressTriggered = true // mark as a long press
-                                        wasLongPress = true // immediately mark long press as detected
-                                        isTapValid.value = false // don't let long press be treated as a tap
+                                    // Standard Android long press timeout
+                                    delay(ViewConfiguration.getLongPressTimeout().toLong())
+
+                                    // Only trigger if minimal movement has occurred
+                                    if (origin == "HomeScreen" && dragDistance < moveThreshold) {
+                                        longPressTriggered = true
+                                        wasLongPress = true
+                                        isTapValid.value = false // Prevent tap handling
+
                                         Log.d("GestureDebug", "Long press detected at $downPosition")
-                                        Log.d("GestureDebug", "longPressTriggered: ${longPressTriggered}")
-                                        //Log.d("GestureDebug", "------------------------")
                                     }
-                                } catch (e: CancellationException) { // user moved too much, long press cancelled
+                                } catch (e: CancellationException) {
                                     Log.d("GestureDebug", "Long press canceled")
                                 }
                             }
 
-                            // step 3: track drags
-
-                            var horizontalDrag = 0f // tracks horizontal movement of finger
-                            //var wasLongPress = false // tracks if long press was completed before the user lifted their finger
-
                             try {
+                                var hasMoved = false
+
                                 do {
-                                    val event = awaitPointerEvent() // wait for the next pointer event (i.e., even a tiny finger movement)
-                                    val dragEvent = event.changes.firstOrNull { it.id == down.id } // gets the touch event for the original touch
+                                    val event = awaitPointerEvent()
+                                    val dragEvent = event.changes.firstOrNull { it.id == down.id }
 
-                                    if (dragEvent != null && dragEvent.positionChange() != Offset.Zero) { // if there is any movement at all
-                                        val positionChange = dragEvent.positionChange() // gets the change in position since the last event
-                                        val currentPosition = dragEvent.position // gets the current position of the touch
-                                        val distance = (currentPosition - downPosition).getDistance() // calculates the total distance moved from the ORIGINAL touch ie the starting point
-                                        dragDistance = distance // assigns that distance to the dragDistance variable
+                                    if (dragEvent != null && dragEvent.positionChange() != Offset.Zero) {
+                                        val positionChange = dragEvent.positionChange()
+                                        val currentPosition = dragEvent.position
+                                        dragDistance = (currentPosition - downPosition).getDistance()
 
-                                        if (positionChange.y > moveThreshold || positionChange.y < -moveThreshold) {
-                                            // if movement is mostly vertical, treat it as scrolling and stop the other gestures
-                                            isDragging = true
+                                        // If significant movement happened, cancel long press and handle as drag
+                                        if (dragDistance > moveThreshold && !hasMoved) {
+                                            hasMoved = true
+                                            longPressJob.cancel()
+                                            isTapValid.value = false
                                         }
 
-                                        /*
-                                        // remove - handled above immediately after long press detected
-                                        if (longPressTriggered) { // if a long press was detected earlier
-                                            wasLongPress = true // mark that the long press happened
-                                            isTapValid.value = false // prevent long press from being treated as a tap
-                                            //continue // POTENTIAL BUG: skip further processing NEEDS TO HANDLE RELEASE - MAY NEED TO REMOVE CONTINUE
+                                        // detect scrolling early
+                                        if (abs(positionChange.y) > abs(positionChange.x) * 1.5f) {
+                                            isScrollGesture = true // user is scrolling
                                         }
 
-                                         */
+                                        // Handle horizontal swipes
+                                        if (hasMoved && !isScrollGesture) {
+                                            val horizontalDragAmount = dragEvent.position.x - dragEvent.previousPosition.x
+                                            horizontalDrag += horizontalDragAmount
 
-                                        // step 4: handle swipes
+                                            // Check if mostly horizontal movement (to distinguish from scrolling)
+                                            val isHorizontalMovement = abs(positionChange.x) > abs(positionChange.y) * 1.5f
 
-                                        if (distance > moveThreshold) { // user moved their finger a significant amount
-                                            longPressJob.cancel() // cancel the long press job because no longer a long press
-                                            isTapValid.value = false // ensure that this touch event is not interpreted as a tap
-                                            Log.d("GestureDebug", "Long press canceled due to movement")
-
-
-                                            val horizontalDragAmount = dragEvent.position.x - dragEvent.previousPosition.x // change in horizontal postion
-                                            horizontalDrag += horizontalDragAmount // accumulate the total horizontal movement
-
-                                            if (!isDragging) { // if the user is not dragging vertically (ie mostly horizontal movement)
-                                                if (origin == "HomeScreen") { // if this is happening on the home screen
-                                                    if (horizontalDragAmount < 0) { // if the user is swiping left
+                                            if (isHorizontalMovement) {
+                                                if (origin == "HomeScreen") {
+                                                    if (horizontalDragAmount < 0) { // Left swipe
                                                         scope.launch {
-                                                            swipeOffset.snapTo( // move the article item left
+                                                            swipeOffset.snapTo(
                                                                 (swipeOffset.value + horizontalDragAmount).coerceIn(-itemWidth.value, 0f)
                                                             )
                                                         }
-                                                    } else if (swipeOffset.value == 0f && horizontalDrag > 50) { // if the user is swiping right and is strong enough
-                                                        Log.d("GestureDebug", "Swiped RIGHT on article → Opening Drawer")
-                                                        openDrawer() // open the sidebar
-                                                        shouldBreakLoop = true // stop processing further gestures
+                                                        dragEvent.consume()
+                                                    } else if (swipeOffset.value == 0f && horizontalDrag > 50) { // Right swipe
+                                                        Log.d("GestureDebug", "Opening drawer from article swipe")
+                                                        if (!isScrollGesture) {
+                                                            openDrawer()
+                                                            dragEvent.consume()
+                                                            break
+                                                        }
                                                     }
-                                                } else if (origin == "SavedArticlesScreen") { // if this is happening on the saved articles screen
-                                                    if (horizontalDragAmount > 0) { // if the user is swiping right
+                                                } else if (origin == "SavedArticlesScreen") {
+                                                    if (horizontalDragAmount > 0) { // Right swipe in saved articles
                                                         scope.launch {
                                                             swipeOffset.snapTo(
-                                                                (swipeOffset.value + horizontalDragAmount).coerceIn(0f, itemWidth.value) // move the article item right
+                                                                (swipeOffset.value + horizontalDragAmount).coerceIn(0f, itemWidth.value)
                                                             )
                                                         }
-                                                        dragEvent.consume() // stop event from propogating to unwanted actions
+                                                        dragEvent.consume()
                                                     }
                                                 }
                                             }
-
-                                            if (shouldBreakLoop) break // if we already handled the gesture (e.g., like opening the drawer), break out and stop processing
                                         }
                                     }
-                                    //Log.d("GestureDebug", "About to iterate while loop")
+                                } while (event.changes.any { it.pressed })
 
+                                // BUG - DOESNT position in right spot when article is scrolled
+                                // When finger is lifted, handle the completed gesture
+                                /*if (wasLongPress && !hasMoved) {
+                                    Log.d("GestureDebug", "Long press released, showing reaction bar")
+                                    //val updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
+                                    var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
+                                    val totalScrollOffset = (listState.firstVisibleItemIndex * 130) + listState.firstVisibleItemScrollOffset
 
-                                } while (event.changes.any { it.pressed }) // continue looping while the user is still pressing the screen
+                                    if (updatedYCoord < totalScrollOffset) {
+                                        Log.d("GestureDebug", "Updated y coord is less than 0")
+                                        updatedYCoord = totalScrollOffset.toFloat()
+                                    }
 
-                                //Log.d("GestureDebug", "Out of the while loop")
-                                // step 5: cleanup
+                                    onLongPressRelease(article, updatedYCoord)
+                                    continue
+                                }*/
 
+                                /*
+                                if (wasLongPress && !hasMoved) {
+                                    Log.d("GestureDebug", "Long press released, showing reaction bar")
 
-                                if (wasLongPress) { // if the user did a long press before releasing
-                                    Log.d("GestureDebug", "Long press released")
-                                    continue // skip tap handling because we don't want to go to next code block and accidentally check swipe
+                                    // get the real Y position of the article
+                                    var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
+                                    val totalScrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
+
+                                    Log.d("GestureDebug", "Original updatedYCoord: $updatedYCoord")
+                                    Log.d("GestureDebug", "Total Scroll Offset: $totalScrollOffset")
+
+                                    // if the article is partially cut off at the top, adjust Y coordinate
+                                    if (updatedYCoord < totalScrollOffset) {
+                                        Log.d("GestureDebug", "Adjusting Y because article is partially out of view")
+                                        updatedYCoord += totalScrollOffset
+                                    }
+
+                                    // if it's the first fully visible article, position correctly
+                                    val firstVisibleItemIndex = listState.firstVisibleItemIndex
+                                    if (firstVisibleItemIndex == 0) {
+                                        updatedYCoord = totalScrollOffset // Ensures reaction bar is slightly over the search bar
+                                    }
+
+                                    Log.d("GestureDebug", "Final updatedYCoord: $updatedYCoord")
+
+                                    onLongPressRelease(article, updatedYCoord)
+                                    continue
                                 }
 
-                                if (horizontalDrag != 0f) { // if there was any horizontal movement (swipe)
+                                 */
+
+                                // y coord correct for all articles, even on scroll, except
+                                // top article if partially cut off
+                                if (wasLongPress && !hasMoved) {
+                                    Log.d("GestureDebug", "Long press released, showing reaction bar")
+
+                                    var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
+
+                                    // total scroll offset considering LazyColumn's scroll state
+                                    val totalScrollOffset = (listState.firstVisibleItemIndex * 130) + listState.firstVisibleItemScrollOffset
+                                    val firstVisibleItemOffset = listState.firstVisibleItemScrollOffset.toFloat()
+
+                                    Log.d("GestureDebug", "Original updatedYCoord: $updatedYCoord")
+                                    Log.d("GestureDebug", "Total Scroll Offset: $totalScrollOffset")
+                                    Log.d("GestureDebug", "First Visible Item Offset: $firstVisibleItemOffset")
+
+                                    // if the article is partially cut off at the top, adjust Y coordinate
+                                    if (updatedYCoord < firstVisibleItemOffset) {
+                                        Log.d("GestureDebug", "Adjusting Y because article is partially out of view")
+                                        updatedYCoord += firstVisibleItemOffset
+                                    }
+
+                                    // ensure reaction bar is slightly above the article (for topmost visible items)
+                                    if (listState.firstVisibleItemIndex == 0) {
+                                        updatedYCoord = firstVisibleItemOffset
+                                    }
+
+                                    Log.d("GestureDebug", "Final updatedYCoord: $updatedYCoord")
+
+                                    onLongPressRelease(article, updatedYCoord)
+                                    continue
+                                }
+
+
+                                // Handle completed swipe
+                                if (horizontalDrag != 0f && !isScrollGesture) {
                                     scope.launch {
-                                        if (origin == "HomeScreen" && swipeOffset.value < -0.4f * itemWidth.value) { // if swiped left past threshold on home screen
-                                            Log.d("NewsScreen", "Swiped LEFT on article: ${article.title}")
-                                            savedArticlesViewModel.saveArticle(article) // save the article
-                                        } else if (origin == "SavedArticlesScreen" && swipeOffset.value > 0.4f * itemWidth.value) { // if swiped right past threshold on saved articles screen
-                                            Log.d("NewsScreen", "Swiped RIGHT on article: ${article.title}")
-                                            savedArticlesViewModel.deleteSavedArticle(article) // delete the article
-                                            isTapValid.value = false // prevent accidental navigation
-                                            awaitPointerEventScope {
-                                                currentEvent.changes.forEach { it.consume() } // stops propogation - prevents this gesture from affecting other UI elements
-                                            }
+                                        if (origin == "HomeScreen" && swipeOffset.value < -0.4f * itemWidth.value) {
+                                            Log.d("NewsScreen", "Saving article from swipe: ${article.title}")
+                                            savedArticlesViewModel.saveArticle(article)
+                                        } else if (origin == "SavedArticlesScreen" && swipeOffset.value > 0.4f * itemWidth.value) {
+                                            Log.d("NewsScreen", "Deleting article from swipe: ${article.title}")
+                                            savedArticlesViewModel.deleteSavedArticle(article)
                                         }
 
-                                        swipeOffset.animateTo(0f) // reset swipe position after action is taken
+                                        swipeOffset.animateTo(0f) // Reset position
                                     }
                                 }
 
                             } finally {
-                                if (longPressJob.isActive) { // if the long press was still running
-                                    longPressJob.cancel() // cancel it to stop unintended behaviour
+                                // Clean up
+                                if (longPressJob.isActive) {
+                                    longPressJob.cancel()
                                 }
-                                isTapValid.value = true // reset it after entire interaction is complete
+                                wasLongPress = false
                             }
                         }
                     }
@@ -588,6 +672,7 @@ fun ReactionBar(
     }
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun PreviewReactionBar() {
@@ -595,3 +680,5 @@ fun PreviewReactionBar() {
         onReactionSelected = { reaction -> Log.d("ReactionBar", "Selected: $reaction") }
     )
 }
+
+ */

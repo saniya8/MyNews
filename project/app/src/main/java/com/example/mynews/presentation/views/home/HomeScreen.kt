@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,7 +43,10 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.foundation.layout.height
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Bookmark
@@ -54,7 +59,23 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.zIndex
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
+import com.example.mynews.data.api.Article
+import kotlinx.coroutines.delay
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 
 fun todayDateText() : String {
@@ -70,15 +91,28 @@ fun HomeScreen(
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
     savedArticlesViewModel: SavedArticlesViewModel,
     selectedCategory: MutableState<String?>,
-    searchQuery: MutableState<String>
+    searchQuery: MutableState<String>,
 ) {
 
     val articles by newsViewModel.articles.observeAsState(emptyList())
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
     val scope = rememberCoroutineScope() // Required for controlling the drawer
 
+    var activeReactionArticle by remember { mutableStateOf<Article?>(null)}
+    var activeReactionArticleYCoord by remember { mutableFloatStateOf(0f) }
+
+    //val reactionBarBounds = remember { mutableStateOf<Rect?>(null) }
+    //var reactionBarBounds = remember { null as Rect? }
+    var reactionBarBounds by remember { mutableStateOf<Rect?>(null) } //  does NOT trigger recompositions unless the variable is directly used inside a Composable UI element (which this isn't)
+    val listState = rememberLazyListState()
+
+
     fun openDrawer() {
         scope.launch { drawerState.open() }
+    }
+
+    fun closeReactionBar() {
+        activeReactionArticle = null
     }
 
     LaunchedEffect(Unit) {
@@ -149,6 +183,18 @@ fun HomeScreen(
         Log.i("FlickerBug", "----------------------")
     }
 
+    LaunchedEffect(activeReactionArticle) {
+        Log.d("GestureDebug", "Recomposing! activeReactionArticle = $activeReactionArticle")
+
+    }
+
+    // CL: Add a remember state to track drawer drag gesture
+    val isDraggingDrawer = remember { mutableStateOf(false) }
+    // CL: Add a remember state to track scroll gesture
+    val isScrolling = remember { mutableStateOf(false) }
+
+
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -160,94 +206,282 @@ fun HomeScreen(
             )
         }
     ) {
-        // Box is to be able to swipe right to open drawer
+
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
+
+                // version 3
                 .pointerInput(Unit) {
-                    detectHorizontalDragGestures { _, dragAmount ->
-                        if (dragAmount > 50) { // Detect swipe right to open drawer
-                            scope.launch { drawerState.open() }
+                    awaitPointerEventScope {
+                        while (true) {
+                            // Wait for first pointer down event
+                            val firstDown = awaitFirstDown(requireUnconsumed = false)
+                            val touchPosition = firstDown.position
+                            var dragStartTime = System.currentTimeMillis()
+                            var totalDragX = 0f
+                            var totalDragY = 0f
+                            var isGestureDetermined = false
+                            var isScrollGesture = false
+                            var isDrawerGesture = false
+                            var lockScrollMode = false
+
+                            // If reaction bar is open, close it on any touch outside the bar itself
+                            // (The bar itself has its own clickable modifier that will stop propagation)
+                            if (activeReactionArticle != null) {
+
+                                val bounds = reactionBarBounds
+
+                                if (bounds != null && bounds.contains(touchPosition)) {
+                                    Log.d("GestureDebug", "Touch inside the reaction bar - allow selection of reactions")
+                                } else {
+
+                                    Log.d(
+                                        "GestureDebug",
+                                        "Touch detected while reaction bar is open"
+                                    )
+                                    closeReactionBar()
+
+                                    // Wait for up event and consume it
+                                    do {
+                                        val event = awaitPointerEvent()
+                                        event.changes.forEach { it.consume() }
+                                    } while (event.changes.any { it.pressed })
+
+                                    continue
+                                }
+
+                            }
+
+                            // Process drag events until pointer up
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                val mainPointer = event.changes.firstOrNull() ?: break
+
+                                if (!mainPointer.pressed) break
+
+                                val positionChange = mainPointer.positionChange()
+                                totalDragX += positionChange.x
+                                totalDragY += positionChange.y
+
+                                // Determine the gesture type early
+                                if (!isGestureDetermined && (abs(totalDragX) > 10f || abs(totalDragY) > 10f)) {
+                                    isGestureDetermined = true
+
+                                    // Horizontal right drag (for drawer) needs to be significantly stronger
+                                    // than vertical to avoid confusion with scroll
+                                    /*
+                                    if (abs(totalDragX) > abs(totalDragY) * 2f && totalDragX > 0) {
+                                        isDrawerGesture = true
+                                        Log.d("GestureDebug", "Detected drawer drag")
+                                    } else if (abs(totalDragY) > abs(totalDragX)) {
+                                        isScrollGesture = true
+                                        Log.d("GestureDebug", "Detected scroll gesture")
+                                    }
+
+                                     */
+
+                                    if (abs(totalDragY) > abs(totalDragX)) {
+                                        isScrollGesture = true
+                                        lockScrollMode = true
+                                    } else if (!lockScrollMode && abs(totalDragX) > abs(totalDragY) * 2f && totalDragX > 0) {
+                                        isDrawerGesture = true
+                                    }
+
+                                }
+
+                                // For scrolling, don't consume events to let them propagate
+                                //if (isScrollGesture) {
+                                //    // Intentionally not consuming events
+                               // }
+
+                                if (lockScrollMode) {
+                                    continue
+                                }
+
+                                // Handle drawer opening if in drawer gesture mode
+                                if (isDrawerGesture) {
+                                    // Consume the event to prevent other handlers from processing it
+                                    mainPointer.consume()
+
+                                    if (totalDragX > 50f && drawerState.isClosed) {
+                                        scope.launch { drawerState.open() }
+                                        break
+                                    }
+                                }
+
+
+                            }
                         }
                     }
                 }
-        ) {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-            ) { innerPadding ->
-                Column(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()
-                ) {
 
-                    Box(
+        )
+
+        {
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                ) { innerPadding ->
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            //.padding(horizontal = 16.dp)
+                            .padding(innerPadding)
+                            .fillMaxSize()
                     ) {
-                        // "My News" - Exactly centered
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                            //.padding(horizontal = 16.dp)
+                        ) {
+                            // "My News" - Exactly centered
+                            Text(
+                                text = "My News",
+                                fontWeight = FontWeight.Bold,
+                                color = CaptainBlue,
+                                fontSize = 25.sp,
+                                fontFamily = FontFamily.SansSerif,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+
+                            // Saved Articles Icon - Pinned to the top right
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(AppScreenRoutes.SavedArticlesScreen.route) {
+                                    }
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd) // Ensures it stays in the top-right
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Bookmark,
+                                    //imageVector = Icons.Outlined.BookmarkBorder,
+                                    contentDescription = "Saved Articles",
+                                    tint = CaptainBlue
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Today's date
                         Text(
-                            text = "My News",
-                            fontWeight = FontWeight.Bold,
+                            text = todayDateText(),
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
                             color = CaptainBlue,
-                            fontSize = 25.sp,
-                            fontFamily = FontFamily.SansSerif,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.align(Alignment.Center)
+                            fontSize = 20.sp,
+                            fontFamily = FontFamily.SansSerif
                         )
 
-                        // Saved Articles Icon - Pinned to the top right
-                        IconButton(
-                            onClick = {
-                                navController.navigate(AppScreenRoutes.SavedArticlesScreen.route) {
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        SearchAndFilter(
+                            newsViewModel = newsViewModel,
+                            drawerState = drawerState,
+                            scope = scope,
+                            selectedCategory = selectedCategory,
+                            searchQuery = searchQuery
+                        )
+
+
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            NewsScreen(
+                                navController = navController,
+                                newsViewModel = newsViewModel,
+                                savedArticlesViewModel = savedArticlesViewModel,
+                                articles = articles,
+                                origin = "HomeScreen",
+                                openDrawer = ::openDrawer,
+                                onLongPressRelease = { article, yCoord -> // callback from ArticleItem
+                                    Log.d(
+                                        "GestureDebug",
+                                        "Updating reaction bar state: ${article.title} at Y = $yCoord"
+                                    ) // debug
+                                    activeReactionArticle = article // store active article
+                                    activeReactionArticleYCoord = yCoord // store y coordinate for correct placement
+                                },
+                                listState = listState,
+                            ) // Display news
+
+                            // render the Reaction Bar if an article is long pressed and released
+                            // CL: Fixed reaction bar handling with proper positioning and event bubbling prevention
+                            if (activeReactionArticle != null) {
+                                // CL: Semi-transparent overlay to capture clicks outside reaction bar
+                                Box(
+
+                                    // works - pre dimming entire screen
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        //.background(Color.Black.copy(alpha = 0.3f)) // dim
+                                        .zIndex(5f)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null // No ripple effect
+                                        ) {
+                                            Log.d("GestureDebug", "CL: Overlay clicked - closing reaction bar")
+                                            closeReactionBar()
+                                        }
+
+                                )
+
+                                // CL: Position the reaction bar at the correct Y coordinate
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .zIndex(10f)
+                                ) {
+                                    val density = LocalDensity.current // get density in a Composable-safe way
+                                    val itemHeightPx = with(density) { 130.dp.toPx() }.toInt() // convert once before .offset {}
+                                    ReactionBar(
+                                        onReactionSelected = { reaction ->
+                                            // CL: Properly log the reaction and close after delay
+                                            Log.d("GestureDebug", "CL: Selected reaction: $reaction for ${activeReactionArticle?.title}")
+                                            scope.launch {
+                                                // CL: Consider showing some feedback to user here
+                                                delay(1000) // shorter delay for better UX
+                                                closeReactionBar()
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.8f) // 80% width for better appearance
+                                            .wrapContentHeight()
+                                            .align(Alignment.TopCenter) // center horizontally
+
+                                             //WORKS EXCEPT FOR EDGE CASE WHERE SCROLLING AND REACTING TO HALF CUT OFF ARTICLE
+                                            // CL: Properly position at the tap location
+                                            .offset {
+                                                // CL: Calculate position based on the recorded Y coordinate
+                                                IntOffset(
+                                                    0,
+                                                    activeReactionArticleYCoord.roundToInt() - 610 // offset up slightly was -60 as offset
+                                                )
+                                            }
+
+                                            .onGloballyPositioned { layoutCoordinates ->
+                                                reactionBarBounds = layoutCoordinates.boundsInRoot() // store reaction bar position
+
+                                            }
+
+                                    )
                                 }
-                            },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd) // Ensures it stays in the top-right
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Bookmark,
-                                //imageVector = Icons.Outlined.BookmarkBorder,
-                                contentDescription = "Saved Articles",
-                                tint = CaptainBlue
-                            )
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Today's date
-                    Text(
-                        text = todayDateText(),
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = CaptainBlue,
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    SearchAndFilter(newsViewModel = newsViewModel,
-                              drawerState = drawerState,
-                              scope = scope,
-                              selectedCategory = selectedCategory,
-                              searchQuery = searchQuery)
-
-
-                    NewsScreen(
-                        navController = navController,
-                        newsViewModel = newsViewModel,
-                        savedArticlesViewModel = savedArticlesViewModel,
-                        articles = articles,
-                        origin = "HomeScreen",
-                        openDrawer = ::openDrawer,
-                    ) // Display news
-
                 }
             }
         }
     }
+
+
+
+
+
+
+
+
 }
 
 @Composable
