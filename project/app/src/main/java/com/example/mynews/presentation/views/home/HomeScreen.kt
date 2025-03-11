@@ -3,10 +3,15 @@ package com.example.mynews.presentation.views.home
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.BorderStroke
@@ -489,6 +494,7 @@ fun HomeScreen(
                                 listState = listState,
                             ) // Display news
 
+
                             // render the Reaction Bar if an article is long pressed and released
                             // CL: Fixed reaction bar handling with proper positioning and event bubbling prevention
                             if (activeReactionArticle != null) {
@@ -514,6 +520,7 @@ fun HomeScreen(
                                         }
 
                                 )
+
 
 
 
@@ -572,13 +579,16 @@ fun HomeScreen(
                                         )
                                     }
                                 }
-                            }
+
+                            } // end of if activeReactionArticle != null
+
                         }
                     }
-                }
+                } // end of scaffold
+
             }
         }
-    }
+    } // end of modal navigation drawer
 }
 
 @Composable
@@ -732,85 +742,8 @@ fun DrawerContent(
     }
 }
 
+
 /*
-// does not work for animation - with animation
-@Composable
-fun ReactionBar(
-    article: Article,
-    newsViewModel: NewsViewModel,
-    selectedReaction: MutableState<String?>,
-    onReactionSelected: (String?) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    AnimatedVisibility(
-        visible = true,
-        enter = scaleIn(
-            initialScale = 0.9f,
-            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium)
-        ) + slideInHorizontally(
-            initialOffsetX = { -it / 4 },
-            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium)
-        ),
-        modifier = modifier
-    ) {
-        Card(
-            modifier = Modifier
-                .wrapContentWidth()
-                .height(50.dp)
-                .shadow(8.dp, shape = RoundedCornerShape(25.dp)),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .horizontalScroll(rememberScrollState()),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😡", "😂")
-                reactions.forEachIndexed { index, reaction ->
-                    val isSelected = reaction == selectedReaction.value
-                    val scale by animateFloatAsState(
-                        targetValue = 1.0f,
-                        animationSpec = keyframes {
-                            durationMillis = 600
-                            0.9f at 0
-                            1.2f at 150 with FastOutSlowInEasing
-                            0.95f at 300 with FastOutSlowInEasing
-                            1.0f at 450 with FastOutSlowInEasing
-                            delayMillis = index * 50
-                        },
-                        label = "ReactionJiggle"
-                    )
-
-                    Text(
-                        text = reaction,
-                        fontSize = 24.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable {
-                                Log.d("GestureDebug", "isSelected for ${selectedReaction.value} is: $isSelected")
-                                val newReaction = if (isSelected) null else reaction
-                                onReactionSelected(newReaction)
-                                newsViewModel.updateReaction(article, newReaction)
-                            }
-                            .background(
-                                if (isSelected) Color(0xFFD2E4FF) else Color.Transparent,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(4.dp)
-                            .scale(scale)
-                    )
-                }
-            }
-        }
-    }
-}
-
- */
-
-
 // works - no animation
 @Composable
 fun ReactionBar(
@@ -866,9 +799,117 @@ fun ReactionBar(
     }
 }
 
+ */
 
 
 
+// works - wave
+@Composable
+fun ReactionBar(
+    article: Article,
+    newsViewModel: NewsViewModel,
+    selectedReaction: MutableState<String?>,
+    onReactionSelected: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Animation state for the bar
+    var shouldAnimate by remember { mutableStateOf(false) }
+    var shouldJiggle by remember { mutableStateOf(false) } // Trigger jiggle after bounce
+
+    // Trigger animations sequentially
+    LaunchedEffect(Unit) {
+        shouldAnimate = true // Start bounce immediately
+        delay(520) // Wait for bounce to finish (almost matches durationMillis)
+        shouldJiggle = true // Start jiggle right after
+    }
+
+    // Bar bounce-in effect (unchanged)
+    val bounceScale by animateFloatAsState(
+        targetValue = if (shouldAnimate) 1f else 0.85f,
+        animationSpec = keyframes {
+            durationMillis = 600
+            0.85f at 0
+            1.12f at 150 with FastOutSlowInEasing
+            0.98f at 300 with FastOutSlowInEasing
+            1.03f at 450 with FastOutSlowInEasing
+            1.00f at 600 with FastOutSlowInEasing
+        },
+        label = "BounceScale"
+    )
+
+    val offsetY by animateFloatAsState(
+        targetValue = if (shouldAnimate) 0f else 40f,
+        animationSpec = keyframes {
+            durationMillis = 600
+            40f at 0
+            -6f at 250 with FastOutSlowInEasing
+            0f at 500 with FastOutSlowInEasing
+        },
+        label = "OffsetY"
+    )
+
+    Box(
+        modifier = modifier
+            .offset(y = offsetY.dp)
+            .scale(bounceScale)
+    ) {
+        Card(
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(50.dp)
+                .shadow(8.dp, shape = RoundedCornerShape(25.dp)),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😡", "😂")
+                reactions.forEachIndexed { index, reaction ->
+                    val isSelected = reaction == selectedReaction.value
+
+                    // Icon jiggle effect (starts after bounce)
+                    val jiggleScale by animateFloatAsState(
+                        targetValue = if (shouldJiggle) 1f else 0.9f,
+                        animationSpec = keyframes {
+                            durationMillis = 600 // Short, snappy jiggle
+                            0.9f at 0 // Start slightly smaller
+                            1.3f at 150 with FastOutSlowInEasing // Big pop
+                            0.85f at 300 with FastOutSlowInEasing // Dip
+                            1.1f at 450 with FastOutSlowInEasing // Small rebound
+                            1.0f at 600 with FastOutSlowInEasing // Settle
+                            delayMillis = index * 50 // Staggered ripple
+                        },
+                        label = "JiggleScale"
+                    )
+
+                    Text(
+                        text = reaction,
+                        fontSize = 24.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable {
+                                Log.d("GestureDebug", "isSelected for ${selectedReaction.value} is: $isSelected")
+                                val newReaction = if (isSelected) null else reaction
+                                onReactionSelected(newReaction)
+                                newsViewModel.updateReaction(article, newReaction)
+                            }
+                            .background(
+                                if (isSelected) Color(0xFFD2E4FF) else Color.Transparent,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(4.dp)
+                            .scale(jiggleScale) // Apply jiggle scale
+                    )
+                }
+            }
+        }
+    }
+}
 
 /*
 @Preview(showBackground = true)
