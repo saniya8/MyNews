@@ -466,7 +466,7 @@ fun ArticleItem(
 
                                 // y coord correct for all articles, even on scroll, except
                                 // top article if partially cut off
-                                if (wasLongPress && !hasMoved) {
+                                /*if (wasLongPress && !hasMoved) {
                                     Log.d("GestureDebug", "Long press released, showing reaction bar")
 
                                     var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
@@ -489,6 +489,45 @@ fun ArticleItem(
                                     if (listState.firstVisibleItemIndex == 0) {
                                         updatedYCoord = firstVisibleItemOffset
                                     }
+
+                                    Log.d("GestureDebug", "Final updatedYCoord: $updatedYCoord")
+
+                                    onLongPressRelease(article, updatedYCoord)
+                                    continue
+                                }*/
+
+                                // y coord correct for all articles, even on scroll, and also correct for
+                                // top article if partially cut off
+                                if (wasLongPress && !hasMoved) {
+                                    Log.d("GestureDebug", "Long press released, showing reaction bar")
+
+                                    // Get the article's Y position in root coordinates
+                                    var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
+
+                                    // Get scroll state details
+                                    val firstVisibleItemOffset = listState.firstVisibleItemScrollOffset.toFloat()
+                                    val firstVisibleItemIndex = listState.firstVisibleItemIndex
+
+                                    Log.d("GestureDebug", "Original updatedYCoord: $updatedYCoord")
+                                    Log.d("GestureDebug", "First Visible Item Offset: $firstVisibleItemOffset")
+                                    Log.d("GestureDebug", "First Visible Item Index: $firstVisibleItemIndex")
+
+                                    // Define a minimum Y-coordinate (e.g., just below search bar or top of screen)
+                                    val minYCoord = 460f // Adjust this based on your header/search bar height
+
+                                    // If the article's top is scrolled out of view (negative or too small Y),
+                                    // clamp it to the top of the visible area
+                                    if (firstVisibleItemIndex == 0 && updatedYCoord < minYCoord) {
+                                        Log.d("GestureDebug", "Top article partially off-screen, clamping Y to minYCoord")
+                                        updatedYCoord = minYCoord
+                                    } else {
+                                        // For articles fully in view, ensure reaction bar is above the article
+                                        // You might subtract a small offset if needed (e.g., reaction bar height)
+                                        updatedYCoord -= 5f // Optional: fine-tune to position "just above"
+                                    }
+
+                                    // Ensure it doesn't go below a sensible minimum (safety check)
+                                    updatedYCoord = maxOf(updatedYCoord, minYCoord)
 
                                     Log.d("GestureDebug", "Final updatedYCoord: $updatedYCoord")
 
@@ -637,6 +676,7 @@ fun ArticleItem(
 
 }
 
+/*
 @Composable
 fun ReactionBar(
     onReactionSelected: (String) -> Unit,
@@ -671,6 +711,10 @@ fun ReactionBar(
         }
     }
 }
+
+ */
+
+
 
 /*
 @Preview(showBackground = true)

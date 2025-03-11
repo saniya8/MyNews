@@ -34,7 +34,7 @@ class SavedArticlesViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
+                Log.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
@@ -58,7 +58,7 @@ class SavedArticlesViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
+                Log.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
@@ -85,13 +85,13 @@ class SavedArticlesViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
+                Log.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
             // at this point, successfully retrieved current user
 
-            savedArticlesRepository.fetchSavedArticles(userID) { userSavedArticles ->
+            savedArticlesRepository.getSavedArticles(userID) { userSavedArticles ->
                 Log.d("SavedArticlesViewModel", "Successfully fetched ${userSavedArticles.size} articles")
                 _savedArticles.postValue(userSavedArticles) // ViewModel updates UI state
             }

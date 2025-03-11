@@ -11,6 +11,28 @@ class FriendsRepositoryImpl (
     private val firestore : FirebaseFirestore
 ): FriendsRepository {
 
+    /*
+
+    // we store the friend user IDs as the document IDs so we can manage friendships and in the
+    // front end, display the usernames (e.g., on social screen or friend activity screen)
+    // and in the backend, retrieve their reactions etc by:
+    // a) for a user, retrieving their friend's username from the friends collection and
+    // b) using the friend's username to access their reactions/other info from the reactions
+    // collection
+
+        friends (Collection)
+        ├── userID (Document)
+        │   ├── users_friends (Sub-collection)
+        │   │   ├── friend1 user ID (Document)
+        │   │   │   ├── username
+        │   │   │   ├── timestamp
+        │   │   ├── friend2 user ID (Document)
+        │   │   │   ├── username
+        │   │   │   ├── timestamp
+
+     */
+
+
     // addFriend: adds friend in firestore and returns true if it was successful, and false
     // otherwise
     override suspend fun addFriend(currentUserID: String, friendUsername: String,

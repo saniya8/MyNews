@@ -61,8 +61,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideNewsRepository(
+        firestore: FirebaseFirestore
     ): NewsRepository {
-        return NewsRepositoryImpl()
+        return NewsRepositoryImpl(firestore)
     }
 
     @Provides

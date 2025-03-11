@@ -34,7 +34,7 @@ fun SavedArticlesScreen(
     val emptyListState = rememberLazyListState()
 
     // no need for LaunchedEffect based on articles value because
-    // in SavedArticlesViewModel's fetchSavedArticles, addSnapshotListener is used meaning
+    // in SavedArticlesViewModel's getSavedArticles, addSnapshotListener is used meaning
     // whenever articles subcollection is updated, firestore detects a change in real time and
     // in that function, triggers _savedArticles.postValue(userSavedArticles) which updates
     // _savedArticles which updates savedArticles in the view model. Since SavedArticlesScreen

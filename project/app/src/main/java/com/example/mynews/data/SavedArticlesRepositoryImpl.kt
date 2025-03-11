@@ -130,7 +130,7 @@ class SavedArticlesRepositoryImpl @Inject constructor(
 
     }
 
-    override fun fetchSavedArticles(userID: String, onResult: (List<Article>) -> Unit) {
+    override fun getSavedArticles(userID: String, onResult: (List<Article>) -> Unit) {
 
         firestore.collection("saved_articles")
             .document(userID)

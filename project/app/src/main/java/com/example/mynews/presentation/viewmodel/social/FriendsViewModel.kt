@@ -41,7 +41,7 @@ class FriendsViewModel @Inject constructor(
     val users: LiveData<List<String>> = _users
 
 
-    // SK: rewrite this function to be identical to savedArticlesViewModel's fetchSavedArticles
+    // SK: rewrite this function to be identical to savedArticlesViewModel's getSavedArticles
     // EXCEPT here, call,
     // friendsRepository.getFriends(userID) { friendsList ->
     //                Log.d("Get friend", "Successfully fetched friends")

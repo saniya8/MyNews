@@ -13,16 +13,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.mynews.domain.repositories.NewsRepository
+import com.example.mynews.domain.repositories.UserRepository
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
+    private val userRepository: UserRepository,
     private val newsRepository: NewsRepository
-): ViewModel() {
+) : ViewModel() {
 
     private val _articles = MutableLiveData<List<Article>>()
+
     // Expose the private _articles as articles to the UI so we can observe
     // articles live data in the UI
     val articles: LiveData<List<Article>> = _articles
+
+    private val _articleReactions = MutableLiveData<Map<String, String?>>()
+    val articleReactions: LiveData<Map<String, String?>> = _articleReactions
 
     private var hasFetchedNews = false // tracks if API call was made
 
@@ -34,6 +40,41 @@ class NewsViewModel @Inject constructor(
     // - Swiping between tabs like Home, Social, Goals, and Settings
     // - Close app but do not swipe to clear it from memory
 
+
+    // In init, call trackReactions, and post the input to onReactionChanged (aka userArticleReactions)
+    // to the _articleReactions
+    // trackReactions only needs to be called once in init. This call will attach the snapshot
+    // listener defined in trackReactions to the users_reactions collection. This means that
+    // trackReactions will listen for any changes in the users_reactions, and if there is any change
+    // it will update _articleReactions, which will update articleReactions. The View that observes
+    // articleReactions will therefore automatically update. So, for example, when the user 
+    // selects/deselects a reaction, it calls updateReaction here, which calls setReaction in the
+    // NewsRepositoryImpl, which makes a change to users_reactions. Since trackReactions is listening
+    // to this via the snapshot listener, it will automatically trigger _articleReactions to
+    // update.
+
+
+
+
+
+    // WORKS - just doesnt work for tiny tiny delay in highlighting selected reaction upon opening reaction bar
+    init {
+        viewModelScope.launch {
+
+            // get current user
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            newsRepository.trackReactions(userID) { userArticleReactions ->
+                Log.d("ReactionDebug", "Received reactions update: $userArticleReactions")
+                _articleReactions.postValue(userArticleReactions)
+            }
+        }
+    }
 
     // for initial news display
     fun fetchTopHeadlines(forceFetch: Boolean = false) {
@@ -54,7 +95,7 @@ class NewsViewModel @Inject constructor(
 
             //Log.i("NewsAPI Response", "Response Code: ${response.code()}")
 
-            if(response.isSuccessful) {
+            if (response.isSuccessful) {
 
                 //Log.i("NewsAPI Response: ", response.body().toString())
 
@@ -65,7 +106,6 @@ class NewsViewModel @Inject constructor(
                 //newsResponse?.articles?.forEach { article ->
                 //    Log.i("NewsAPI Response", "Title: ${article.title}")
                 //}
-
 
 
                 // Assign articles to the mutable live data _articles
@@ -116,7 +156,7 @@ class NewsViewModel @Inject constructor(
 
             val response = newsRepository.getTopHeadlinesByCategory(category)
 
-            if(response.isSuccessful) {
+            if (response.isSuccessful) {
                 val newsResponse = response.body()
                 // Assign articles to the mutable live data _articles
                 newsResponse?.articles?.let {
@@ -128,13 +168,12 @@ class NewsViewModel @Inject constructor(
             }
 
 
-
         }
 
     }
 
     // for searching
-    fun fetchEverythingBySearch(searchQuery : String) {
+    fun fetchEverythingBySearch(searchQuery: String) {
 
 
         viewModelScope.launch {
@@ -144,7 +183,7 @@ class NewsViewModel @Inject constructor(
 
             val response = newsRepository.getEverythingBySearch(searchQuery)
 
-            if(response.isSuccessful) {
+            if (response.isSuccessful) {
                 val newsResponse = response.body()
                 // Assign articles to the mutable live data _articles
                 newsResponse?.articles?.let {
@@ -157,5 +196,47 @@ class NewsViewModel @Inject constructor(
         }
 
     }
+
+
+
+    // for retrieving user's reaction for a specific article
+
+    fun fetchReaction(article: Article, onResult: (String?) -> Unit) {
+        viewModelScope.launch {
+
+            // get current user
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            val reaction = newsRepository.getReaction(userID, article)
+            onResult(reaction) // return the result directly to the UI
+        }
+    }
+
+    fun updateReaction(article: Article, reaction: String?) {
+
+        viewModelScope.launch {
+
+            // get current user
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            newsRepository.setReaction(userID, article, reaction)
+
+        }
+
+    }
+
+
+
+
 
 }

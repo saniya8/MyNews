@@ -1,6 +1,14 @@
 package com.example.mynews.presentation.views.home
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +57,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -60,6 +69,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -95,6 +106,10 @@ fun HomeScreen(
 ) {
 
     val articles by newsViewModel.articles.observeAsState(emptyList())
+    val articleReactions by newsViewModel.articleReactions.observeAsState(emptyMap())
+
+
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
     val scope = rememberCoroutineScope() // Required for controlling the drawer
 
@@ -106,6 +121,15 @@ fun HomeScreen(
     var reactionBarBounds by remember { mutableStateOf<Rect?>(null) } //  does NOT trigger recompositions unless the variable is directly used inside a Composable UI element (which this isn't)
     val listState = rememberLazyListState()
 
+    var selectedReaction = remember { mutableStateOf<String?>(null) } // track the selected reaction
+    var isFetchingReaction by remember { mutableStateOf(false) } // New loading state
+
+
+    /*val displayedReaction by remember {
+        derivedStateOf { selectedReaction } // ensures immediate recomposition
+    }
+
+     */
 
     fun openDrawer() {
         scope.launch { drawerState.open() }
@@ -113,6 +137,8 @@ fun HomeScreen(
 
     fun closeReactionBar() {
         activeReactionArticle = null
+        selectedReaction.value = null
+        isFetchingReaction = false
     }
 
     LaunchedEffect(Unit) {
@@ -183,10 +209,37 @@ fun HomeScreen(
         Log.i("FlickerBug", "----------------------")
     }
 
+    /*
     LaunchedEffect(activeReactionArticle) {
-        Log.d("GestureDebug", "Recomposing! activeReactionArticle = $activeReactionArticle")
+        activeReactionArticle?.let { article ->
 
+            /*
+            val storedReaction = articleReactions[article.url]
+
+            // this launched effect is use as a backup to ensure UI updates in real-time
+            // it only runs if onLongPressRelease was delayed in updating selectedReaction
+
+
+            if (selectedReaction.value != storedReaction) { // meaning onLongPressRelease did not update selectedReaction in time to be the stored reaction
+                Log.d("GestureDebug", "Syncing selectedReaction: $selectedReaction -> $storedReaction")
+                selectedReaction.value = storedReaction
+            }
+
+             */
+
+            selectedReaction.value = articleReactions[article.url] //  immediately set UI
+
+            newsViewModel.fetchReaction(article) { reaction ->
+                if (reaction != selectedReaction.value) {
+                    selectedReaction.value = reaction // ensure accuracy without flicker
+                }
+            }
+
+        }
     }
+
+     */
+
 
     // CL: Add a remember state to track drawer drag gesture
     val isDraggingDrawer = remember { mutableStateOf(false) }
@@ -400,8 +453,38 @@ fun HomeScreen(
                                         "GestureDebug",
                                         "Updating reaction bar state: ${article.title} at Y = $yCoord"
                                     ) // debug
+
+                                    val cachedReaction = articleReactions[article.url] // debug
+                                    Log.d("ReactionDebug", "Setting selectedReaction to: $cachedReaction") // debug
+
+                                    selectedReaction.value = articleReactions[article.url] // cached reaction
                                     activeReactionArticle = article // store active article
                                     activeReactionArticleYCoord = yCoord // store y coordinate for correct placement
+                                    isFetchingReaction = true // Start loading
+
+                                    // fetch the selected reaction for initial UI update when reaction bar loads
+
+                                    // NEWFIX
+                                    // set this immediately based on what is in articleReactions to immediately
+                                    // update UI
+
+                                    newsViewModel.fetchReaction(article) { reaction ->
+                                        Log.d("ReactionDebug", "Selected ReactionValue pre-fetch: $selectedReaction.value")
+                                        Log.d(
+                                            "ReactionDebug",
+                                            "Fetched reaction: $reaction for ${article.title}"
+                                        )
+                                        if (reaction !== selectedReaction.value) { // NEWFIX
+                                            // need the above to immediately update UI without delay
+                                            // but this is here in case what's in firestore is for some small
+                                            // chance different than the cached reaction (e.g., local cache is
+                                            // different)
+                                            selectedReaction.value = reaction // store the fetched reaction
+
+                                        }
+                                        isFetchingReaction = false // always reset when fetch completes; this will trigger reaction bar to open and also trigger animation
+                                    }
+
                                 },
                                 listState = listState,
                             ) // Display news
@@ -409,7 +492,12 @@ fun HomeScreen(
                             // render the Reaction Bar if an article is long pressed and released
                             // CL: Fixed reaction bar handling with proper positioning and event bubbling prevention
                             if (activeReactionArticle != null) {
+
+                                //val currentReaction = articleReactions[activeReactionArticle!!.url] // get the selected reaction -> for live updates during changes to selection
+                                //selectedReaction.value = articleReactions[activeReactionArticle!!.url]
                                 // CL: Semi-transparent overlay to capture clicks outside reaction bar
+
+
                                 Box(
 
                                     // works - pre dimming entire screen
@@ -427,45 +515,62 @@ fun HomeScreen(
 
                                 )
 
-                                // CL: Position the reaction bar at the correct Y coordinate
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .zIndex(10f)
-                                ) {
-                                    val density = LocalDensity.current // get density in a Composable-safe way
-                                    val itemHeightPx = with(density) { 130.dp.toPx() }.toInt() // convert once before .offset {}
-                                    ReactionBar(
-                                        onReactionSelected = { reaction ->
-                                            // CL: Properly log the reaction and close after delay
-                                            Log.d("GestureDebug", "CL: Selected reaction: $reaction for ${activeReactionArticle?.title}")
-                                            scope.launch {
-                                                // CL: Consider showing some feedback to user here
-                                                delay(1000) // shorter delay for better UX
-                                                closeReactionBar()
-                                            }
-                                        },
+
+
+                                // works - without animation
+                                if (!isFetchingReaction) {
+
+                                    // CL: Position the reaction bar at the correct Y coordinate
+                                    Box(
                                         modifier = Modifier
-                                            .fillMaxWidth(0.8f) // 80% width for better appearance
-                                            .wrapContentHeight()
-                                            .align(Alignment.TopCenter) // center horizontally
+                                            .fillMaxSize()
+                                            .zIndex(10f)
+                                    ) {
+                                        val density =
+                                            LocalDensity.current // get density in a Composable-safe way
+                                        val itemHeightPx =
+                                            with(density) { 130.dp.toPx() }.toInt() // convert once before .offset {}
+                                        ReactionBar(
+                                            article = activeReactionArticle!!,
+                                            newsViewModel = newsViewModel,
+                                            selectedReaction = selectedReaction,
+                                            onReactionSelected = { reaction ->
 
-                                             //WORKS EXCEPT FOR EDGE CASE WHERE SCROLLING AND REACTING TO HALF CUT OFF ARTICLE
-                                            // CL: Properly position at the tap location
-                                            .offset {
-                                                // CL: Calculate position based on the recorded Y coordinate
-                                                IntOffset(
-                                                    0,
-                                                    activeReactionArticleYCoord.roundToInt() - 610 // offset up slightly was -60 as offset
+                                                selectedReaction.value = reaction
+                                                // CL: Properly log the reaction and close after delay
+                                                Log.d(
+                                                    "GestureDebug",
+                                                    "CL: Selected reaction: $reaction for ${activeReactionArticle?.title}"
                                                 )
-                                            }
+                                                scope.launch {
+                                                    // CL: Consider showing some feedback to user here
+                                                    delay(1000) // shorter delay for better UX
+                                                    closeReactionBar()
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .fillMaxWidth(0.8f) // 80% width for better appearance
+                                                .wrapContentHeight()
+                                                .align(Alignment.TopCenter) // center horizontally
 
-                                            .onGloballyPositioned { layoutCoordinates ->
-                                                reactionBarBounds = layoutCoordinates.boundsInRoot() // store reaction bar position
+                                                //WORKS EXCEPT FOR EDGE CASE WHERE SCROLLING AND REACTING TO HALF CUT OFF ARTICLE
+                                                // CL: Properly position at the tap location
+                                                .offset {
+                                                    // CL: Calculate position based on the recorded Y coordinate
+                                                    IntOffset(
+                                                        0,
+                                                        activeReactionArticleYCoord.roundToInt() - 610 // offset up slightly was -60 as offset
+                                                    )
+                                                }
 
-                                            }
+                                                .onGloballyPositioned { layoutCoordinates ->
+                                                    reactionBarBounds =
+                                                        layoutCoordinates.boundsInRoot() // store reaction bar position
 
-                                    )
+                                                }
+
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -474,14 +579,6 @@ fun HomeScreen(
             }
         }
     }
-
-
-
-
-
-
-
-
 }
 
 @Composable
@@ -634,6 +731,155 @@ fun DrawerContent(
         }
     }
 }
+
+/*
+// does not work for animation - with animation
+@Composable
+fun ReactionBar(
+    article: Article,
+    newsViewModel: NewsViewModel,
+    selectedReaction: MutableState<String?>,
+    onReactionSelected: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = true,
+        enter = scaleIn(
+            initialScale = 0.9f,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium)
+        ) + slideInHorizontally(
+            initialOffsetX = { -it / 4 },
+            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium)
+        ),
+        modifier = modifier
+    ) {
+        Card(
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(50.dp)
+                .shadow(8.dp, shape = RoundedCornerShape(25.dp)),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😡", "😂")
+                reactions.forEachIndexed { index, reaction ->
+                    val isSelected = reaction == selectedReaction.value
+                    val scale by animateFloatAsState(
+                        targetValue = 1.0f,
+                        animationSpec = keyframes {
+                            durationMillis = 600
+                            0.9f at 0
+                            1.2f at 150 with FastOutSlowInEasing
+                            0.95f at 300 with FastOutSlowInEasing
+                            1.0f at 450 with FastOutSlowInEasing
+                            delayMillis = index * 50
+                        },
+                        label = "ReactionJiggle"
+                    )
+
+                    Text(
+                        text = reaction,
+                        fontSize = 24.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable {
+                                Log.d("GestureDebug", "isSelected for ${selectedReaction.value} is: $isSelected")
+                                val newReaction = if (isSelected) null else reaction
+                                onReactionSelected(newReaction)
+                                newsViewModel.updateReaction(article, newReaction)
+                            }
+                            .background(
+                                if (isSelected) Color(0xFFD2E4FF) else Color.Transparent,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(4.dp)
+                            .scale(scale)
+                    )
+                }
+            }
+        }
+    }
+}
+
+ */
+
+
+// works - no animation
+@Composable
+fun ReactionBar(
+    article: Article,
+    newsViewModel: NewsViewModel,
+    selectedReaction: MutableState<String?>,
+    onReactionSelected: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .wrapContentWidth()
+            .height(50.dp)
+            .background(Color.White, shape = RoundedCornerShape(25.dp)) // i think can remove this
+            .shadow(8.dp, shape = RoundedCornerShape(25.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color.White), // Reaction Bar is white
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .horizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😡", "😂")
+
+            reactions.forEach { reaction ->
+
+                val isSelected = reaction == selectedReaction.value // true if the reaction is the selectedReaction, false otherwise
+
+
+                Text(
+                    text = reaction,
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            Log.d("GestureDebug", "isSelected for ${selectedReaction} is: ${isSelected}")
+                            val newReaction = if (isSelected) null else reaction // toggle selection
+                            onReactionSelected(newReaction) // update the selectedReaction.value, close the reaction bar after 1 sec delay, do this first so UI doesnt flicker
+                            newsViewModel.updateReaction(article, newReaction) // then update in backend
+
+                        }
+                        .background(
+                            if (isSelected) Color(0xFFD2E4FF) else Color.Transparent, // highlight selected reaction to indicate selected
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(4.dp)
+                )
+            }
+        }
+    }
+}
+
+
+
+
+
+/*
+@Preview(showBackground = true)
+@Composable
+fun PreviewReactionBar() {
+    ReactionBar(
+        onReactionSelected = { reaction -> Log.d("ReactionBar", "Selected: $reaction") }
+    )
+}
+
+ */
 
 
 
