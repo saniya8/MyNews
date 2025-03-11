@@ -6,9 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.data.api.Article
-//import com.kwabenaberko.newsapilib.NewsApiClient
-//import com.kwabenaberko.newsapilib.models.request.TopHeadlinesRequest
-//import com.kwabenaberko.newsapilib.models.response.ArticleResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,7 +14,6 @@ import com.example.mynews.domain.repositories.UserRepository
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val userRepository: UserRepository,
     private val newsRepository: NewsRepository
 ) : ViewModel() {
 
@@ -26,9 +22,6 @@ class NewsViewModel @Inject constructor(
     // Expose the private _articles as articles to the UI so we can observe
     // articles live data in the UI
     val articles: LiveData<List<Article>> = _articles
-
-    private val _articleReactions = MutableLiveData<Map<String, String?>>()
-    val articleReactions: LiveData<Map<String, String?>> = _articleReactions
 
     private var hasFetchedNews = false // tracks if API call was made
 
@@ -52,29 +45,6 @@ class NewsViewModel @Inject constructor(
     // NewsRepositoryImpl, which makes a change to users_reactions. Since trackReactions is listening
     // to this via the snapshot listener, it will automatically trigger _articleReactions to
     // update.
-
-
-
-
-
-    // WORKS - just doesnt work for tiny tiny delay in highlighting selected reaction upon opening reaction bar
-    init {
-        viewModelScope.launch {
-
-            // get current user
-            val userID = userRepository.getCurrentUserId()
-
-            if (userID.isNullOrEmpty()) {
-                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
-                return@launch // return
-            }
-
-            newsRepository.trackReactions(userID) { userArticleReactions ->
-                Log.d("ReactionDebug", "Received reactions update: $userArticleReactions")
-                _articleReactions.postValue(userArticleReactions)
-            }
-        }
-    }
 
     // for initial news display
     fun fetchTopHeadlines(forceFetch: Boolean = false) {
@@ -196,47 +166,5 @@ class NewsViewModel @Inject constructor(
         }
 
     }
-
-
-
-    // for retrieving user's reaction for a specific article
-
-    fun fetchReaction(article: Article, onResult: (String?) -> Unit) {
-        viewModelScope.launch {
-
-            // get current user
-            val userID = userRepository.getCurrentUserId()
-
-            if (userID.isNullOrEmpty()) {
-                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
-                return@launch // return
-            }
-
-            val reaction = newsRepository.getReaction(userID, article)
-            onResult(reaction) // return the result directly to the UI
-        }
-    }
-
-    fun updateReaction(article: Article, reaction: String?) {
-
-        viewModelScope.launch {
-
-            // get current user
-            val userID = userRepository.getCurrentUserId()
-
-            if (userID.isNullOrEmpty()) {
-                Log.e("NewsViewModel", "No user logged in. User ID is null or empty")
-                return@launch // return
-            }
-
-            newsRepository.setReaction(userID, article, reaction)
-
-        }
-
-    }
-
-
-
-
 
 }

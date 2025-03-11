@@ -22,6 +22,7 @@ import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.components.BottomNavBar
 import com.example.mynews.domain.model.BottomNavBarItem
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
+import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import com.example.mynews.utils.HomeNavGraph
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
@@ -31,6 +32,7 @@ import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 @Composable
 
 fun MainScreen(rootNavController: NavHostController,
+               homeViewModel: HomeViewModel = hiltViewModel(),
                newsViewModel: NewsViewModel = hiltViewModel(), // newsViewModel instantiated here to have one instance while app running
                savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
                friendsViewModel: FriendsViewModel = hiltViewModel(),
@@ -100,6 +102,7 @@ fun MainScreen(rootNavController: NavHostController,
         ) {
             HomeNavGraph(rootNavController = rootNavController,
                          navController = navController,
+                         homeViewModel = homeViewModel,
                          newsViewModel = newsViewModel,
                          savedArticlesViewModel = savedArticlesViewModel,
                          friendsViewModel = friendsViewModel,

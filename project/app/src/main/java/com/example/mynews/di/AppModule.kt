@@ -11,6 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import com.example.mynews.data.AuthRepositoryImpl
 import com.example.mynews.data.CondensedNewsArticleRepositoryImpl
 import com.example.mynews.data.FriendsRepositoryImpl
+import com.example.mynews.data.HomeRepositoryImpl
 import com.example.mynews.data.NewsRepositoryImpl
 import com.example.mynews.data.SavedArticlesRepositoryImpl
 import com.example.mynews.domain.repositories.AuthRepository
@@ -19,6 +20,7 @@ import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
 import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.domain.repositories.CondensedNewsArticleRepository
 import com.example.mynews.domain.repositories.FriendsRepository
+import com.example.mynews.domain.repositories.HomeRepository
 import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
@@ -60,10 +62,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNewsRepository(
+    fun provideHomeRepository(
         firestore: FirebaseFirestore
+    ): HomeRepository {
+        return HomeRepositoryImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsRepository(
     ): NewsRepository {
-        return NewsRepositoryImpl(firestore)
+        return NewsRepositoryImpl()
     }
 
     @Provides

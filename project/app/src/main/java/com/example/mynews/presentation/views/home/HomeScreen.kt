@@ -89,6 +89,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.data.api.Article
+import com.example.mynews.presentation.viewmodel.home.HomeViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -104,6 +106,7 @@ fun todayDateText() : String {
 @Composable
 fun HomeScreen(
     navController: NavHostController /*= rememberNavController()*/,
+    homeViewModel: HomeViewModel,
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
     savedArticlesViewModel: SavedArticlesViewModel,
     selectedCategory: MutableState<String?>,
@@ -111,7 +114,7 @@ fun HomeScreen(
 ) {
 
     val articles by newsViewModel.articles.observeAsState(emptyList())
-    val articleReactions by newsViewModel.articleReactions.observeAsState(emptyMap())
+    val articleReactions by homeViewModel.articleReactions.observeAsState(emptyMap())
 
 
 
@@ -129,6 +132,9 @@ fun HomeScreen(
     var selectedReaction = remember { mutableStateOf<String?>(null) } // track the selected reaction
     var isFetchingReaction by remember { mutableStateOf(false) } // New loading state
 
+    var closeJob by remember { mutableStateOf<Job?>(null) } // to track closing job - for if user selects another reaction before automatically closure
+
+
 
     /*val displayedReaction by remember {
         derivedStateOf { selectedReaction } // ensures immediate recomposition
@@ -144,6 +150,7 @@ fun HomeScreen(
         activeReactionArticle = null
         selectedReaction.value = null
         isFetchingReaction = false
+        closeJob = null
     }
 
     LaunchedEffect(Unit) {
@@ -473,7 +480,7 @@ fun HomeScreen(
                                     // set this immediately based on what is in articleReactions to immediately
                                     // update UI
 
-                                    newsViewModel.fetchReaction(article) { reaction ->
+                                    homeViewModel.fetchReaction(article) { reaction ->
                                         Log.d("ReactionDebug", "Selected ReactionValue pre-fetch: $selectedReaction.value")
                                         Log.d(
                                             "ReactionDebug",
@@ -539,7 +546,7 @@ fun HomeScreen(
                                             with(density) { 130.dp.toPx() }.toInt() // convert once before .offset {}
                                         ReactionBar(
                                             article = activeReactionArticle!!,
-                                            newsViewModel = newsViewModel,
+                                            homeViewModel = homeViewModel,
                                             selectedReaction = selectedReaction,
                                             onReactionSelected = { reaction ->
 
@@ -549,9 +556,13 @@ fun HomeScreen(
                                                     "GestureDebug",
                                                     "CL: Selected reaction: $reaction for ${activeReactionArticle?.title}"
                                                 )
-                                                scope.launch {
+
+                                                // cancel any close job if it is running
+                                                closeJob?.cancel()
+
+                                                closeJob = scope.launch {
                                                     // CL: Consider showing some feedback to user here
-                                                    delay(1000) // shorter delay for better UX
+                                                    delay(2000) // shorter delay for better UX
                                                     closeReactionBar()
                                                 }
                                             },
@@ -807,7 +818,7 @@ fun ReactionBar(
 @Composable
 fun ReactionBar(
     article: Article,
-    newsViewModel: NewsViewModel,
+    homeViewModel: HomeViewModel,
     selectedReaction: MutableState<String?>,
     onReactionSelected: (String?) -> Unit,
     modifier: Modifier = Modifier
@@ -896,7 +907,7 @@ fun ReactionBar(
                                 Log.d("GestureDebug", "isSelected for ${selectedReaction.value} is: $isSelected")
                                 val newReaction = if (isSelected) null else reaction
                                 onReactionSelected(newReaction)
-                                newsViewModel.updateReaction(article, newReaction)
+                                homeViewModel.updateReaction(article, newReaction)
                             }
                             .background(
                                 if (isSelected) Color(0xFFD2E4FF) else Color.Transparent,
