@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
+import com.example.mynews.ui.theme.BiasColors
 import com.example.mynews.utils.AppScreenRoutes
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -595,82 +596,131 @@ fun ArticleItem(
 
             }
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
 
+
+            Box( // wrap everything inside a Box so political bias flag placed correctly
+                modifier = Modifier.fillMaxSize()
             ) {
-                // Show the thumbnail
-
-                Log.d("CoilDebug", "Loading image URL: ${article.urlToImage}")
 
 
-                val placeholderImage: String =
-                    "https://s.france24.com/media/display/e6279b3c-db08-11ee-b7f5-005056bf30b7/w:1024/p:16x9/news_en_1920x1080.jpg"
+                // political bias flag
 
-                val articleImageUrl = if (article.urlToImage?.startsWith("https") == true) {
-                    // use the article.urlToImage only if it is non-null and starts with "https"
-                    // so image is retrieved correctly
-                    article.urlToImage
-                } else {
-                    // if article.urlToImage is null, or if article.urlToImage is not null but
-                    // doesn't start with "https", then use the placeholder image
-                    placeholderImage
-                }
+                val bias = newsViewModel.fetchBiasForSource(article.source.name)
+                val biasColor = BiasColors.getBiasColour(bias)
 
-                AsyncImage(
-                    model = articleImageUrl /*article.urlToImage?: placeholderImage*/,
-                    contentDescription = "Article Image",
-                    modifier = Modifier.size(80.dp)
-                        .size(80.dp) // fixing image to fixed square size
-                        .aspectRatio(1f),
-                    contentScale = ContentScale.Crop
+                Box(
+                    modifier = Modifier
+                        .size(width = 12.dp, height = 18.dp) // Fixed size for now
+                        .background(biasColor) // Placeholder color (to be updated)
+                        .align(Alignment.TopEnd) // Position in the top right
+                        .padding(4.dp) // Small padding from edges
                 )
 
-                Column(
-                    modifier = Modifier.fillMaxSize()
 
-                        .padding(start = 8.dp) // gap between Date at top of page and the scrollable articles
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+
                 ) {
+                    // Show the thumbnail
 
-                    // show the article title
-                    Text(
-                        text = article.title,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis // cuts off text with "..."
+                    Log.d("CoilDebug", "Loading image URL: ${article.urlToImage}")
+
+
+                    val placeholderImage: String =
+                        "https://s.france24.com/media/display/e6279b3c-db08-11ee-b7f5-005056bf30b7/w:1024/p:16x9/news_en_1920x1080.jpg"
+
+                    val articleImageUrl = if (article.urlToImage?.startsWith("https") == true) {
+                        // use the article.urlToImage only if it is non-null and starts with "https"
+                        // so image is retrieved correctly
+                        article.urlToImage
+                    } else {
+                        // if article.urlToImage is null, or if article.urlToImage is not null but
+                        // doesn't start with "https", then use the placeholder image
+                        placeholderImage
+                    }
+
+                    AsyncImage(
+                        model = articleImageUrl /*article.urlToImage?: placeholderImage*/,
+                        contentDescription = "Article Image",
+                        modifier = Modifier.size(80.dp)
+                            .size(80.dp) // fixing image to fixed square size
+                            .aspectRatio(1f),
+                        contentScale = ContentScale.Crop
                     )
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp) // adds space between the two Text objects
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        // show the source
-                        Text(
-                            text = article.source.name,
-                            maxLines = 1,
-                            fontSize = 14.sp
-                        )
 
-                        Text(
-                            text = "Condensed Article",
-                            modifier = Modifier.clickable {
-                                // navigate to the CondensedNewsArticleScreen with article content
-                                Log.d("Condensed Debug", "Article clicked: ${article.title}")
-                                navController.navigate(
-                                    AppScreenRoutes.CondensedNewsArticleScreen.createRoute(
-                                        encodedUrl
-                                    )
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                                .weight(1f) // makes the text take available space but respects the flag
+                                .padding(start = 8.dp, end = 15.dp) // adds extra space on the right
+                                // start: the space between the article image and the text
+                                // end: the space to the right of the entire column (where column contains
+                                // article title, below it the source and Condensed Article. This ensures the
+                                // text does not overlap with the flag
+
+                            //.padding(start = 8.dp)
+                        ) {
+
+                            // show the article title
+                            Text(
+                                text = article.title,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis // cuts off text with "..."
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp) // adds space between the two Text objects
+                            ) {
+                                // show the source
+                                Text(
+                                    text = article.source.name,
+                                    maxLines = 1,
+                                    fontSize = 14.sp
                                 )
-                            },
-                            color = Color.Blue,
-                            fontSize = 14.sp
-                        )
+
+                                Text(
+                                    text = "Condensed Article",
+                                    modifier = Modifier.clickable {
+                                        // navigate to the CondensedNewsArticleScreen with article content
+                                        Log.d(
+                                            "Condensed Debug",
+                                            "Article clicked: ${article.title}"
+                                        )
+                                        navController.navigate(
+                                            AppScreenRoutes.CondensedNewsArticleScreen.createRoute(
+                                                encodedUrl
+                                            )
+                                        )
+                                    },
+                                    color = Color.Blue,
+                                    fontSize = 14.sp
+                                )
+                            }
+
+                        } // end of Column
                     }
 
+
                 }
+
             }
+
+
+
+
+
+
+
+
         } // end of Card
     } // end of Box
 

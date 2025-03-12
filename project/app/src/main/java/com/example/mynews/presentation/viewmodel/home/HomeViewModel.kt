@@ -22,6 +22,18 @@ class HomeViewModel @Inject constructor(
     private val _articleReactions = MutableLiveData<Map<String, String?>>()
     val articleReactions: LiveData<Map<String, String?>> = _articleReactions
 
+    // In init, call trackReactions, and post the input to onReactionChanged (aka userArticleReactions)
+    // to the _articleReactions
+    // trackReactions only needs to be called once in init. This call will attach the snapshot
+    // listener defined in trackReactions to the users_reactions collection. This means that
+    // trackReactions will listen for any changes in the users_reactions, and if there is any change
+    // it will update _articleReactions, which will update articleReactions. The View that observes
+    // articleReactions will therefore automatically update. So, for example, when the user
+    // selects/deselects a reaction, it calls updateReaction here, which calls setReaction in the
+    // NewsRepositoryImpl, which makes a change to users_reactions. Since trackReactions is listening
+    // to this via the snapshot listener, it will automatically trigger _articleReactions to
+    // update.
+
     init {
         viewModelScope.launch {
 

@@ -24,6 +24,8 @@ import com.example.mynews.domain.repositories.HomeRepository
 import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
 @Module
@@ -71,8 +73,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideNewsRepository(
+        @ApplicationContext context: Context
     ): NewsRepository {
-        return NewsRepositoryImpl()
+        return NewsRepositoryImpl(context)
     }
 
     @Provides

@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.UserRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
@@ -23,6 +25,10 @@ class NewsViewModel @Inject constructor(
     // articles live data in the UI
     val articles: LiveData<List<Article>> = _articles
 
+
+    private val _newsBiasMappings = MutableStateFlow<Map<String, String>>(emptyMap())
+    val newsBiasMappings: StateFlow<Map<String, String>> = _newsBiasMappings
+
     private var hasFetchedNews = false // tracks if API call was made
 
     // Based on: hasFetchedNews usage and LaunchedEffect in MainScreen,
@@ -34,17 +40,14 @@ class NewsViewModel @Inject constructor(
     // - Close app but do not swipe to clear it from memory
 
 
-    // In init, call trackReactions, and post the input to onReactionChanged (aka userArticleReactions)
-    // to the _articleReactions
-    // trackReactions only needs to be called once in init. This call will attach the snapshot
-    // listener defined in trackReactions to the users_reactions collection. This means that
-    // trackReactions will listen for any changes in the users_reactions, and if there is any change
-    // it will update _articleReactions, which will update articleReactions. The View that observes
-    // articleReactions will therefore automatically update. So, for example, when the user 
-    // selects/deselects a reaction, it calls updateReaction here, which calls setReaction in the
-    // NewsRepositoryImpl, which makes a change to users_reactions. Since trackReactions is listening
-    // to this via the snapshot listener, it will automatically trigger _articleReactions to
-    // update.
+    init {
+        // load the bias mappings
+        viewModelScope.launch {
+            _newsBiasMappings.value = newsRepository.getAllBiasMappings()
+        }
+        //Log.d("NewsBiasDebug", "NewsViewMode's _newsBiasMappings is: ${newsBiasMappings.value}")
+    }
+
 
     // for initial news display
     fun fetchTopHeadlines(forceFetch: Boolean = false) {
@@ -165,6 +168,17 @@ class NewsViewModel @Inject constructor(
             }
         }
 
+    }
+
+    fun fetchBiasForSource(sourceName: String): String {
+        //return newsRepository.getBiasForSource(sourceName) // we already preloaded the data into _newsBiasMappings in init so we can just get it from there
+        //return _newsBiasMappings.value[sourceName] ?: "Neutral"
+
+        // first check in cached bias mappings
+        _newsBiasMappings.value[sourceName]?.let { return it }
+
+        // otherwise call getBiasForSource which will do the fuzzy matching
+        return newsRepository.getBiasForSource(sourceName)
     }
 
 }
