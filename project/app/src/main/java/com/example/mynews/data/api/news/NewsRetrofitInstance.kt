@@ -1,16 +1,16 @@
-package com.example.mynews.data.api
+package com.example.mynews.data.api.news
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitInstance {
+object NewsRetrofitInstance {
 
-    private const val baseUrl = "https://newsapi.org/v2/";
+    private const val BASE_URL = "https://newsapi.org/v2/";
 
     private fun getInstance() : Retrofit {
         return Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create()) // Gson for Json parsing
             .build()
     }
 

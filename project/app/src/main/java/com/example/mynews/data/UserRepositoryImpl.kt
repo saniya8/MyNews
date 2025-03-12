@@ -14,25 +14,25 @@ class UserRepositoryImpl (
 ): UserRepository {
 
     override suspend fun addUser(user: User): Boolean {
-        return try {
+        try {
             firestore.collection("users").document(user.uid).set(user).await()
-            true
+            return true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error adding user", e)
-            false
+            return false
         }
     }
 
     // isUsernameTaken: returns true if username is already taken by another user, false otherwise
     override suspend fun isUsernameTaken(username: String): Boolean {
         Log.d("UsernameDebug", "In isUsernameTaken")
-        return try {
+        try {
             val doc = firestore.collection("usernames").document(username).get().await()
             Log.d("UsernameDebug", "Username taken? : ${doc.exists()}")
-            doc.exists() // doc.exists() is true if username is taken, false otherwise,
+            return doc.exists() // doc.exists() is true if username is taken, false otherwise,
         } catch (e: Exception) {
             Log.e("UsernameDebug", "Error checking username: ${e.message}", e)
-            true // Assume taken if Firestore query fails
+            return true // Assume taken if Firestore query fails
         }
     }
 
@@ -54,12 +54,12 @@ class UserRepositoryImpl (
 
 
     override suspend fun getUserById(userId: String): User? {
-        return try {
+        try {
             val document = firestore.collection("users").document(userId).get().await()
-            document.toObject(User::class.java)
+            return document.toObject(User::class.java)
         } catch (e: Exception) {
             Log.e("UserRepository", "Error fetching user", e)
-            null
+            return null
         }
     }
 
@@ -68,12 +68,12 @@ class UserRepositoryImpl (
     }
 
     override suspend fun deleteUserById(userId: String): Boolean {
-        return try {
+        try {
             firestore.collection("users").document(userId).delete().await()
-            true
+            return true
         } catch (e: Exception) {
             Log.e("UserRepository", "Error deleting user from firestore", e)
-            false
+            return false
         }
     }
 }

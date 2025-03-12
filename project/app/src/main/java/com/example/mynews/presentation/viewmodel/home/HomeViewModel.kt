@@ -4,12 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.Article
+import com.example.mynews.data.api.news.Article
 import com.example.mynews.domain.repositories.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.UserRepository
 
 

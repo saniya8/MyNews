@@ -1,12 +1,13 @@
 package com.example.mynews.data
 
 import com.example.mynews.domain.repositories.NewsRepository
-import com.example.mynews.data.api.NewsResponse
-import com.example.mynews.data.api.RetrofitInstance
+import com.example.mynews.data.api.news.NewsResponse
+import com.example.mynews.data.api.news.NewsRetrofitInstance
 import retrofit2.Response
 import javax.inject.Inject
 import android.content.Context
 import com.example.mynews.data.newsbias.NewsBiasProvider
+import kotlinx.coroutines.flow.StateFlow
 
 // Implementation of the NewsRepository interface in .com.example.mynews/domain/repositories
 
@@ -17,7 +18,7 @@ class NewsRepositoryImpl @Inject constructor(
 
     private val newsBiasProvider = NewsBiasProvider(context)
 
-    private val newsApi = RetrofitInstance.newsApi
+    private val newsApi = NewsRetrofitInstance.newsApi
     private val language = "en"
 
     override suspend fun getTopHeadlines(): Response<NewsResponse> {
@@ -43,13 +44,16 @@ class NewsRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun getAllBiasMappings() : Map<String, String> {
+    override suspend fun startFetchingBiasData() {
+        newsBiasProvider.startFetchingBiasData()
+    }
+
+    override fun getAllBiasMappings() : StateFlow<Map<String, String>> {
         return newsBiasProvider.getAllBiasMappings()
     }
 
-    // don't need this per newsviewmodel's fetchBiasForSource so don't need
-    // newsBiasProvider.getBiasForSource(sourceName) either but keeping in case
-    override fun getBiasForSource(sourceName: String) : String {
+
+    override suspend fun getBiasForSource(sourceName: String) : String {
         return newsBiasProvider.getBiasForSource(sourceName)
     }
 

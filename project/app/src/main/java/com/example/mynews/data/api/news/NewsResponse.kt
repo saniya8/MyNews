@@ -1,4 +1,4 @@
-package com.example.mynews.data.api
+package com.example.mynews.data.api.news
 
 data class NewsResponse(
     val articles: List<Article>,

@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.Article
+import com.example.mynews.data.api.news.Article
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
 //import com.kwabenaberko.newsapilib.NewsApiClient

@@ -2,7 +2,7 @@ package com.example.mynews.data
 
 import android.net.Uri
 import android.util.Log
-import com.example.mynews.data.api.Article
+import com.example.mynews.data.api.news.Article
 import com.example.mynews.domain.repositories.HomeRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -19,7 +19,7 @@ class HomeRepositoryImpl @Inject constructor(
 
         val safeArticleURL = Uri.encode(article.url)
 
-        return try {
+        try {
             val reactionLocation = firestore.collection("reactions")
                 .document(userID)
                 .collection("users_reactions")
@@ -27,7 +27,7 @@ class HomeRepositoryImpl @Inject constructor(
                 .get()
                 .await()
 
-            reactionLocation.getString("reaction")
+            return reactionLocation.getString("reaction")
 
         } catch (e: Exception) {
             Log.e(

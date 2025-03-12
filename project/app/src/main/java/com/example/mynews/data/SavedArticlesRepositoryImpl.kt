@@ -2,8 +2,8 @@ package com.example.mynews.data
 
 import android.net.Uri
 import android.util.Log
-import com.example.mynews.data.api.Article
-import com.example.mynews.data.api.Source
+import com.example.mynews.data.api.news.Article
+import com.example.mynews.data.api.news.Source
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -47,7 +47,7 @@ class SavedArticlesRepositoryImpl @Inject constructor(
          */
 
 
-        return try {
+        try {
             // although firestore prevents duplicate documents since article.url is document ID,
             // prevent unnecessary Firestore overwrites if the article that the user saved already
             // exists in firestore, ie was already saved previously
@@ -69,11 +69,11 @@ class SavedArticlesRepositoryImpl @Inject constructor(
             // is stored there
             articleLocation.set(article).await() // save entire article
             Log.d("SavedArticlesRepositoryImpl", "Article saved successfully: ${article.title}")
-            true
+            return true
 
         } catch (e: Exception) {
             Log.e("SavedArticlesRepositoryImpl", "Error saving article: ", e)
-            false
+            return false
         }
 
     }
@@ -102,7 +102,7 @@ class SavedArticlesRepositoryImpl @Inject constructor(
             .document(safeArticleURL) // use URL as unique document identifier to avoid saving duplicate articles
 
 
-        return try {
+        try {
 
 
             // fetch document at the article location, using await since firestore is async
@@ -121,10 +121,10 @@ class SavedArticlesRepositoryImpl @Inject constructor(
             // is stored there
             articleLocation.delete().await() // delete article
             Log.d("SavedArticlesRepositoryImpl", "Article deleted successfully: ${article.title}")
-            true
+            return true
         } catch (e: Exception) {
             Log.e("SavedArticlesRepositoryImpl", "Error deleting article: ", e)
-            false
+            return false
         }
 
 

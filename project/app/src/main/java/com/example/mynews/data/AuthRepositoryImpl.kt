@@ -138,7 +138,7 @@ class AuthRepositoryImpl (
     // version 4 - testing - version 3 + integrating stuff back from version 1
 
     override suspend fun logout(): Boolean {
-        return try {
+        try {
             val firebaseUser = FirebaseAuth.getInstance().currentUser
 
             firebaseUser?.let { user ->
@@ -151,10 +151,10 @@ class AuthRepositoryImpl (
 
             FirebaseAuth.getInstance().signOut()
             Log.d("AuthRepository", "User signed out successfully")
-            true
+            return true
         } catch (e: Exception) {
             Log.e("AuthRepository", "Error logging out user", e)
-            false
+            return false
         }
     }
 

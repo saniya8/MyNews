@@ -1,4 +1,4 @@
-package com.example.mynews.data.api
+package com.example.mynews.data.api.news
 
 import retrofit2.Response
 import retrofit2.http.GET

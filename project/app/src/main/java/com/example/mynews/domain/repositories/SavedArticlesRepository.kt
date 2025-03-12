@@ -1,6 +1,6 @@
 package com.example.mynews.domain.repositories
 
-import com.example.mynews.data.api.Article
+import com.example.mynews.data.api.news.Article
 
 interface SavedArticlesRepository {
     suspend fun saveArticle(userID: String, article: Article): Boolean

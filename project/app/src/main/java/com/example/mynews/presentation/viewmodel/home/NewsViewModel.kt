@@ -5,12 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.Article
+import com.example.mynews.data.api.news.Article
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.mynews.domain.repositories.NewsRepository
-import com.example.mynews.domain.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -43,7 +42,11 @@ class NewsViewModel @Inject constructor(
     init {
         // load the bias mappings
         viewModelScope.launch {
-            _newsBiasMappings.value = newsRepository.getAllBiasMappings()
+            val fetchJob = launch { newsRepository.startFetchingBiasData() }
+            fetchJob.join() // wait for fetching to complete before collecting below
+            newsRepository.getAllBiasMappings().collect { biasData ->
+                _newsBiasMappings.value = biasData // update when data changes
+            }
         }
         //Log.d("NewsBiasDebug", "NewsViewMode's _newsBiasMappings is: ${newsBiasMappings.value}")
     }
@@ -170,15 +173,19 @@ class NewsViewModel @Inject constructor(
 
     }
 
-    fun fetchBiasForSource(sourceName: String): String {
-        //return newsRepository.getBiasForSource(sourceName) // we already preloaded the data into _newsBiasMappings in init so we can just get it from there
-        //return _newsBiasMappings.value[sourceName] ?: "Neutral"
+    fun fetchBiasForSource(sourceName: String, onResult: (String) -> Unit) {
 
-        // first check in cached bias mappings
-        _newsBiasMappings.value[sourceName]?.let { return it }
+        // first heck in cached bias mappings
+        _newsBiasMappings.value[sourceName]?.let {
+            onResult(it)
+        }
 
-        // otherwise call getBiasForSource which will do the fuzzy matching
-        return newsRepository.getBiasForSource(sourceName)
+        // Otherwise, fetch bias asynchronously
+        viewModelScope.launch {
+            val bias = newsRepository.getBiasForSource(sourceName)
+            onResult(bias) // pass the result back
+        }
     }
+
 
 }

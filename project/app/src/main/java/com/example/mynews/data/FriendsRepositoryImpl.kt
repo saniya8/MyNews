@@ -38,7 +38,7 @@ class FriendsRepositoryImpl (
     override suspend fun addFriend(currentUserID: String, friendUsername: String,
                                    isFriendNotFound: MutableState<Boolean>
     ): Boolean {
-        return try {
+        try {
 
             // check if friend exists
 
@@ -74,11 +74,11 @@ class FriendsRepositoryImpl (
 
             Log.d("Add Friend", "Successfully added friend: $friendUsername ($friendUserID)")
 
-            true
+            return true
 
         } catch (e: Exception) {
             Log.e("Add Friend", "Error adding friend: ${e.message}", e)
-            false
+            return false
 
         }
 
@@ -90,7 +90,7 @@ class FriendsRepositoryImpl (
     // returns false otherwise
     override suspend fun removeFriend(currentUserID: String, friendUsername: String): Boolean {
 
-        return try {
+        try {
 
             // check if friend exists (should always be true because in the UI, user can only click
             // delete for friends that they see
@@ -120,11 +120,11 @@ class FriendsRepositoryImpl (
 
             Log.d("Remove Friend", "Successfully removed friend: $friendUsername ($friendUserID)")
 
-            true
+            return true
 
         } catch (e: Exception) {
             Log.e("Remove Friend", "Error adding friend: ${e.message}", e)
-            false
+            return false
 
         }
 
