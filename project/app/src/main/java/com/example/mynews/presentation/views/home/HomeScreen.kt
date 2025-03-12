@@ -65,8 +65,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.livedata.observeAsState
@@ -134,7 +136,7 @@ fun HomeScreen(
 
     var closeJob by remember { mutableStateOf<Job?>(null) } // to track closing job - for if user selects another reaction before automatically closure
 
-
+    var showBiasLegend by remember { mutableStateOf(false) } // state to track visibility of legend dialog box
 
     /*val displayedReaction by remember {
         derivedStateOf { selectedReaction } // ensures immediate recomposition
@@ -401,6 +403,19 @@ fun HomeScreen(
                                 .fillMaxWidth()
                             //.padding(horizontal = 16.dp)
                         ) {
+
+                            // Info Icon - Pinned to the top left
+                            IconButton(
+                                onClick = { showBiasLegend = true }, // open the dialog box
+                                modifier = Modifier.align(Alignment.TopStart) // stays in the top-left
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = "Info",
+                                    tint = CaptainBlue
+                                )
+                            }
+
                             // "My News" - Exactly centered
                             Text(
                                 text = "My News",
@@ -412,6 +427,7 @@ fun HomeScreen(
                                 modifier = Modifier.align(Alignment.Center)
                             )
 
+
                             // Saved Articles Icon - Pinned to the top right
                             IconButton(
                                 onClick = {
@@ -419,7 +435,7 @@ fun HomeScreen(
                                     }
                                 },
                                 modifier = Modifier
-                                    .align(Alignment.TopEnd) // Ensures it stays in the top-right
+                                    .align(Alignment.TopEnd) // stays in the top-right
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Bookmark,
@@ -428,6 +444,12 @@ fun HomeScreen(
                                     tint = CaptainBlue
                                 )
                             }
+
+                        }
+
+                        // show Bias Legend Dialog
+                        if (showBiasLegend) {
+                            BiasLegendDialog(onDismiss = { showBiasLegend = false })
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -932,6 +954,63 @@ fun PreviewReactionBar() {
 }
 
  */
+
+@Composable
+fun BiasLegendDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Bias Guide",
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, //
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        text = {
+            Column() {
+                Text(
+                    text = "Articles have a flag in their top-right corner indicating their political bias.",
+                    textAlign = TextAlign.Center, // center the explanation text
+                    modifier = Modifier.padding(bottom = 8.dp) // space before legend
+                )
+                BiasLegendItem("Left", BiasColors.Left)
+                BiasLegendItem("Lean Left", BiasColors.LeanLeft)
+                BiasLegendItem("Center", BiasColors.Center)
+                BiasLegendItem("Lean Right", BiasColors.LeanRight)
+                BiasLegendItem("Right", BiasColors.Right)
+                BiasLegendItem("Mixed", BiasColors.Mixed)
+                BiasLegendItem("Neutral", BiasColors.Neutral)
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("OK")
+            }
+        }
+    )
+}
+
+
+@Composable
+fun BiasLegendItem(label: String, color: Color) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(20.dp) // small color box
+                .background(color)
+        )
+        Spacer(modifier = Modifier.width(8.dp)) // space between box & text
+        Text(text = label, fontSize = 16.sp)
+    }
+}
+
+
 
 
 
