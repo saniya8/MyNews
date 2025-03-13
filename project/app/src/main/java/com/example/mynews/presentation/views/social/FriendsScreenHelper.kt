@@ -19,13 +19,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 
 @Composable
 fun UserItem(
@@ -59,6 +62,7 @@ fun UserItem(
 @Composable
 fun FriendsSearchBar(
     searchQuery: MutableState<String>,
+    onAddNewFriend: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -90,11 +94,10 @@ fun FriendsSearchBar(
                         // and will rerender UI
                         // UI will automatically rerender per note at the top of FriendsScreen
                         // No additional code should be required to re-render it
-                        // TODO maybe
+                        onAddNewFriend()
                     }
                 ) {
-                    // SK: update this image vector to be like a plus button to add a friend
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add friend")
                 }
             }
         )
@@ -102,8 +105,37 @@ fun FriendsSearchBar(
 }
 
 @Composable
+fun FriendItem(
+    friend: String,
+    onRemoveFriend: () -> Unit // Lambda to handle friend removal
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = friend,
+            fontSize = 16.sp,
+            modifier = Modifier.weight(1f)
+        )
+
+        IconButton(
+            onClick = onRemoveFriend
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Remove friend"
+            )
+        }
+    }
+}
+
+@Composable
 fun AddedFriendsList(
-    friends: List<String>
+    friends: List<String>,
+    viewModel: FriendsViewModel,
 ) {
     Column(
         modifier = Modifier
@@ -111,7 +143,7 @@ fun AddedFriendsList(
             .padding(16.dp)
     ) {
         Text(
-            text = "Added Friends",
+            text = "Your Friends",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -126,10 +158,9 @@ fun AddedFriendsList(
         } else {
             LazyColumn {
                 items(friends) { friend ->
-                    Text(
-                        text = friend,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                    FriendItem(
+                        friend = friend,
+                        onRemoveFriend = { viewModel.removeFriend(friend) }
                     )
                 }
             }

@@ -41,7 +41,6 @@ class FriendsRepositoryImpl (
         try {
 
             // check if friend exists
-
             val friendLocation = firestore.collection("usernames")
                                           .document(friendUsername).get().await()
             if (!friendLocation.exists()) {
@@ -51,7 +50,6 @@ class FriendsRepositoryImpl (
             }
 
             // get friend's UID from usernames collection in firestore
-
             val friendUserIDLocation = firestore.collection("usernames")
                                             .document(friendUsername)
                                             .collection("private")
@@ -130,6 +128,28 @@ class FriendsRepositoryImpl (
 
     }
 
+    // Get user's friend's Usernames
+    override suspend fun getFriendUsernames(currentUserID: String, onResult: (List<String>) -> Unit) {
+        firestore.collection("friends")
+            .document(currentUserID)
+            .collection("users_friends")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot != null) {
+                    // Map each document to the "username" field
+                    val friendUsernames = snapshot.documents.mapNotNull { it.getString("username") }
+                    Log.d("Get Friend Usernames", "Successfully retrieved friend usernames: $friendUsernames")
+                    onResult(friendUsernames)
+                } else {
+                    Log.d("Get Friend Usernames", "Firestore snapshot is null")
+                    onResult(emptyList())
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Get Friend Usernames", "Error fetching friend usernames: ${e.message}", e)
+                onResult(emptyList())
+            }
+    }
 
     // getFriends: returns a list of strings where each item in the list is the username of
     // a friend

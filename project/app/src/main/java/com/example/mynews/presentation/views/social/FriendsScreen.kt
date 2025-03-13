@@ -29,16 +29,17 @@ import com.example.mynews.utils.AppScreenRoutes
 import kotlinx.coroutines.delay
 
 //import com.example.mynews.presentation.views.social.FriendScreen
+//import com.example.mynews.presentation.views.social.FriendsScreenHelper
 
 @Composable
 fun FriendsScreen(
     navController: NavHostController,
     friendsViewModel: FriendsViewModel
 ) {
-    val users by friendsViewModel.users.observeAsState(emptyList())
-    val friends by friendsViewModel.friends.observeAsState(emptyList())
-    val filteredUsers = remember { mutableStateOf(users) }
     val searchQuery = remember { mutableStateOf("") }
+    val friends by friendsViewModel.friends.observeAsState(emptyList())
+
+    // val isFriendNotFound = FriendsViewModel.isFriendNotFound.value
 
     // SK: no other Launched Effects other than LaunchedEffect(Unit) should be needed here
     // UI will automatically render when user's friends change ie when friend added, friend removed
@@ -63,12 +64,12 @@ fun FriendsScreen(
     // it's only if the user clicks on the trailing icon (e.g., add friend icon) that the UI
     // should update
     // don't think below launched effect is needed at all
-    LaunchedEffect(searchQuery.value) {
-        delay(300) // Wait for 300ms before updating the filtered list
-        filteredUsers.value = users.filter { user ->
-            user.contains(searchQuery.value, ignoreCase = true)
-        }
-    }
+//    LaunchedEffect(searchQuery.value) {
+//        delay(300) // Wait for 300ms before updating the filtered list
+//        filteredUsers.value = users.filter { user ->
+//            user.contains(searchQuery.value, ignoreCase = true)
+//        }
+//    }
 
 
 
@@ -97,7 +98,7 @@ fun FriendsScreen(
                     .padding(innerPadding)
             ) {
                 Text(
-                    text = "Find Friends",
+                    text = "Add Friends",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -106,46 +107,12 @@ fun FriendsScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                FriendsSearchBar(searchQuery = searchQuery)
+                FriendsSearchBar(searchQuery = searchQuery, onAddNewFriend = { friendsViewModel.addFriend(searchQuery.value) } )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Username List
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp)
-                ) {
-                    // users or filtered users
-                    if (filteredUsers.value.isEmpty()) {
-                        item {
-                            Text(
-                                text = "No users found",
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                            )
-                        }
-                    } else {
-                        items(filteredUsers.value) { user ->
-                            UserItem(
-                                username = user,
-                                onAddFriend = {
-                                    friendsViewModel.addFriend(user)
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // uncomment once completed
-                // AddedFriendsList(friends = friends)
+                AddedFriendsList(friends = friends, viewModel = friendsViewModel)
             }
-
         }
-
 }
 }
