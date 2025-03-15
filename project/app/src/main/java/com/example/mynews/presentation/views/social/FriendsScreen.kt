@@ -21,10 +21,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
+import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import com.example.mynews.utils.AppScreenRoutes
 import kotlinx.coroutines.delay
 
@@ -34,7 +36,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun FriendsScreen(
     navController: NavHostController,
-    friendsViewModel: FriendsViewModel
+    friendsViewModel: FriendsViewModel,
 ) {
     val searchQuery = remember { mutableStateOf("") }
     val friends by friendsViewModel.friends.observeAsState(emptyList())

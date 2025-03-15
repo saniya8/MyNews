@@ -22,3 +22,10 @@ data class Source(
     val name: String
 )
 
+data class Reaction(
+    val userId: String,
+    val article: Article,
+    val reaction: String,
+    val timestamp: Long
+)
+

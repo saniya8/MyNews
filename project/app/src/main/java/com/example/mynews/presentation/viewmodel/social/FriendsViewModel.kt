@@ -19,11 +19,9 @@ import javax.inject.Inject
 class FriendsViewModel @Inject constructor(
     private val userRepository: UserRepository, // won't need this anymore
     private val friendsRepository: FriendsRepository
-   // private val authRepository: AuthRepository
 ) : ViewModel() {
 
     // SK: later problem - add in the FriendsState to store error dialogue message
-
     // SK: will use _isFriendNotFound to produce the correct error message in error dialog box
     // later, similar to how done in RegisterViewModel, which makes use of RegisterState
     private val _isFriendNotFound = mutableStateOf(false) // pass to addFriend in FriendsRepository
@@ -32,13 +30,12 @@ class FriendsViewModel @Inject constructor(
     private val _friends = MutableLiveData<List<String>>()
     val friends: LiveData<List<String>> = _friends
 
+    private val _friendsIds = MutableLiveData<List<String>>()
+    val friendsIds: LiveData<List<String>> = _friendsIds
+
     // SK: not sure if we still need _username and username
     private val _username = MutableStateFlow<String?>("")
     val username: StateFlow<String?> = _username
-
-    // SK: won't need _users and users if we do simple find friends screen
-    private val _users = MutableLiveData<List<String>>()
-    val users: LiveData<List<String>> = _users
 
     val searchQuery = mutableStateOf("")
     val isFriendNotFound = mutableStateOf(false)
@@ -50,8 +47,7 @@ class FriendsViewModel @Inject constructor(
     //                Log.d("Get friend", "Successfully fetched friends")
     //                _friends.postValue(friendsList) // ViewModel updates UI state
     //            }
-    // reason this needs to be re-written is due to the implementation of the function in the
-    // friends repository
+    // This returns the user's friend's usernames
     fun fetchFriends() {
         viewModelScope.launch {
             try {
@@ -60,14 +56,24 @@ class FriendsViewModel @Inject constructor(
                     Log.e("FriendsViewModel", "Error: User ID is null, cannot fetch friends")
                     return@launch
                 }
-
                 friendsRepository.getFriendUsernames(currentUserId) { friendsList ->
                     _friends.value = friendsList
                 }
-                // val friendsList = friendsRepository.getFriends(currentUserId, onResult = {} ) // TODO
-                // _friends.postValue(friendsList)
             } catch (e: Exception) {
                 Log.e("FriendsViewModel", "Error fetching friends", e)
+            }
+        }
+    }
+
+    fun getFriendIds() {
+        viewModelScope.launch {
+            try {
+                val currentUserId = userRepository.getCurrentUserId().toString()
+                friendsRepository.getFriends(currentUserId) { friendsIDList ->
+                    _friendsIds.postValue(friendsIDList)
+                }
+            } catch (e: Exception) {
+                Log.e("FriendsRepository", "Error fetching friend IDs: ${e.message}", e)
             }
         }
     }
@@ -79,33 +85,21 @@ class FriendsViewModel @Inject constructor(
     // else (i.e., !success) then log error
     // this is very similar to savedArticlesViewModel's deleteSavedArticle function flow
     fun addFriend(friendUsername: String) {
-        // val friendUsername = searchQuery.value.trim()
         if (friendUsername.isEmpty()) return
-
         viewModelScope.launch {
             try {
-                 //Create a new list by adding the friend to the existing list
                 val currentUserID = userRepository.getCurrentUserId().toString()
-
                 val isAdded = friendsRepository.addFriend(currentUserID, friendUsername, isFriendNotFound)
                 if (isAdded) {
                     // Clear the search query and refresh the friends list
                     searchQuery.value = ""
                     fetchFriends()
                 }
-//                val currentUserId = userRepository.getCurrentUserId()
-//                val updatedFriends = _friends.value.orEmpty() + friendUsername
-//
-//                if (currentUserId != null) {
-//                    // friendsRepository.addFriend(currentUserId, friendUsername, true) // TODO
-//                }
-//                _friends.postValue(updatedFriends)
             } catch (e: Exception) {
                 Log.e("FriendsViewModel", "Error adding friend", e)
             }
         }
     }
-
 
     // SK: below currentUserId, check if it's null and if so, log error and return (like in fetchFriends above)
     // add in...
@@ -121,11 +115,9 @@ class FriendsViewModel @Inject constructor(
                     Log.e("FriendsViewModel", "Error: User ID is null, cannot remove friend")
                     return@launch
                 }
-
                 // Call the repository to remove the friend
                 val isRemoved = friendsRepository.removeFriend(currentUserId, friendUsername)
                 if (isRemoved) {
-                    // Refresh the friends list after removal
                     fetchFriends()
                 }
             } catch (e: Exception) {
@@ -133,4 +125,5 @@ class FriendsViewModel @Inject constructor(
             }
         }
     }
+
 }

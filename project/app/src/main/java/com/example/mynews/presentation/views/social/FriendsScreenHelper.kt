@@ -7,11 +7,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.background
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button // check this
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,37 +24,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
-
-@Composable
-fun UserItem(
-    username: String,
-    onAddFriend: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = username,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.weight(1f)
-        )
-
-        Button(
-            onClick = onAddFriend,
-            modifier = Modifier.padding(start = 8.dp)
-        ) {
-            Text("Add")
-        }
-    }
-}
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.Card
+import com.example.mynews.data.api.news.Reaction
+// TODO check this import
+import java.util.Date
 
 @Composable
 fun FriendsSearchBar(
@@ -107,7 +80,7 @@ fun FriendsSearchBar(
 @Composable
 fun FriendItem(
     friend: String,
-    onRemoveFriend: () -> Unit // Lambda to handle friend removal
+    onRemoveFriend: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -117,7 +90,7 @@ fun FriendItem(
     ) {
         Text(
             text = friend,
-            fontSize = 16.sp,
+            fontSize = 20.sp,
             modifier = Modifier.weight(1f)
         )
 
@@ -164,6 +137,42 @@ fun AddedFriendsList(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ReactionItem(reaction: Reaction) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "User ${reaction.userId} reacted:",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = reaction.reaction,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Article: ${reaction.article.title}",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+            Text(
+                text = "Timestamp: ${Date(reaction.timestamp)}",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
         }
     }
 }

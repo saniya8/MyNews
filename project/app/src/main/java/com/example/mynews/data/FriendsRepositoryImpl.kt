@@ -39,11 +39,12 @@ class FriendsRepositoryImpl (
                                    isFriendNotFound: MutableState<Boolean>
     ): Boolean {
         try {
-
             // check if friend exists
+            val currentUserUsername = firestore.collection("users").document(currentUserID).get().await().getString("username")
             val friendLocation = firestore.collection("usernames")
                                           .document(friendUsername).get().await()
-            if (!friendLocation.exists()) {
+            // check if valid username or if the username is the user (cant add yourself)
+            if (!friendLocation.exists() || currentUserUsername == friendUsername) {
                 Log.e("Add Friend", "Username '${friendUsername}' does not exist in Firestore")
                 isFriendNotFound.value = true
                 return false
@@ -58,13 +59,11 @@ class FriendsRepositoryImpl (
             val friendUserID = friendUserIDLocation.getString("uid") ?: return false // should never return false here since uid should always be in document
 
             // add to friends collection
-
             val friendData = mapOf("username" to friendUsername,
                                    "timestamp" to System.currentTimeMillis(),
                                   )
 
             // add friend to user's friends in firestore
-
             firestore.collection("friends")
                 .document(currentUserID)
                 .collection("users_friends")
@@ -83,7 +82,6 @@ class FriendsRepositoryImpl (
 
     }
 
-
     // removeFriend: removes friend from firestore and returns true if it was successful, and
     // returns false otherwise
     override suspend fun removeFriend(currentUserID: String, friendUsername: String): Boolean {
@@ -92,7 +90,6 @@ class FriendsRepositoryImpl (
 
             // check if friend exists (should always be true because in the UI, user can only click
             // delete for friends that they see
-
             val friendLocation = firestore.collection("usernames")
                 .document(friendUsername).get().await()
             if (!friendLocation.exists()) {
@@ -101,7 +98,6 @@ class FriendsRepositoryImpl (
             }
 
             // get friend's UID from usernames collection in firestore
-
             val friendUserIDLocation = firestore.collection("usernames")
                 .document(friendUsername)
                 .collection("private")
@@ -110,16 +106,13 @@ class FriendsRepositoryImpl (
             val friendUserID = friendUserIDLocation.getString("uid") ?: return false // should never return false here since uid should always be in document
 
             // remove from friends collection
-
             firestore.collection("friends")
                 .document(currentUserID)
                 .collection("users_friends")
                 .document(friendUserID).delete().await()
 
             Log.d("Remove Friend", "Successfully removed friend: $friendUsername ($friendUserID)")
-
             return true
-
         } catch (e: Exception) {
             Log.e("Remove Friend", "Error adding friend: ${e.message}", e)
             return false
@@ -151,7 +144,7 @@ class FriendsRepositoryImpl (
             }
     }
 
-    // getFriends: returns a list of strings where each item in the list is the username of
+    // getFriends: returns a list of strings where each item in the list is the id of
     // a friend
     override suspend fun getFriends(currentUserID: String, onResult: (List<String>) -> Unit) {
         firestore.collection("friends")
@@ -163,7 +156,6 @@ class FriendsRepositoryImpl (
                     onResult(emptyList())
                     return@addSnapshotListener
                 }
-
                 if (snapshot != null) {
                     val friendUsernames = snapshot.documents.map { it.id }
                     Log.d("Get Friends", "Successfully retrieved friends: $friendUsernames")

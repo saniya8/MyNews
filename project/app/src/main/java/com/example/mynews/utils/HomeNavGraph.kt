@@ -82,8 +82,12 @@ fun HomeNavGraph(rootNavController: NavHostController,
                         achievements = listOf())
         }
 
+            // TODO Update
         composable(AppScreenRoutes.SocialScreen.route) {
-            SocialScreen(navController = navController,)
+            SocialScreen(navController = navController,
+                friendsViewModel = friendsViewModel,
+                homeViewModel = homeViewModel,
+                )
         }
 
         composable(route = AppScreenRoutes.NewsArticleScreen.route,
