@@ -167,5 +167,30 @@ class FriendsRepositoryImpl (
             }
     }
 
+    override suspend fun getFriendIdsAndUsernames(currentUserID: String, onResult: (Map<Any?, Any?>) -> Unit) { // String String
+        firestore.collection("friends")
+            .document(currentUserID)
+            .collection("users_friends")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot != null) {
+                    // Create a map of friend IDs to usernames
+                    val friendMap = snapshot.documents.associate {
+                        ((it.id to it.getString("username")) ?: "") as Pair<*, *>
+                    }
+
+                    Log.d("GetFriendIdsAndUsernames", "Successfully retrieved friend map: $friendMap")
+                    onResult(friendMap)
+                } else {
+                    Log.d("GetFriendIdsAndUsernames", "Firestore snapshot is null")
+                    onResult(emptyMap())
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("GetFriendIdsAndUsernames", "Error fetching friend IDs and usernames: ${e.message}", e)
+                onResult(emptyMap())
+            }
+    }
+
 }
 

@@ -27,5 +27,10 @@ data class Reaction(
     val article: Article,
     val reaction: String,
     val timestamp: Long
-)
+) {
+    val userID: String
+        get() {
+            return userId
+        }
+}
 

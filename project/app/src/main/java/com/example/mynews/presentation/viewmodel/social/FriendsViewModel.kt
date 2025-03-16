@@ -40,6 +40,9 @@ class FriendsViewModel @Inject constructor(
     val searchQuery = mutableStateOf("")
     val isFriendNotFound = mutableStateOf(false)
 
+    // TODO update types
+    private val _friendsMap = MutableStateFlow<Map<Any?, Any?>>(emptyMap())
+    val friendsMap: StateFlow<Map<Any?, Any?>> = _friendsMap
 
     // SK: rewrite this function to be identical to savedArticlesViewModel's getSavedArticles
     // EXCEPT here, call,
@@ -122,6 +125,31 @@ class FriendsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("FriendsViewModel", "Error removing friend", e)
+            }
+        }
+    }
+
+    fun fetchFriendIdsAndUsernames() {
+        viewModelScope.launch {
+            try {
+                val currentUserId = userRepository.getCurrentUserId()
+                if (currentUserId == null) {
+                    Log.e("FriendsViewModel", "Error: User ID is null, cannot fetch friends")
+                    return@launch
+                }
+
+                // Call the repository to get the map of friend IDs and usernames
+                friendsRepository.getFriendIdsAndUsernames(currentUserId) { friendMap ->
+                    _friendsMap.value = friendMap
+
+                    // Update _friends and _friendsIds if needed
+//                    _friendsIds.postValue(friendMap.keys.toList() as List<String>?)
+//                    _friends.postValue(friendMap.values.toList() as List<String>?)
+                    _friendsIds.postValue(friendMap.keys.map { it.toString() })
+                    _friends.postValue(friendMap.values.map { it.toString() })
+                }
+            } catch (e: Exception) {
+                Log.e("FriendsViewModel", "Error fetching friend IDs and usernames", e)
             }
         }
     }
