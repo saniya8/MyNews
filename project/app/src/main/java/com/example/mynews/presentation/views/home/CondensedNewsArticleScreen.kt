@@ -93,7 +93,7 @@ fun CondensedNewsArticleScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 25.dp) // Adjust spacing
+                        .padding(20.dp) // Adjust spacing
                 ) {
                     Text(
                         text = articleTitle,
