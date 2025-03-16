@@ -1,5 +1,6 @@
 package com.example.mynews.presentation.views.social
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,9 +29,12 @@ import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Card
+import androidx.navigation.NavController
 import com.example.mynews.data.api.news.Reaction
+import com.example.mynews.utils.AppScreenRoutes
 // TODO check this import
 import java.util.Date
+import android.net.Uri
 
 @Composable
 fun FriendsSearchBar(
@@ -142,18 +146,31 @@ fun AddedFriendsList(
 }
 
 @Composable
-fun ReactionItem(reaction: Reaction) {
+fun ReactionItem(
+    reaction: Reaction,
+    username: String,
+    navController: NavController
+    ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable {
+                // Navigate to the article screen with the article's URL
+                navController.navigate(
+                            AppScreenRoutes.NewsArticleScreen.createRoute(
+                                Uri.encode(reaction.article.url),
+                                "HomeScreen" // TODO might be wrong
+                            )
+                        )
+            },
         elevation = 4.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "User ${reaction.userId} reacted:",
+                text = "User $username reacted:", // reaction.userId
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )

@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.mynews.data.api.news.Article
 import com.example.mynews.data.api.news.Reaction
 import com.example.mynews.domain.repositories.HomeRepository
+import com.example.mynews.domain.repositories.UserRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -129,6 +130,8 @@ class HomeRepositoryImpl @Inject constructor(
         val reactions = mutableListOf<Reaction>()
         try {
             for (friendId in friendIDs) {
+                //val friend = userRepository.getUserById(friendId)
+
                 val reactionSnapshot = firestore.collection("reactions")
                     .document(friendId)
                     .collection("users_reactions")
@@ -163,7 +166,7 @@ class HomeRepositoryImpl @Inject constructor(
                     val timestamp = document.getLong("timestamp") ?: continue
                     reactions.add(
                         Reaction(
-                            userId = friendId,
+                            userId = friendId, // friendUsername TODO
                             article = article,
                             reaction = reaction,
                             timestamp = timestamp
@@ -179,5 +182,19 @@ class HomeRepositoryImpl @Inject constructor(
             )
         }
         return reactions
+    }
+
+    private suspend fun getFriendUsername(friendId: String): String? {
+        return try {
+            val userDocument = firestore.collection("users")
+                .document(friendId)
+                .get()
+                .await()
+
+            userDocument.getString("username")
+        } catch (e: Exception) {
+            Log.e("GetFriendUsername", "Error fetching username for friend $friendId: ${e.message}", e)
+            null
+        }
     }
 }

@@ -42,10 +42,13 @@ fun SocialScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val friendsIds by friendsViewModel.friendsIds.observeAsState(emptyList())
+    //val friendsUsernames by friendsViewModel.friends.observeAsState(emptyList())
     val reactions by homeViewModel.reactions.collectAsState()
+    val friendsMap by friendsViewModel.friendsMap.collectAsState()
 
     LaunchedEffect(Unit) {
         friendsViewModel.getFriendIds()
+        friendsViewModel.fetchFriendIdsAndUsernames()
     }
 
     LaunchedEffect(friendsIds) {
@@ -112,7 +115,7 @@ fun SocialScreen(
             } else {
                 LazyColumn {
                     items(reactions) { reaction ->
-                        ReactionItem(reaction = reaction)
+                        ReactionItem(reaction = reaction, username = friendsMap[reaction.userID].toString(), navController = navController)
                     }
                 }
             }
