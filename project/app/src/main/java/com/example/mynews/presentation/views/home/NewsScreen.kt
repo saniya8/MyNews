@@ -694,7 +694,8 @@ fun ArticleItem(
                                         )
                                         navController.navigate(
                                             AppScreenRoutes.CondensedNewsArticleScreen.createRoute(
-                                                encodedUrl
+                                                encodedUrl,
+                                                article.title
                                             )
                                         )
                                     },
