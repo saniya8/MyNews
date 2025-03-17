@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.PersonAddAlt1
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +41,6 @@ fun SocialScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val friendsIds by friendsViewModel.friendsIds.observeAsState(emptyList())
-    //val friendsUsernames by friendsViewModel.friends.observeAsState(emptyList())
     val reactions by homeViewModel.reactions.collectAsState()
     val friendsMap by friendsViewModel.friendsMap.collectAsState()
 
@@ -78,17 +76,15 @@ fun SocialScreen(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.align(Alignment.Center)
                 )
-                // Saved Articles Icon - Pinned to the top right
                 IconButton(
                     onClick = {
                         navController.navigate(AppScreenRoutes.FriendsScreen.route)
                     },
                     modifier = Modifier
-                        .align(Alignment.TopEnd) // ensure it stays in the top right
+                        .align(Alignment.TopEnd)
                 ) {
                     Icon(
                         imageVector = Icons.Default.PersonAddAlt1,
-                        //imageVector = Icons.Outlined.BookmarkBorder,
                         contentDescription = "Saved Articles",
                         tint = CaptainBlue
                     )

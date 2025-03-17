@@ -32,7 +32,6 @@ import androidx.compose.material.Card
 import androidx.navigation.NavController
 import com.example.mynews.data.api.news.Reaction
 import com.example.mynews.utils.AppScreenRoutes
-// TODO check this import
 import java.util.Date
 import android.net.Uri
 
@@ -156,7 +155,6 @@ fun ReactionItem(
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                // Navigate to the article screen with the article's URL
                 navController.navigate(
                             AppScreenRoutes.NewsArticleScreen.createRoute(
                                 Uri.encode(reaction.article.url),
@@ -170,7 +168,7 @@ fun ReactionItem(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "User $username reacted:", // reaction.userId
+                text = "$username reacted:",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )

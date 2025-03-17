@@ -26,12 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import com.example.mynews.utils.AppScreenRoutes
-import kotlinx.coroutines.delay
-
-//import com.example.mynews.presentation.views.social.FriendScreen
-//import com.example.mynews.presentation.views.social.FriendsScreenHelper
 
 @Composable
 fun FriendsScreen(
@@ -40,8 +35,6 @@ fun FriendsScreen(
 ) {
     val searchQuery = remember { mutableStateOf("") }
     val friends by friendsViewModel.friends.observeAsState(emptyList())
-
-    // val isFriendNotFound = FriendsViewModel.isFriendNotFound.value
 
     // SK: no other Launched Effects other than LaunchedEffect(Unit) should be needed here
     // UI will automatically render when user's friends change ie when friend added, friend removed
@@ -55,7 +48,6 @@ fun FriendsScreen(
     // is observing friends in the view model, whenever friends in view model updates,
     // UI will be re-rendered
 
-
     LaunchedEffect(Unit) {
         friendsViewModel.fetchFriends()
     }
@@ -66,14 +58,6 @@ fun FriendsScreen(
     // it's only if the user clicks on the trailing icon (e.g., add friend icon) that the UI
     // should update
     // don't think below launched effect is needed at all
-//    LaunchedEffect(searchQuery.value) {
-//        delay(300) // Wait for 300ms before updating the filtered list
-//        filteredUsers.value = users.filter { user ->
-//            user.contains(searchQuery.value, ignoreCase = true)
-//        }
-//    }
-
-
 
     Box (
         // User can swipe left to right to return back to the social screen

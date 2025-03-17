@@ -39,7 +39,6 @@ class FriendsRepositoryImpl (
                                    isFriendNotFound: MutableState<Boolean>
     ): Boolean {
         try {
-            // check if friend exists
             val currentUserUsername = firestore.collection("users").document(currentUserID).get().await().getString("username")
             val friendLocation = firestore.collection("usernames")
                                           .document(friendUsername).get().await()
@@ -50,15 +49,12 @@ class FriendsRepositoryImpl (
                 return false
             }
 
-            // get friend's UID from usernames collection in firestore
             val friendUserIDLocation = firestore.collection("usernames")
                                             .document(friendUsername)
                                             .collection("private")
                                             .document("uid").get().await()
 
-            val friendUserID = friendUserIDLocation.getString("uid") ?: return false // should never return false here since uid should always be in document
-
-            // add to friends collection
+            val friendUserID = friendUserIDLocation.getString("uid") ?: return false
             val friendData = mapOf("username" to friendUsername,
                                    "timestamp" to System.currentTimeMillis(),
                                   )
@@ -78,8 +74,6 @@ class FriendsRepositoryImpl (
             return false
 
         }
-
-
     }
 
     // removeFriend: removes friend from firestore and returns true if it was successful, and
@@ -97,15 +91,13 @@ class FriendsRepositoryImpl (
                 return false
             }
 
-            // get friend's UID from usernames collection in firestore
             val friendUserIDLocation = firestore.collection("usernames")
                 .document(friendUsername)
                 .collection("private")
                 .document("uid").get().await()
 
-            val friendUserID = friendUserIDLocation.getString("uid") ?: return false // should never return false here since uid should always be in document
+            val friendUserID = friendUserIDLocation.getString("uid") ?: return false
 
-            // remove from friends collection
             firestore.collection("friends")
                 .document(currentUserID)
                 .collection("users_friends")
@@ -129,7 +121,6 @@ class FriendsRepositoryImpl (
             .get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot != null) {
-                    // Map each document to the "username" field
                     val friendUsernames = snapshot.documents.mapNotNull { it.getString("username") }
                     Log.d("Get Friend Usernames", "Successfully retrieved friend usernames: $friendUsernames")
                     onResult(friendUsernames)
@@ -174,7 +165,6 @@ class FriendsRepositoryImpl (
             .get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot != null) {
-                    // Create a map of friend IDs to usernames
                     val friendMap = snapshot.documents.associate {
                         ((it.id to it.getString("username")) ?: "") as Pair<*, *>
                     }

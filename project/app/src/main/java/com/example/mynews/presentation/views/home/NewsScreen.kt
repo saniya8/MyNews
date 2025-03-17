@@ -64,7 +64,6 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 
-
 @Composable
 fun NewsScreen(
     navController: NavHostController,
@@ -80,7 +79,6 @@ fun NewsScreen(
     // Observe the articles
     // now doing this individually in HomeScreen and SavedArticlesScreen
     //val articles by newsViewModel.articles.observeAsState(emptyList())
-
     Column(
         modifier = Modifier.fillMaxSize()
     )
