@@ -77,9 +77,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
                        searchQuery = searchQuery)
         }
         composable(AppScreenRoutes.GoalsScreen.route) {
-            GoalsScreen(navController = navController,
-                        streakDays = 4,
-                        achievements = listOf())
+            GoalsScreen(navController = navController)
         }
 
             // TODO Update

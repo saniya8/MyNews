@@ -35,6 +35,7 @@ class FriendsRepositoryImpl (
 
     // addFriend: adds friend in firestore and returns true if it was successful, and false
     // otherwise
+
     override suspend fun addFriend(currentUserID: String, friendUsername: String,
                                    isFriendNotFound: MutableState<Boolean>
     ): Boolean {

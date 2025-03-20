@@ -11,6 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import com.example.mynews.data.AuthRepositoryImpl
 import com.example.mynews.data.CondensedNewsArticleRepositoryImpl
 import com.example.mynews.data.FriendsRepositoryImpl
+import com.example.mynews.data.GoalsRepositoryImpl
 import com.example.mynews.data.HomeRepositoryImpl
 import com.example.mynews.data.NewsRepositoryImpl
 import com.example.mynews.data.SavedArticlesRepositoryImpl
@@ -25,6 +26,7 @@ import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
 import android.content.Context
+import com.example.mynews.domain.repositories.GoalsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
@@ -111,5 +113,12 @@ object AppModule {
     fun provideFirebaseFirestore(): FirebaseFirestore {
         return FirebaseFirestore.getInstance()
     }
+
+    @Singleton
+    @Provides
+    fun provideGoalsRepository(firestore: FirebaseFirestore): GoalsRepository {
+        return GoalsRepositoryImpl (firestore)
+    }
+
 
 }
