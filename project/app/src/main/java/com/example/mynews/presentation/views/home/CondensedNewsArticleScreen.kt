@@ -26,10 +26,12 @@ fun CondensedNewsArticleScreen(
 ) {
     val articleText by condensedNewsArticleViewModel.articleText.collectAsState()
     val summarizedText by condensedNewsArticleViewModel.summarizedText.collectAsState()
+
     var showErrorDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(articleUrl) {
         condensedNewsArticleViewModel.clearCondensedArticleState().also {
+            condensedNewsArticleViewModel.updateSummarizedText("Loading...")
             condensedNewsArticleViewModel.fetchArticleText(articleUrl)
         }
     }
@@ -50,6 +52,16 @@ fun CondensedNewsArticleScreen(
             showErrorDialog = true
         }
     }
+
+    // Reset summary when user leaves the screen
+    LaunchedEffect(navController.currentBackStackEntry) {
+        snapshotFlow { navController.currentBackStackEntry }
+            .collect {
+                condensedNewsArticleViewModel.clearSummarizedText()
+                condensedNewsArticleViewModel.clearArticleText()
+            }
+    }
+
 
     if (showErrorDialog) {
         AlertDialog(
