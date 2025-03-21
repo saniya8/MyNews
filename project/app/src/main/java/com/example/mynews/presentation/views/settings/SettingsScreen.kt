@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.PersonAddAlt1
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -48,75 +49,13 @@ fun SettingsScreen(
     userRepository: UserRepository,
 ) {
     val logoutState by settingsViewModel.logoutState.collectAsState()
+    val username by settingsViewModel.username.collectAsState()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                androidx.compose.material3.Text(
-                    text = "Settings",
-                    fontWeight = FontWeight.Bold,
-                    color = CaptainBlue,
-                    fontSize = 25.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Logout Button
-            Button(
-                onClick = {
-
-                    Log.d("LogoutDebug", "Before clicking, logoutState: $logoutState")
-
-                    settingsViewModel.logout()
-
-                    Log.d("LogoutDebug", "After clicking, logoutState: $logoutState")
-                    Log.d("NavDebug", "Current destination: ${navController.currentDestination?.route}")
-                    Log.d("NavDebug", "Logout button clicked. Attempting navigation...")
-                    Log.d("NavDebug", "Attempting to navigate to: ${Graph.AUTHENTICATION}")
-
-                    onNavigateToAuthScreen()
-
-                },
-
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = NavyBlue,
-                    contentColor = Color.White,
-                )
-
-            ) {
-                Text("Log out")
-            }
-
-        }
+    LaunchedEffect(Unit) {
+        val userID = userRepository.getCurrentUserId()
+        settingsViewModel.getUsername(userID!!)
     }
 
-
-
-
-
-
-
-
-
-
-    /*
     // very basic just logout
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -128,6 +67,7 @@ fun SettingsScreen(
                 .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center
+
         ) {
             // Logout Button
             Button(
@@ -158,8 +98,23 @@ fun SettingsScreen(
             ) {
                 Text("Log Out")
             }
+
+
+            Spacer(modifier = Modifier.height(16.dp)) // Space between button and text
+
+            // Username Text
+            Text(
+                text = "Username: ${username ?: "Loading..."}", // Show username or fallback
+                fontSize = 24.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+
+
         }
-    } */
+    }
 
 
 
