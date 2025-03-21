@@ -81,34 +81,6 @@ fun FriendsSearchBar(
 }
 
 @Composable
-fun FriendItem(
-    friend: String,
-    onRemoveFriend: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = friend,
-            fontSize = 20.sp,
-            modifier = Modifier.weight(1f)
-        )
-
-        IconButton(
-            onClick = onRemoveFriend
-        ) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Remove friend"
-            )
-        }
-    }
-}
-
-@Composable
 fun AddedFriendsList(
     friends: List<String>,
     viewModel: FriendsViewModel,
@@ -140,6 +112,34 @@ fun AddedFriendsList(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun FriendItem(
+    friend: String,
+    onRemoveFriend: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = friend,
+            fontSize = 20.sp,
+            modifier = Modifier.weight(1f)
+        )
+
+        IconButton(
+            onClick = onRemoveFriend
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Remove friend"
+            )
         }
     }
 }

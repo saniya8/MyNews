@@ -26,19 +26,25 @@ fun CondensedNewsArticleScreen(
 ) {
     val articleText by condensedNewsArticleViewModel.articleText.collectAsState()
     val summarizedText by condensedNewsArticleViewModel.summarizedText.collectAsState()
+    val currentArticleUrl by condensedNewsArticleViewModel.currentArticleUrl.collectAsState()
 
     var showErrorDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(articleUrl) {
-        condensedNewsArticleViewModel.clearCondensedArticleState().also {
-            condensedNewsArticleViewModel.updateSummarizedText("Loading...")
-            condensedNewsArticleViewModel.fetchArticleText(articleUrl)
-        }
+        //condensedNewsArticleViewModel.clearCondensedArticleState().also {
+        //    condensedNewsArticleViewModel.updateSummarizedText(text = "Loading...")
+        //    condensedNewsArticleViewModel.fetchArticleText(url = articleUrl)
+       // }
+        condensedNewsArticleViewModel.fetchArticleText(articleUrl)
     }
 
-    LaunchedEffect(articleText) {
-        if (articleText.isNotEmpty()) {
-            condensedNewsArticleViewModel.fetchSummarizedText(articleText, 200)
+    LaunchedEffect(articleText, currentArticleUrl) {
+        if (articleText.isNotEmpty() && currentArticleUrl == articleUrl) {
+            condensedNewsArticleViewModel.fetchSummarizedText(
+                url = articleUrl,
+                text = articleText,
+                wordLimit = 200
+            )
         }
     }
 
@@ -53,6 +59,15 @@ fun CondensedNewsArticleScreen(
         }
     }
 
+    // clear state when leaving screen
+    DisposableEffect(navController.currentBackStackEntry) {
+        onDispose {
+            condensedNewsArticleViewModel.clearCondensedArticleState()
+        }
+    }
+
+
+    /*
     // Reset summary when user leaves the screen
     LaunchedEffect(navController.currentBackStackEntry) {
         snapshotFlow { navController.currentBackStackEntry }
@@ -61,6 +76,8 @@ fun CondensedNewsArticleScreen(
                 condensedNewsArticleViewModel.clearArticleText()
             }
     }
+
+     */
 
 
     if (showErrorDialog) {
@@ -77,8 +94,23 @@ fun CondensedNewsArticleScreen(
                     Text("OK")
                 }
             },
-            title = { Text("Condensed Article Unavailable") },
-            text = { Text("A condensed article is unavailable for this article.") }
+
+            title = {
+                Text(
+                    text = "Summary Unavailable",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            },
+
+            text = {
+                Text(
+                    text = "A condensed article is \n unavailable for this article.",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                )
+            }
+
         )
     }
 
@@ -114,7 +146,10 @@ fun CondensedNewsArticleScreen(
                         fontSize = 25.sp,
                         fontFamily = FontFamily.SansSerif,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(horizontal = 16.dp)
                     )
                 }
 
@@ -123,18 +158,61 @@ fun CondensedNewsArticleScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp), // Padding around the content
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
+
+
+                    // only display summarizedText if the current url matches the article url
+                    if (currentArticleUrl != articleUrl || summarizedText.isEmpty()) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(32.dp),
+                            color = Color.Blue, // Customize color if needed
+                            strokeWidth = 4.dp
+                        )
+                    } else {
+                        // Display summarizedText when ready
+                        Text(
+                            text = summarizedText,
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontWeight = FontWeight.Normal,
+                                color = Color.Black,
+                                fontSize = 18.sp
+                            ),
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+
+
+                    /*
+                    // pre circular loading indicator - works, removed race condition
                     // Display summarizedText
-                    Text(
-                        text = summarizedText,
-                        style = androidx.compose.ui.text.TextStyle(
-                            fontWeight = FontWeight.Normal,
-                            color = Color.Black,
-                            fontSize = 18.sp
-                        ),
-                        modifier = Modifier.padding(8.dp) // Padding around the text
-                    )
+                    if (currentArticleUrl == articleUrl) {
+                        Text(
+                            text = summarizedText,
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontWeight = FontWeight.Normal,
+                                color = Color.Black,
+                                fontSize = 18.sp
+                            ),
+                            modifier = Modifier.padding(8.dp) // Padding around the text
+                        )
+                    } else {
+
+                        Text(
+                            text = "Loading...",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontWeight = FontWeight.Normal,
+                                color = Color.Black,
+                                fontSize = 18.sp
+                            ),
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+
+                     */
+
                 }
             }
         }

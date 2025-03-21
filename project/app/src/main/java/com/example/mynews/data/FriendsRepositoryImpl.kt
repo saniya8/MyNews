@@ -2,6 +2,7 @@ package com.example.mynews.data
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import com.example.mynews.domain.repositories.FriendsRepository
+import com.example.mynews.presentation.state.AddFriendState
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -38,24 +39,34 @@ class FriendsRepositoryImpl (
 
     override suspend fun addFriend(currentUserID: String, friendUsername: String,
                                    isFriendNotFound: MutableState<Boolean>
-    ): Boolean {
+    ): AddFriendState {
         try {
             val currentUserUsername = firestore.collection("users").document(currentUserID).get().await().getString("username")
             val friendLocation = firestore.collection("usernames")
                                           .document(friendUsername).get().await()
+
             // check if valid username or if the username is the user (cant add yourself)
-            if (!friendLocation.exists() || currentUserUsername == friendUsername) {
+
+            if (currentUserUsername == friendUsername) {
                 Log.e("Add Friend", "Username '${friendUsername}' does not exist in Firestore")
                 isFriendNotFound.value = true
-                return false
+                return AddFriendState.SelfAddAttempt
             }
+
+            if (!friendLocation.exists()) {
+                Log.e("Add Friend", "Username '${friendUsername}' does not exist in Firestore")
+                isFriendNotFound.value = true
+                return AddFriendState.UserNotFound
+            }
+
+
 
             val friendUserIDLocation = firestore.collection("usernames")
                                             .document(friendUsername)
                                             .collection("private")
                                             .document("uid").get().await()
 
-            val friendUserID = friendUserIDLocation.getString("uid") ?: return false
+            val friendUserID = friendUserIDLocation.getString("uid") ?: return AddFriendState.UserNotFound
             val friendData = mapOf("username" to friendUsername,
                                    "timestamp" to System.currentTimeMillis(),
                                   )
@@ -68,11 +79,11 @@ class FriendsRepositoryImpl (
 
             Log.d("Add Friend", "Successfully added friend: $friendUsername ($friendUserID)")
 
-            return true
+            return AddFriendState.Success
 
         } catch (e: Exception) {
             Log.e("Add Friend", "Error adding friend: ${e.message}", e)
-            return false
+            return AddFriendState.Error(e.message ?: "Unknown error occurred")
 
         }
     }

@@ -137,7 +137,7 @@ fun NewsArticleScreen(
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.Center) // Center the loading circle
-                    .size(50.dp),
+                    .size(32.dp),
                 color = Color.Blue, // Customize color if needed
                 strokeWidth = 4.dp
             )

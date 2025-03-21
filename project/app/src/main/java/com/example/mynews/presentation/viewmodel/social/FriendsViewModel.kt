@@ -1,13 +1,17 @@
 package com.example.mynews.presentation.viewmodel.social
 
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.domain.repositories.FriendsRepository
 import com.example.mynews.domain.repositories.UserRepository
+import com.example.mynews.presentation.state.AddFriendState
+import com.example.mynews.presentation.state.RegisterState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +24,14 @@ class FriendsViewModel @Inject constructor(
     private val userRepository: UserRepository, // won't need this anymore
     private val friendsRepository: FriendsRepository
 ) : ViewModel() {
+
+
+    var showErrorDialog by mutableStateOf(false)
+
+    // stores the error message to display in the dialog
+    var errorDialogMessage by mutableStateOf<String?>(null)
+        private set
+
 
     // SK: later problem - add in the FriendsState to store error dialogue message
     // SK: will use _isFriendNotFound to produce the correct error message in error dialog box
@@ -39,6 +51,10 @@ class FriendsViewModel @Inject constructor(
 
     val searchQuery = mutableStateOf("")
     val isFriendNotFound = mutableStateOf(false)
+
+    private var _selfAddAttemptErrorMessage = "You cannot add yourself \n as a friend."
+    private var _userNotFoundErrorMessage = "This user does not exist. \n Please check the username."
+    private var _defaultErrorMessage = "Something went wrong. \n Please try again."
 
     // TODO update types
     private val _friendsMap = MutableStateFlow<Map<Any?, Any?>>(emptyMap())
@@ -84,11 +100,36 @@ class FriendsViewModel @Inject constructor(
                     return@launch
                 }
                 val isAdded = friendsRepository.addFriend(userID, friendUsername, isFriendNotFound)
-                if (isAdded) {
+
+                /*if (isAdded) {
                     // Clear the search query and refresh the friends list
                     searchQuery.value = ""
                     fetchFriends()
+                }*/
+
+                when (isAdded) {
+
+                    is AddFriendState.Success -> {
+                        searchQuery.value = "" // clear search bar
+                        fetchFriends()         // refresh friends list
+                    }
+
+                    is AddFriendState.SelfAddAttempt -> {
+                        errorDialogMessage = _selfAddAttemptErrorMessage
+                        showErrorDialog = true
+                    }
+
+                    is AddFriendState.UserNotFound -> {
+                        errorDialogMessage = _userNotFoundErrorMessage
+                        showErrorDialog = true
+                    }
+
+                    is AddFriendState.Error -> {
+                        errorDialogMessage = _defaultErrorMessage
+                        showErrorDialog = true
+                    }
                 }
+
             } catch (e: Exception) {
                 Log.e("FriendsViewModel", "Error adding friend", e)
             }
