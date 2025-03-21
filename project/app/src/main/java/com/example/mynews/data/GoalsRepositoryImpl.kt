@@ -20,7 +20,7 @@ class GoalsRepositoryImpl(
 
     override suspend fun logArticleRead(userId: String, articleId: String) {
         val timestamp = System.currentTimeMillis()
-        firestore.collection("users")
+        firestore.collection("goals")
             .document(userId)
             .collection("activity")
             .document(articleId)
@@ -30,7 +30,7 @@ class GoalsRepositoryImpl(
     }
 
     override suspend fun getStreak(userId: String): Int {
-        val doc = firestore.collection("users")
+        val doc = firestore.collection("goals")
             .document(userId)
             .collection("streak")
             .document("current")
@@ -55,7 +55,7 @@ class GoalsRepositoryImpl(
             Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }.time
         )
 
-        val activitySnapshot = firestore.collection("users")
+        val activitySnapshot = firestore.collection("goals")
             .document(userId)
             .collection("activity")
             .whereGreaterThan("timestamp", getStartOfDayTimestamp(today))
@@ -63,7 +63,7 @@ class GoalsRepositoryImpl(
             .await()
         if (activitySnapshot.isEmpty) return
 
-        val streakDoc = firestore.collection("users")
+        val streakDoc = firestore.collection("goals")
             .document(userId)
             .collection("streak")
             .document("current")
@@ -79,7 +79,7 @@ class GoalsRepositoryImpl(
             else -> Streak(1, today)
         }
 
-        firestore.collection("users")
+        firestore.collection("goals")
             .document(userId)
             .collection("streak")
             .document("current")
@@ -88,7 +88,7 @@ class GoalsRepositoryImpl(
     }
 
     override fun getStreakFlow(userId: String): Flow<Pair<Int, String>> = callbackFlow {
-        val listener = firestore.collection("users")
+        val listener = firestore.collection("goals")
             .document(userId)
             .collection("streak")
             .document("current")

@@ -26,7 +26,9 @@ import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
 import android.content.Context
+import com.example.mynews.data.SocialRepositoryImpl
 import com.example.mynews.domain.repositories.GoalsRepository
+import com.example.mynews.domain.repositories.SocialRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
@@ -94,6 +96,14 @@ object AppModule {
         firestore: FirebaseFirestore
     ): FriendsRepository {
         return FriendsRepositoryImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSocialRepository(
+        firestore: FirebaseFirestore
+    ): SocialRepository {
+        return SocialRepositoryImpl(firestore)
     }
 
     @Provides

@@ -15,6 +15,7 @@ import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.social.SocialViewModel
 import com.example.mynews.presentation.views.goals.GoalsScreen
 import com.example.mynews.presentation.views.social.FriendsScreen
 import com.example.mynews.presentation.views.home.HomeScreen
@@ -60,6 +61,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
                  savedArticlesViewModel: SavedArticlesViewModel,
                  friendsViewModel: FriendsViewModel,
                  condensedNewsArticleViewModel: CondensedNewsArticleViewModel,
+                 socialViewModel: SocialViewModel,
                  selectedCategory: MutableState<String?>,
                  searchQuery: MutableState<String>) {
 
@@ -83,8 +85,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
             // TODO Update
         composable(AppScreenRoutes.SocialScreen.route) {
             SocialScreen(navController = navController,
-                friendsViewModel = friendsViewModel,
-                homeViewModel = homeViewModel,
+                socialViewModel = socialViewModel,
                 )
         }
 

@@ -1,5 +1,6 @@
 package com.example.mynews.presentation.viewmodel.goals
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -34,15 +35,26 @@ class GoalsViewModel @Inject constructor(
 
     fun logArticleRead(articleId: String) {
         viewModelScope.launch {
-            val userId = userRepository.getCurrentUserId() ?: return@launch
-            goalsRepository.logArticleRead(userId, articleId)
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            goalsRepository.logArticleRead(userID, articleId)
         }
     }
 
     private fun fetchStreak() {
         viewModelScope.launch {
-            val userId = userRepository.getCurrentUserId() ?: return@launch
-            goalsRepository.getStreakFlow(userId).collectLatest { (count, lastReadDate) ->
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+            goalsRepository.getStreakFlow(userID).collectLatest { (count, lastReadDate) ->
                 _streakCount.value = count
                 _lastReadDate.value = lastReadDate
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())

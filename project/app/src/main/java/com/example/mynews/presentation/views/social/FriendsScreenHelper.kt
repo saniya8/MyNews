@@ -30,7 +30,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Card
 import androidx.navigation.NavController
-import com.example.mynews.data.api.news.Reaction
+import com.example.mynews.domain.model.Reaction
 import com.example.mynews.utils.AppScreenRoutes
 import java.util.Date
 import android.net.Uri
@@ -140,54 +140,6 @@ fun AddedFriendsList(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ReactionItem(
-    reaction: Reaction,
-    username: String,
-    navController: NavController
-    ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable {
-                navController.navigate(
-                            AppScreenRoutes.NewsArticleScreen.createRoute(
-                                Uri.encode(reaction.article.url),
-                                "HomeScreen" // TODO might be wrong
-                            )
-                        )
-            },
-        elevation = 4.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "$username reacted:",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = reaction.reaction,
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Article: ${reaction.article.title}",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-            Text(
-                text = "Timestamp: ${Date(reaction.timestamp)}",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
         }
     }
 }

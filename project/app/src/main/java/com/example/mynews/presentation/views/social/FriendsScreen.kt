@@ -41,7 +41,7 @@ fun FriendsScreen(
     // without the use of LaunchedEffect
     // This was tested and worked with SavedArticles feature, so should work here
     // Reason:
-    // in friendRepository's getFriends, addSnapshotListener is used meaning
+    // in friendRepository's getFriendIds, addSnapshotListener is used meaning
     // whenever users_friends subcollection is updated, firestore detects a change in real time and
     // in the viewmodel, triggers _friends.postValue(friendsList) which updates
     // _friends which updates friends in the view model. Since FriendsScreen

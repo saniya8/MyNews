@@ -27,6 +27,7 @@ import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import com.example.mynews.utils.HomeNavGraph
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.social.SocialViewModel
 
 
 @Composable
@@ -37,6 +38,8 @@ fun MainScreen(rootNavController: NavHostController,
                savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
                friendsViewModel: FriendsViewModel = hiltViewModel(),
                condensedNewsArticleViewModel: CondensedNewsArticleViewModel = hiltViewModel(),
+               socialViewModel: SocialViewModel = hiltViewModel(),
+
                ) {
 
     val navController = rememberNavController() // local controller for bottom nav
@@ -107,6 +110,7 @@ fun MainScreen(rootNavController: NavHostController,
                          savedArticlesViewModel = savedArticlesViewModel,
                          friendsViewModel = friendsViewModel,
                          condensedNewsArticleViewModel = condensedNewsArticleViewModel,
+                         socialViewModel = socialViewModel,
                          selectedCategory = selectedCategory,
                          searchQuery = searchQuery)
 

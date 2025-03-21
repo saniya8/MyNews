@@ -1,6 +1,8 @@
 package com.example.mynews.presentation.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
@@ -28,7 +30,7 @@ fun BottomNavBar (
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     BottomNavigation(
-        modifier = modifier,
+        modifier = modifier.height(70.dp),
         backgroundColor = BlueGrey,
         elevation = 5.dp
     ) {
@@ -52,13 +54,15 @@ fun BottomNavBar (
                 unselectedContentColor = DarkText,
                 icon = {
                     Column(horizontalAlignment = CenterHorizontally ) {
-                        Icon( imageVector = item.icon,
+                        Icon(
+                            modifier = modifier.size(28.dp),
+                            imageVector = item.icon,
                             contentDescription = null )
                         if(selected) {
                             Text(
                                 text = item.name,
                                 textAlign = TextAlign.Center,
-                                fontSize = 10.sp
+                                fontSize = 12.sp
                             )
                         }
                     }

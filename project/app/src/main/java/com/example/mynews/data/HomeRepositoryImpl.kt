@@ -3,7 +3,7 @@ package com.example.mynews.data
 import android.net.Uri
 import android.util.Log
 import com.example.mynews.data.api.news.Article
-import com.example.mynews.data.api.news.Reaction
+import com.example.mynews.domain.model.Reaction
 import com.example.mynews.domain.repositories.HomeRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -121,63 +121,6 @@ class HomeRepositoryImpl @Inject constructor(
             }
     }
 
-    override suspend fun getFriendsReactions(
-        friendIDs: List<String>
-    ): List<Reaction> {
-        val reactions = mutableListOf<Reaction>()
-        try {
-            for (friendId in friendIDs) {
-                val reactionSnapshot = firestore.collection("reactions")
-                    .document(friendId)
-                    .collection("users_reactions")
-                    .get()
-                    .await()
-
-                for (document in reactionSnapshot.documents) {
-                    val articleData = document.get("article") as? Map<*, *>
-                    if (articleData == null) {
-                        Log.w("GetFriendsReactions", "Article data is null for document: ${document.id}")
-                        continue
-                    }
-
-                    val sourceData = articleData["source"] as Map<*, *>
-                    val source = Source(
-                        id = sourceData["id"] as? String ?: "",
-                       // id = "test",//sourceData["id"] as String, // get NULL in an example setting this to default to test
-                        name = sourceData["name"] as? String ?: "" // get
-                    )
-                    // Create an Article object directly from the Firestore data
-                    val article = Article(
-                        author = articleData["author"] as? String ?: "",//articleData["author"] as String, // can be null replacing with test
-                        content = articleData["content"] as? String ?: "",
-                        description = articleData["description"] as? String ?: "",
-                        publishedAt = articleData["publishedAt"] as? String ?: "",
-                        source = source,
-                        title = articleData["title"] as? String ?: "",
-                        url = articleData["url"] as? String ?: "",
-                        urlToImage = articleData["urlToImage"] as? String ?: ""
-                    )
-                    val reaction = document.getString("reaction") ?: continue
-                    val timestamp = document.getLong("timestamp") ?: continue
-                    reactions.add(
-                        Reaction(
-                            userId = friendId,
-                            article = article,
-                            reaction = reaction,
-                            timestamp = timestamp
-                        )
-                    )
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(
-                "GetFriendsReactions",
-                "Error fetching friends' reactions: ${e.message}",
-                e
-            )
-        }
-        return reactions
-    }
 
 //    private suspend fun getFriendUsername(friendId: String): String? {
 //        return try {

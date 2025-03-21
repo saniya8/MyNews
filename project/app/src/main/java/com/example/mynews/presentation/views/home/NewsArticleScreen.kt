@@ -52,8 +52,10 @@ fun NewsArticleScreen(
                             navController.popBackStack(AppScreenRoutes.HomeScreen.route, false)
                         } else if (origin == "SavedArticlesScreen") {
                             navController.popBackStack(AppScreenRoutes.SavedArticlesScreen.route, false)
+                        } else if (origin == "SocialScreen") {
+                            navController.popBackStack(AppScreenRoutes.SocialScreen.route, false)
                         } else {
-                            Log.d("NewsArticleScreen", "Origination error: did not originate from HomeScreen or SavedArticlesScreen")
+                            Log.d("NewsArticleScreen", "Origination error: did not originate from HomeScreen or SavedArticlesScreen or SocialScreen")
                         }
                     }
                 }

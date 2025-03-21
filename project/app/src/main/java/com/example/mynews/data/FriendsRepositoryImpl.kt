@@ -136,52 +136,6 @@ class FriendsRepositoryImpl (
             }
     }
 
-    // getFriends: returns a list of strings where each item in the list is the id of
-    // a friend
-    override suspend fun getFriends(currentUserID: String, onResult: (List<String>) -> Unit) {
-        firestore.collection("friends")
-            .document(currentUserID)
-            .collection("users_friends")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e("Get Friends", "Error fetching friends: ${error.message}", error)
-                    onResult(emptyList())
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val friendUsernames = snapshot.documents.map { it.id }
-                    Log.d("Get Friends", "Successfully retrieved friends: $friendUsernames")
-                    onResult(friendUsernames) // Updates UI via ViewModel
-                } else {
-                    Log.d("Get Friends", "Firestore snapshot is null")
-                    onResult(emptyList())
-                }
-            }
-    }
-
-    override suspend fun getFriendIdsAndUsernames(currentUserID: String, onResult: (Map<Any?, Any?>) -> Unit) { // String String
-        firestore.collection("friends")
-            .document(currentUserID)
-            .collection("users_friends")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                if (snapshot != null) {
-                    val friendMap = snapshot.documents.associate {
-                        ((it.id to it.getString("username")) ?: "") as Pair<*, *>
-                    }
-
-                    Log.d("GetFriendIdsAndUsernames", "Successfully retrieved friend map: $friendMap")
-                    onResult(friendMap)
-                } else {
-                    Log.d("GetFriendIdsAndUsernames", "Firestore snapshot is null")
-                    onResult(emptyMap())
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("GetFriendIdsAndUsernames", "Error fetching friend IDs and usernames: ${e.message}", e)
-                onResult(emptyMap())
-            }
-    }
 
 }
 
