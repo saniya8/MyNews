@@ -2,6 +2,7 @@ package com.example.mynews.presentation.views.social
 
 import android.net.Uri
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -47,11 +48,26 @@ fun SocialScreen(
     //val friendsIds by socialViewModel.friendsIds.observeAsState(emptyList())
     val reactions by socialViewModel.reactions.collectAsState()
     val friendsMap by socialViewModel.friendsMap.collectAsState()
+    val isLoading by socialViewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
         //socialViewModel.fetchFriendIds()
         //socialViewModel.fetchFriendIdsAndUsernames()
         socialViewModel.fetchFriends()
+    }
+
+
+
+    LaunchedEffect(friendsMap) {
+
+        if (friendsMap.isNotEmpty()) {
+            val friendsIdsList = friendsMap.keys.toList()
+            socialViewModel.fetchFriendsReactions(friendsIdsList)
+        } else {
+            socialViewModel.fetchFriendsReactions(emptyList())
+        }
+
+
     }
 
     /*
@@ -62,19 +78,6 @@ fun SocialScreen(
     }
 
      */
-
-    LaunchedEffect(friendsMap) {
-
-        if (friendsMap.isNotEmpty()) {
-            val friendsIdsList = friendsMap.keys.toList()
-            socialViewModel.fetchFriendsReactions(friendsIdsList)
-        }
-
-
-    }
-
-
-
 
 
     Scaffold(
@@ -115,8 +118,12 @@ fun SocialScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            if (reactions.isEmpty()) {
-                Box (
+
+            if (!isLoading) {
+
+                if (reactions.isEmpty()) {
+
+                    /*Box (
                     modifier = Modifier
                         .fillMaxWidth()
                 ){
@@ -130,13 +137,34 @@ fun SocialScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-            } else {
-                LazyColumn {
-                    items(reactions) { reaction ->
-                        ReactionItem(reaction = reaction, username = friendsMap[reaction.userID].toString(), navController = navController)
+
+                 */
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No friend activity yet",
+                            fontSize = 18.sp,
+                            color = Color.Gray
+                        )
+                    }
+                } else {
+                    LazyColumn {
+                        items(reactions) { reaction ->
+                            ReactionItem(
+                                reaction = reaction,
+                                username = friendsMap[reaction.userID].toString(),
+                                navController = navController
+                            )
+                        }
                     }
                 }
-            }
+            } // else isLoading == true, show nothing
         }
     }
 }

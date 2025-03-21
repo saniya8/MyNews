@@ -39,7 +39,7 @@ class SocialViewModel @Inject constructor(
     private val _reactions = MutableStateFlow<List<Reaction>>(emptyList())
     val reactions: StateFlow<List<Reaction>> get() = _reactions.asStateFlow()
 
-    // TODO update types
+    // DONE - TODO update types
     //private val _friendsMap = MutableStateFlow<Map<Any?, Any?>>(emptyMap())
     //val friendsMap: StateFlow<Map<Any?, Any?>> = _friendsMap
 
@@ -49,19 +49,55 @@ class SocialViewModel @Inject constructor(
 
     fun fetchFriends() {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 val userID = userRepository.getCurrentUserId()
                 if (userID.isNullOrEmpty()) {
                     Log.e("SocialViewModel", "Error: User ID is null, cannot fetch friends")
+                    _isLoading.value = false
                     return@launch
                 }
                 socialRepository.getFriends(userID) { friendMap ->
                     _friendsMap.value = friendMap // update friendsMap (friendID -> username)
                     //_friendsIds.value = friendMap.keys.toList() // update friend IDs list
                     //_friends.value = friendMap.values.toList() // update friend usernames list
+                    if (friendMap.isEmpty()) { // avoids flickers
+                        _reactions.value = emptyList()
+                        _isLoading.value = false
+                    }
+                    // don't reset _isLoading here: let fetchFriendsReaction handle it
+                    // since this means friendMap is not empty, so LaunchedEffect on friendMap
+                    // in view will call fetchFriendsReactions
+
                 }
             } catch (e: Exception) {
                 Log.e("SocialViewModel", "Error fetching friends: ${e.message}", e)
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun fetchFriendsReactions(friendIds: List<String>) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            //if (friendIds.isEmpty()) { // immediately clear reactions if no friends exist
+            //    _reactions.value = emptyList()
+            //    _isLoading.value = false
+            //    return@launch
+            //}
+
+            try {
+                //val friendsReactions = socialRepository.getFriendsReactions(friendIds)
+                //_reactions.value = friendsReactions
+                socialRepository.getFriendsReactions(friendIds) { reactions ->
+                    _reactions.value = reactions // updates UI in real-time
+                    _isLoading.value = false
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Failed to fetch friends' reactions: ${e.message}"
+                _isLoading.value = false
             }
         }
     }
@@ -109,23 +145,6 @@ class SocialViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("SocialViewModel", "Error fetching friend IDs and usernames", e)
-            }
-        }
-    }
-
-    fun fetchFriendsReactions(friendIds: List<String>) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            try {
-                //val friendsReactions = socialRepository.getFriendsReactions(friendIds)
-                //_reactions.value = friendsReactions
-                socialRepository.getFriendsReactions(friendIds) { reactions ->
-                    _reactions.value = reactions // updates UI in real-time
-                    _isLoading.value = false
-                }
-            } catch (e: Exception) {
-                _errorMessage.value = "Failed to fetch friends' reactions: ${e.message}"
             }
         }
     }
