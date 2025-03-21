@@ -6,6 +6,7 @@ import com.example.mynews.data.api.news.NewsRetrofitInstance
 import retrofit2.Response
 import javax.inject.Inject
 import android.content.Context
+import com.example.mynews.data.api.news.NewsApiClient
 import com.example.mynews.data.newsbias.NewsBiasProvider
 import kotlinx.coroutines.flow.StateFlow
 
@@ -18,28 +19,30 @@ class NewsRepositoryImpl @Inject constructor(
 
     private val newsBiasProvider = NewsBiasProvider(context)
 
-    private val newsApi = NewsRetrofitInstance.newsApi
+    //private val newsApi = NewsRetrofitInstance.newsApi
+    private val newsApiClient = NewsApiClient()
+
     private val language = "en"
 
-    override suspend fun getTopHeadlines(): Response<NewsResponse> {
-        return newsApi.getTopHeadlines(
+    override suspend fun getTopHeadlines(): NewsResponse {
+        return newsApiClient.getTopHeadlines(
             language = language,
             apiKey = Constant.apiKey
         )
     }
 
-    override suspend fun getTopHeadlinesByCategory(category: String): Response<NewsResponse> {
-        return newsApi.getTopHeadlinesByCategory(
+    override suspend fun getTopHeadlinesByCategory(category: String): NewsResponse {
+        return newsApiClient.getTopHeadlinesByCategory(
             language = language,
             category = category,
             apiKey = Constant.apiKey
         )
     }
 
-    override suspend fun getEverythingBySearch(searchQuery: String): Response<NewsResponse> {
-        return newsApi.getEverythingBySearch(
+    override suspend fun getEverythingBySearch(searchQuery: String): NewsResponse {
+        return newsApiClient.getEverythingBySearch(
             language = language,
-            q = searchQuery,
+            query = searchQuery,
             apiKey = Constant.apiKey
         )
     }

@@ -107,6 +107,19 @@ dependencies {
     implementation ("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation ("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 
+    // Ktor API
+
+    // Ktor client core
+    implementation("io.ktor:ktor-client-core:3.1.0")
+    implementation("io.ktor:ktor-client-cio:3.1.0")
+
+    // Ktor serialization (Kotlinx)
+    implementation("io.ktor:ktor-client-content-negotiation:3.1.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.0")
+
+    // Logging (Optional but useful)
+    implementation("io.ktor:ktor-client-logging:3.1.0")
+
     // Coil - Image Loading
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0") //- don't need this now but this is in COIL documentation - might need later

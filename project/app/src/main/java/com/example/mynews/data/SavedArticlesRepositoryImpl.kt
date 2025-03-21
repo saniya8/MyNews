@@ -166,7 +166,7 @@ class SavedArticlesRepositoryImpl @Inject constructor(
                             ),
                             title = document.getString("title") ?: "",
                             url = document.getString("url") ?: "",
-                            urlToImage = document.getString("urlToImage")
+                            urlToImage = document.getString("urlToImage") ?: ""
                         )
                     }
                     /*

@@ -1,22 +1,16 @@
 package com.example.mynews.data.newsbias
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.news.NewsRetrofitInstance
+import com.example.mynews.data.api.newsbias.NewsBiasApiClient
 import com.example.mynews.data.api.newsbias.NewsBiasResponse
 import com.example.mynews.data.api.newsbias.NewsBiasRetrofitInstance
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import retrofit2.HttpException
-import java.io.File
 import java.io.IOException
 
 // Note:
@@ -39,8 +33,8 @@ class NewsBiasProvider(context: Context) {
     private val _biasMap = MutableStateFlow<Map<String, String>>(emptyMap())
     val biasMap: StateFlow<Map<String, String>> = _biasMap // for NewsViewModel
 
-    private val newsBiasApi = NewsBiasRetrofitInstance.newsBiasApi
-
+    //private val newsBiasApi = NewsBiasRetrofitInstance.newsBiasApi
+    private val newsBiasApi = NewsBiasApiClient()
 
     /*init {
         // load the JSON data as a raw string
@@ -66,7 +60,33 @@ class NewsBiasProvider(context: Context) {
     private suspend fun fetchBiasData(context: Context): Map<String, String> {
 
         try {
+            // Attempt API fetch via Ktor
+            val response = newsBiasApi.getBiasRatings()
+
+            Log.d("NewsBiasProvider", "Successfully fetched bias data from API")
+
+            val parsedNewsBias = parseNewsBiasFromApi(response) // parse response directly
+            return parsedNewsBias
+
+        } catch (e: IOException) { // network errors
+            Log.e("NewsBiasDebug", "Network error: ${e.message}", e)
+
+        } catch (e: HttpException) { // HTTP errors
+            Log.e("NewsBiasDebug", "API error: ${e.message}", e)
+
+        } catch (e: Exception) { // any errors
+            Log.e("NewsBiasDebug", "Error: ${e.message}", e)
+        }
+
+        Log.d("NewsBiasDebug", "Falling back to local JSON") //fallback on failure
+        val jsonString = loadNewsBiasFromJson(context)
+        return parseNewsBiasFromJson(jsonString)
+
+        /*
+
+        try {
             //throw IOException("Forced failure") // to test that fallback occurred
+            //val response = newsBiasApiClient.getBiasRatings()
             val response = newsBiasApi.getBiasRatings()
 
             if (response.isSuccessful) {
@@ -94,6 +114,8 @@ class NewsBiasProvider(context: Context) {
         Log.d("NewsBiasDebug", "Falling back to local JSON")
         val jsonString = loadNewsBiasFromJson(context)
         return parseNewsBiasFromJson(jsonString) // fallback to local JSON
+
+         */
 
     }
 

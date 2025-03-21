@@ -61,38 +61,12 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch {
             // getTopHeadlines is a suspend function, therefore will take time
             // to load, therefore wrap it in a coroutine using viewModelScope.launch
-            val response = newsRepository.getTopHeadlines()
+            try {
+                val response = newsRepository.getTopHeadlines() // ktor gives parsed data directly
+                _articles.postValue(response.articles)
 
-            // response represents entire HTTP response:
-            // response.code() - status code
-            // response.headers() - headers
-            // response.errorBody() - error body
-            // response.body() - body - the actual NewsResponse entity
-
-            //Log.i("NewsAPI Response", "Response Code: ${response.code()}")
-
-            if (response.isSuccessful) {
-
-                //Log.i("NewsAPI Response: ", response.body().toString())
-
-                val newsResponse = response.body()
-
-
-                // Print the titles
-                //newsResponse?.articles?.forEach { article ->
-                //    Log.i("NewsAPI Response", "Title: ${article.title}")
-                //}
-
-
-                // Assign articles to the mutable live data _articles
-                newsResponse?.articles?.let {
-                    _articles.postValue(it)
-                }
-
-
-            } else {
-                //response.errorBody()?.string()?.let { Log.i("NewsAPI Response Failed: ", it) }
-                Log.i("NewsAPI Response Failure: ", response.message())
+            } catch (e: Exception) {
+                Log.e("NewsAPI Error", "Failed to fetch top headlines: ${e.message}", e)
             }
         }
     }
@@ -108,66 +82,25 @@ class NewsViewModel @Inject constructor(
 
 
         viewModelScope.launch {
-            // getTopHeadlinesByCategory is a suspend function, therefore will take time
-            // to load, therefore wrap it in a coroutine using viewModelScope.launch
 
-            /*
-
-            // this was code when handling category == null
-            // now handling that in HomeScreen.kt
-
-            // value of response depends on the category value
-            val response =
-                if(category == null) {
-                    newsApi.getTopHeadlines(language = language,
-                                            apiKey = Constant.apiKey)
-                } else { // category is not null
-                    newsApi.getTopHeadlinesByCategory(language = language,
-                                                      category = category,
-                                                      apiKey = Constant.apiKey)
-                }
-
-             */
-
-
-            val response = newsRepository.getTopHeadlinesByCategory(category)
-
-            if (response.isSuccessful) {
-                val newsResponse = response.body()
-                // Assign articles to the mutable live data _articles
-                newsResponse?.articles?.let {
-                    _articles.postValue(it)
-                }
-
-            } else {
-                Log.i("NewsAPI Response Failure By Category: ", response.message())
+            try {
+                val newsResponse = newsRepository.getTopHeadlinesByCategory(category)
+                _articles.postValue(newsResponse.articles)
+            } catch (e: Exception) {
+                Log.e("NewsAPI Error", "Failed to fetch headlines by category: ${e.message}", e)
             }
-
-
         }
-
     }
 
     // for searching
     fun fetchEverythingBySearch(searchQuery: String) {
 
-
         viewModelScope.launch {
-
-            // getEverythingBySearch is a suspend function, therefore will take time
-            // to load, therefore wrap it in a coroutine using viewModelScope.launch
-
-            val response = newsRepository.getEverythingBySearch(searchQuery)
-
-            if (response.isSuccessful) {
-                val newsResponse = response.body()
-                // Assign articles to the mutable live data _articles
-                newsResponse?.articles?.let {
-                    _articles.postValue(it)
-                }
-
-            } else {
-                Log.i("NewsAPI Response Failure By Category: ", response.message())
+            try {
+                val newsResponse = newsRepository.getEverythingBySearch(searchQuery)
+                _articles.postValue(newsResponse.articles)
+            } catch (e: Exception) {
+                Log.e("NewsAPI Error", "Failed to fetch search results: ${e.message}", e)
             }
         }
 
