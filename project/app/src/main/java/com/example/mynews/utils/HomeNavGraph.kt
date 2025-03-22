@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mynews.data.UserRepositoryImpl
+import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
@@ -62,6 +63,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
                  friendsViewModel: FriendsViewModel,
                  condensedNewsArticleViewModel: CondensedNewsArticleViewModel,
                  socialViewModel: SocialViewModel,
+                 goalsViewModel: GoalsViewModel,
                  selectedCategory: MutableState<String?>,
                  searchQuery: MutableState<String>) {
 
@@ -75,11 +77,13 @@ fun HomeNavGraph(rootNavController: NavHostController,
                        homeViewModel = homeViewModel,
                        newsViewModel = newsViewModel,
                        savedArticlesViewModel = savedArticlesViewModel,
+                       goalsViewModel = goalsViewModel,
                        selectedCategory = selectedCategory,
                        searchQuery = searchQuery)
         }
         composable(AppScreenRoutes.GoalsScreen.route) {
-            GoalsScreen(navController = navController)
+            GoalsScreen(navController = navController,
+                        goalsViewModel = goalsViewModel)
         }
 
             // TODO Update
@@ -116,7 +120,8 @@ fun HomeNavGraph(rootNavController: NavHostController,
         composable(AppScreenRoutes.SavedArticlesScreen.route) {
             SavedArticlesScreen(navController = navController,
                                 newsViewModel = newsViewModel,
-                                savedArticlesViewModel = savedArticlesViewModel)
+                                savedArticlesViewModel = savedArticlesViewModel,
+                                goalsViewModel = goalsViewModel,)
         }
 
         composable(AppScreenRoutes.SettingsScreen.route) {

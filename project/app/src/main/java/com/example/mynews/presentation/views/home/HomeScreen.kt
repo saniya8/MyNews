@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.data.api.news.Article
+import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -93,6 +94,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
     savedArticlesViewModel: SavedArticlesViewModel,
+    goalsViewModel: GoalsViewModel,
     selectedCategory: MutableState<String?>,
     searchQuery: MutableState<String>,
 ) {
@@ -461,6 +463,7 @@ fun HomeScreen(
                                 navController = navController,
                                 newsViewModel = newsViewModel,
                                 savedArticlesViewModel = savedArticlesViewModel,
+                                goalsViewModel = goalsViewModel,
                                 articles = articles,
                                 origin = "HomeScreen",
                                 openDrawer = ::openDrawer,

@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.ui.theme.BiasColors
 import com.example.mynews.utils.AppScreenRoutes
@@ -69,6 +70,7 @@ fun NewsScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
     savedArticlesViewModel: SavedArticlesViewModel,
+    goalsViewModel: GoalsViewModel,
     articles: List<Article>,
     origin: String,
     openDrawer: () -> Unit,
@@ -98,6 +100,7 @@ fun NewsScreen(
                 ArticleItem(navController = navController,
                             newsViewModel = newsViewModel,
                             savedArticlesViewModel = savedArticlesViewModel,
+                            goalsViewModel = goalsViewModel,
                             article = article,
                             origin = origin,
                             openDrawer = openDrawer,
@@ -120,6 +123,7 @@ fun ArticleItem(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
     savedArticlesViewModel: SavedArticlesViewModel,
+    goalsViewModel: GoalsViewModel,
     article: Article,
     origin: String,
     openDrawer: () -> Unit,
@@ -559,6 +563,10 @@ fun ArticleItem(
                 if (isTapValid.value) { // only valid taps trigger navigation
 
                     if (origin == "HomeScreen" || origin == "SavedArticlesScreen") {
+
+                        if (origin == "HomeScreen") {
+                            goalsViewModel.logArticleRead(article)
+                        }
                         navController.navigate(
                             AppScreenRoutes.NewsArticleScreen.createRoute(
                                 encodedUrl,

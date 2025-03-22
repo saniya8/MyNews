@@ -21,6 +21,7 @@ import com.example.mynews.utils.AuthScreen
 import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.components.BottomNavBar
 import com.example.mynews.domain.model.BottomNavBarItem
+import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
@@ -39,6 +40,7 @@ fun MainScreen(rootNavController: NavHostController,
                friendsViewModel: FriendsViewModel = hiltViewModel(),
                condensedNewsArticleViewModel: CondensedNewsArticleViewModel = hiltViewModel(),
                socialViewModel: SocialViewModel = hiltViewModel(),
+               goalsViewModel: GoalsViewModel = hiltViewModel(),
 
                ) {
 
@@ -111,6 +113,7 @@ fun MainScreen(rootNavController: NavHostController,
                          friendsViewModel = friendsViewModel,
                          condensedNewsArticleViewModel = condensedNewsArticleViewModel,
                          socialViewModel = socialViewModel,
+                         goalsViewModel = goalsViewModel,
                          selectedCategory = selectedCategory,
                          searchQuery = searchQuery)
 

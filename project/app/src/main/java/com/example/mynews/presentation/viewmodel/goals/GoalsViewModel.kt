@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.data.api.news.Article
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +34,7 @@ class GoalsViewModel @Inject constructor(
         fetchStreak()
     }
 
-    fun logArticleRead(articleId: String) {
+    fun logArticleRead(article: Article) {
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()
 
@@ -42,7 +43,7 @@ class GoalsViewModel @Inject constructor(
                 return@launch // return
             }
 
-            goalsRepository.logArticleRead(userID, articleId)
+            goalsRepository.logArticleRead(userID, article)
         }
     }
 

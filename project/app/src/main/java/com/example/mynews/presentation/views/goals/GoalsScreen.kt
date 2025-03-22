@@ -28,17 +28,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 
 @Composable
 fun GoalsScreen(
     navController: NavHostController,
-    viewModel: GoalsViewModel = hiltViewModel()
+    goalsViewModel: GoalsViewModel,
 ) {
-    val streakCount by viewModel.streakCount.observeAsState(0)
-    val hasLoggedToday by viewModel.hasLoggedToday
+    val streakCount by goalsViewModel.streakCount.observeAsState(0)
+    val hasLoggedToday by goalsViewModel.hasLoggedToday
 
     // these are still hard coded but to be replaced with Firestore data later
     val sampleAchievements = listOf(

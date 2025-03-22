@@ -1,5 +1,7 @@
 package com.example.mynews.data
 
+import android.net.Uri
+import com.example.mynews.data.api.news.Article
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -18,12 +20,17 @@ class GoalsRepositoryImpl(
         val lastReadDate: String
     )
 
-    override suspend fun logArticleRead(userId: String, articleId: String) {
+    override suspend fun logArticleRead(userId: String, article: Article) {
+
+        // firestore does not allow slashes in document IDs so need to encode URL
+        val safeArticleURL = Uri.encode(article.url)
+
+
         val timestamp = System.currentTimeMillis()
         firestore.collection("goals")
             .document(userId)
             .collection("activity")
-            .document(articleId)
+            .document(safeArticleURL)
             .set(mapOf("timestamp" to timestamp))
             .await()
         updateStreak(userId)

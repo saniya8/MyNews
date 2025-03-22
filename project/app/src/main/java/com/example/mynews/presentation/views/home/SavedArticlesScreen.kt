@@ -20,6 +20,7 @@ import com.example.mynews.utils.AppScreenRoutes
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.ui.theme.CaptainBlue
 
@@ -28,6 +29,7 @@ fun SavedArticlesScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
     savedArticlesViewModel: SavedArticlesViewModel,
+    goalsViewModel: GoalsViewModel,
 ){
 
     val articles by savedArticlesViewModel.savedArticles.observeAsState(emptyList())
@@ -158,6 +160,7 @@ fun SavedArticlesScreen(
                             navController = navController,
                             newsViewModel = newsViewModel,
                             savedArticlesViewModel = savedArticlesViewModel,
+                            goalsViewModel = goalsViewModel,
                             articles = articles,
                             origin = "SavedArticlesScreen",
                             openDrawer = {}, // empty since no drawer on this screen,
