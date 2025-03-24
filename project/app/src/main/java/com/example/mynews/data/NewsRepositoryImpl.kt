@@ -2,8 +2,6 @@ package com.example.mynews.data
 
 import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.data.api.news.NewsResponse
-import com.example.mynews.data.api.news.NewsRetrofitInstance
-import retrofit2.Response
 import javax.inject.Inject
 import android.content.Context
 import com.example.mynews.data.api.news.NewsApiClient
@@ -27,7 +25,7 @@ class NewsRepositoryImpl @Inject constructor(
     override suspend fun getTopHeadlines(): NewsResponse {
         return newsApiClient.getTopHeadlines(
             language = language,
-            apiKey = Constant.apiKey
+            apiKey = Constant.NEWS_API_KEY
         )
     }
 
@@ -35,7 +33,7 @@ class NewsRepositoryImpl @Inject constructor(
         return newsApiClient.getTopHeadlinesByCategory(
             language = language,
             category = category,
-            apiKey = Constant.apiKey
+            apiKey = Constant.NEWS_API_KEY
         )
     }
 
@@ -43,7 +41,7 @@ class NewsRepositoryImpl @Inject constructor(
         return newsApiClient.getEverythingBySearch(
             language = language,
             query = searchQuery,
-            apiKey = Constant.apiKey
+            apiKey = Constant.NEWS_API_KEY
         )
     }
 

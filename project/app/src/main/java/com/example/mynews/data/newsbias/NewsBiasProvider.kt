@@ -3,7 +3,6 @@ import android.content.Context
 import android.util.Log
 import com.example.mynews.data.api.newsbias.NewsBiasApiClient
 import com.example.mynews.data.api.newsbias.NewsBiasResponse
-import com.example.mynews.data.api.newsbias.NewsBiasRetrofitInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

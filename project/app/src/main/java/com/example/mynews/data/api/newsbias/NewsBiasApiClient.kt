@@ -1,21 +1,18 @@
 package com.example.mynews.data.api.newsbias
 
-import com.example.mynews.data.api.newsbias.NewsBiasResponse
+import com.example.mynews.data.Constant
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.ContentType
-import io.ktor.serialization.kotlinx.KotlinxSerializationConverter
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
 import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.http.*
-import io.ktor.util.*
 
 // Custom plugin to remove the Accept-Charset header
 val RemoveAcceptCharset = createClientPlugin("RemoveAcceptCharset") {
@@ -28,8 +25,8 @@ val RemoveAcceptCharset = createClientPlugin("RemoveAcceptCharset") {
 
 class NewsBiasApiClient {
 
-    private val baseUrl = "https://www.allsides.com/"
-    private val userAgent = "Mozilla/5.0"
+    private val baseUrl = Constant.NEWS_BIAS_API_BASE_URL
+    private val userAgent = Constant.USER_AGENT
 
     /*private val client = HttpClient {
         install(ContentNegotiation) {
@@ -73,7 +70,7 @@ class NewsBiasApiClient {
     suspend fun getBiasRatings(): NewsBiasResponse {
         return client.get("${baseUrl}media-bias/json/noncommercial/publications") {
             headers {
-                append("User-Agent", userAgent) // ⬅️ Required to prevent 403
+                append("User-Agent", userAgent) // required to prevent 403
             }
         }.body()
     }

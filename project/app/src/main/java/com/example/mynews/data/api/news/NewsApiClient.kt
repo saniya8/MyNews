@@ -1,5 +1,6 @@
 package com.example.mynews.data.api.news
 
+import com.example.mynews.data.Constant
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -9,8 +10,8 @@ import kotlinx.serialization.json.Json
 
 class NewsApiClient {
 
-    private val baseUrl = "https://newsapi.org/v2/"
-    private val userAgent = "Mozilla/5.0"
+    private val baseUrl = Constant.NEWS_API_BASE_URL
+    private val userAgent = Constant.USER_AGENT
 
     private val client = HttpClient {
         install(ContentNegotiation) {
