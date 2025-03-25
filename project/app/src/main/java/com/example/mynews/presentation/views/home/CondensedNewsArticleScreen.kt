@@ -38,8 +38,29 @@ fun CondensedNewsArticleScreen(
         condensedNewsArticleViewModel.fetchArticleText(articleUrl)
     }
 
-    LaunchedEffect(articleText, currentArticleUrl) {
+    /*LaunchedEffect(articleText, currentArticleUrl) {
         if (articleText.isNotEmpty() && currentArticleUrl == articleUrl) {
+            condensedNewsArticleViewModel.fetchSummarizedText(
+                url = articleUrl,
+                text = articleText,
+                wordLimit = 200
+            )
+        }
+    }*/
+
+
+    LaunchedEffect(articleText, currentArticleUrl) {
+        val articleErrorMessages = listOf(
+            "Failed to extract meaningful content from the article",
+            "No article content found in Diffbot response",
+            "No summary generated from Huggingface",
+            "Invalid summary containing 'CNN'",
+        )
+        if (articleText in articleErrorMessages || articleText.startsWith("Error:")) {
+            condensedNewsArticleViewModel.clearArticleText()
+            condensedNewsArticleViewModel.clearSummarizedText()
+            showErrorDialog = true
+        } else if (articleText.isNotEmpty() && currentArticleUrl == articleUrl) {
             condensedNewsArticleViewModel.fetchSummarizedText(
                 url = articleUrl,
                 text = articleText,
@@ -50,11 +71,13 @@ fun CondensedNewsArticleScreen(
 
     LaunchedEffect(summarizedText) {
         val errorMessages = listOf(
-            "Failed to extract meaningful content from the article.",
-            "No article content found in Diffbot response"
+            "Failed to extract meaningful content from the article",
+            "No article content found in Diffbot response",
+            "No summary generated from Huggingface",
+            "Invalid summary containing 'CNN'",
         )
-
         if (summarizedText in errorMessages || summarizedText.startsWith("Error:")) {
+            condensedNewsArticleViewModel.clearSummarizedText() // summarized text will show the error message, clear it
             showErrorDialog = true
         }
     }

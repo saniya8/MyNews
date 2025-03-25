@@ -112,6 +112,8 @@ dependencies {
     // Ktor client core
     implementation("io.ktor:ktor-client-core:3.1.0")
     implementation("io.ktor:ktor-client-cio:3.1.0")
+    implementation ("io.ktor:ktor-client-encoding:3.1.0")
+    implementation ("io.ktor:ktor-client-android:3.1.0")
 
     // Ktor serialization (Kotlinx)
     implementation("io.ktor:ktor-client-content-negotiation:3.1.0")
