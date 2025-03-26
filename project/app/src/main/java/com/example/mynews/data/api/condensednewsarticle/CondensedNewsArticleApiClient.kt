@@ -4,18 +4,8 @@ import android.util.Log
 import com.example.mynews.data.Constant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
-import org.jsoup.Jsoup
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 import io.ktor.client.*
 import io.ktor.client.engine.android.Android
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.DefaultRequest
-import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.statement.HttpResponse
@@ -23,13 +13,11 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import org.json.JSONArray
+import org.json.JSONObject
 
 class CondensedNewsArticleApiClient {
 
@@ -40,24 +28,18 @@ class CondensedNewsArticleApiClient {
                 coerceInputValues = true
             })
         }
-        //install(HttpRequestRetry) {
-        //    retryOnServerErrors(maxRetries = 3)
-        //    exponentialDelay()
-        //}
+
         install(ContentEncoding) { // Enable gzip decompression
             gzip()
         }
-        //install(DefaultRequest) {
-        //    header(HttpHeaders.Accept, "application/json")
-        //    header(HttpHeaders.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        //}
-    }
 
+    }
 
     suspend fun getArticleText(url: String): String {
         return withContext(Dispatchers.IO) {
             try {
-                val apiUrl = "https://api.diffbot.com/v3/article?token=${Constant.DIFFBOT_API_KEY}&url=$url"
+                val apiUrl =
+                    "https://api.diffbot.com/v3/article?token=${Constant.DIFFBOT_API_KEY}&url=$url"
 
                 // using ktor
 
@@ -65,24 +47,47 @@ class CondensedNewsArticleApiClient {
                 val response: HttpResponse = client.get(apiUrl) {
                     headers {
                         append(HttpHeaders.Accept, "application/json")
+                        append(HttpHeaders.UserAgent, Constant.USER_AGENT)
                     }
                 }
 
                 Log.d("CondensedNewsApi", "Response Status: ${response.status}")
-                val responseBody = response.bodyAsText()
-                Log.d("CondensedNewsApi", "Raw Response Body: $responseBody")
+
+                val responseText = response.bodyAsText()
+                Log.d("CondensedNewsApi", "Raw Response Body: $responseText")
 
                 if (response.status != HttpStatusCode.OK) {
                     return@withContext "Error: API returned ${response.status}"
                 }
 
-                val jsonResponse = Json.parseToJsonElement(responseBody).jsonObject
+                val jsonResponse = JSONObject(responseText)
                 Log.d("CondensedNewsApi", "Json response $jsonResponse")
-                val htmlContent = jsonResponse["objects"]?.jsonArray?.get(0)?.jsonObject?.get("html")?.jsonPrimitive?.content
+                val htmlContent = jsonResponse.getJSONArray("objects").getJSONObject(0).getString("html")
+                    ?: return@withContext "No article content found in Diffbot response"
 
-//             println("Diffbot Response: ${response}") // This line can be used to see what is being returned by Diffbot
+                // additional error-checking
 
-                return@withContext htmlContent ?: "No article content found in Diffbot response"
+               /* val title = jsonResponse.getJSONArray("objects")
+                    .getJSONObject(0)
+                    .optString("title", "Untitled") // Fallback to "Untitled" if missing
+
+                val images = jsonResponse.getJSONArray("objects")
+                    .getJSONObject(0)
+                    .optJSONArray("images") ?: JSONArray()
+
+                Log.d("CondensedNewsApi", "Fetched HTML content: $htmlContent")
+                Log.d("CondensedNewsApi", "Title: $title")
+
+                // check if html is too problematic
+                if (isProblematicHtml(htmlContent, title, images)) {
+                    Log.d("CondensedNewsApi", "Detected problematic HTML - returning error")
+                    return@withContext "Error: Unable to extract meaningful article text"
+                }*/
+
+                Log.d("CondensedNewsApi", "Extracted text: $htmlContent")
+
+                return@withContext htmlContent
+
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -97,20 +102,11 @@ class CondensedNewsArticleApiClient {
         val url = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn"
 
 
-        if (text.startsWith("Error:")){
+        if (text.startsWith("Error:")) {
             return@withContext "Error: Unable to summarize text."
         }
 
         try {
-
-            /*val requestBody = JSONObject().apply {
-                put("inputs", text)
-                put("parameters", JSONObject().apply {
-                    put("max_length", wordLimit)
-                    put("min_length", wordLimit / 2)
-                    put("do_sample", false)
-                })
-            }*/
 
             val requestBody = JsonObject(
                 mapOf(
@@ -125,15 +121,15 @@ class CondensedNewsArticleApiClient {
                 )
             )
 
-
             // POST request using Ktor
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.Authorization, "Bearer ${Constant.HUGGINGFACE_API_KEY}")
-                    append(HttpHeaders.ContentType,"application/json" /*ContentType.Application.Json.toString()*/)
+                    append( HttpHeaders.ContentType, "application/json" /*ContentType.Application.Json.toString()*/)
+                    append(HttpHeaders.UserAgent, Constant.USER_AGENT)
                 }
-                setBody(requestBody)  // Set the body of the request
-            } // Get the response body as a String
+                setBody(requestBody)
+            }
 
             Log.d("CondensedNewsApi", "Hugging Face Status: ${response.status}")
             val responseText = response.bodyAsText()
@@ -145,23 +141,21 @@ class CondensedNewsArticleApiClient {
 
             // handle the response
             if (responseText.isNotEmpty()) {
-                //val jsonResponse = JSONArray(response)
-                //val summaryText = jsonResponse.optJSONObject(0)?.optString("summary_text")
 
-                val jsonResponse = Json.parseToJsonElement(responseText).jsonArray
-                val summaryText = jsonResponse.getOrNull(0)?.jsonObject?.get("summary_text")?.jsonPrimitive?.content
+                val jsonResponse = JSONArray(responseText)
+                val summaryText = jsonResponse.optJSONObject(0)?.optString("summary_text")
 
                 // check if summaryText is valid and return it
-                if (!summaryText.isNullOrEmpty() && !summaryText.contains("CNN", ignoreCase = true)) {
+                if (!summaryText.isNullOrEmpty() && !summaryText.contains("CNN", ignoreCase = true)
+                ) {
 
                     // simulate error
                     //return@withContext "Error: ..."
 
-
-
                     return@withContext summaryText
 
                 } else {
+
                     // Loading message due to weird Hugging Face behaviour
 
                     if (summaryText.isNullOrEmpty()) {
@@ -179,4 +173,43 @@ class CondensedNewsArticleApiClient {
         }
     }
 
+    private fun isProblematicHtml(html: String, title: String, images: JSONArray): Boolean {
+        // extract meaningful text, exclude carousel/sidebars
+        val plainText = html
+            .replace(
+                Regex("<ul.*?>.*?</ul>", RegexOption.DOT_MATCHES_ALL),
+                " "
+            ) // Remove carousel lists
+            .replace(Regex("<h2.*?>.*?</h2>", RegexOption.DOT_MATCHES_ALL), " ") // Remove headings
+            .replace(Regex("<[^>]+>"), " ") // Strip remaining tags
+            .replace(Regex("\\s+"), " ")
+            .trim()
+
+        val problematicMarkers = listOf(
+            "<li data-carousel-id",
+            "<h2>Top Stories</h2>",
+            "<h2>ABC News Live Presents</h2>"
+        )
+        val hasEarlyProblematic = problematicMarkers.any { marker ->
+            val index = html.indexOf(marker)
+            index >= 0 && index < 400 // Wider net for carousel
+        }
+
+        val isTooShort = plainText.length < 20
+
+        val isVideoPageLike =
+            (images.length() > 1 || html.contains("<figure>")) && plainText.length < 100
+
+        val titleWords = title.split(" ").filter { it.length > 3 }.map { it.lowercase() }
+        val textWords = plainText.lowercase()
+        val titleMatch = titleWords.any { it in textWords }
+
+        Log.d("CondensedNewsApi", "Plain text: '$plainText' (length: ${plainText.length})")
+        Log.d("CondensedNewsApi", "Has early problematic: $hasEarlyProblematic")
+        Log.d("CondensedNewsApi", "Title match: $titleMatch")
+        Log.d("CondensedNewsApi", "Is too short: $isTooShort")
+        Log.d("CondensedNewsApi", "Is video page like: $isVideoPageLike")
+
+        return (hasEarlyProblematic && !titleMatch) || (isTooShort && isVideoPageLike)
+    }
 }
