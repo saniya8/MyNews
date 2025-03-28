@@ -15,18 +15,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
+import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.utils.AppScreenRoutes
 
 @Composable
 fun CondensedNewsArticleScreen(
     navController: NavHostController,
     condensedNewsArticleViewModel: CondensedNewsArticleViewModel,
+    settingsViewModel: SettingsViewModel,
     articleUrl: String,
     articleTitle: String
 ) {
     val articleText by condensedNewsArticleViewModel.articleText.collectAsState()
     val summarizedText by condensedNewsArticleViewModel.summarizedText.collectAsState()
     val currentArticleUrl by condensedNewsArticleViewModel.currentArticleUrl.collectAsState()
+//    val wordLimit = settingsViewModel.wordLimit
+    val wordLimit by settingsViewModel.wordLimit.collectAsState()
 
     var showErrorDialog by remember { mutableStateOf(false) }
 
@@ -40,10 +44,11 @@ fun CondensedNewsArticleScreen(
 
     LaunchedEffect(articleText, currentArticleUrl) {
         if (articleText.isNotEmpty() && currentArticleUrl == articleUrl) {
+            println("word limit: ${settingsViewModel.getWordLimit()}")
             condensedNewsArticleViewModel.fetchSummarizedText(
                 url = articleUrl,
                 text = articleText,
-                wordLimit = 200
+                wordLimit = settingsViewModel.getWordLimit() ?: 101
             )
         }
     }

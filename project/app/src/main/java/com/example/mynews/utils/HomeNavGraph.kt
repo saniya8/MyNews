@@ -16,6 +16,7 @@ import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.presentation.viewmodel.social.SocialViewModel
 import com.example.mynews.presentation.views.goals.GoalsScreen
 import com.example.mynews.presentation.views.social.FriendsScreen
@@ -62,6 +63,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
                  savedArticlesViewModel: SavedArticlesViewModel,
                  friendsViewModel: FriendsViewModel,
                  condensedNewsArticleViewModel: CondensedNewsArticleViewModel,
+                 settingsViewModel: SettingsViewModel,
                  socialViewModel: SocialViewModel,
                  goalsViewModel: GoalsViewModel,
                  selectedCategory: MutableState<String?>,
@@ -113,6 +115,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
             val articleTitle = backStackEntry.arguments?.getString("articleTitle") ?: ""
             CondensedNewsArticleScreen(navController = navController,
                                        condensedNewsArticleViewModel = condensedNewsArticleViewModel,
+                                       settingsViewModel = settingsViewModel,
                                        articleUrl = articleUrl,
                                        articleTitle = articleTitle)
         }

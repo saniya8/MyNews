@@ -28,6 +28,7 @@ import com.example.mynews.presentation.viewmodel.social.FriendsViewModel
 import com.example.mynews.utils.HomeNavGraph
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
+import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.presentation.viewmodel.social.SocialViewModel
 
 
@@ -39,6 +40,7 @@ fun MainScreen(rootNavController: NavHostController,
                savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
                friendsViewModel: FriendsViewModel = hiltViewModel(),
                condensedNewsArticleViewModel: CondensedNewsArticleViewModel = hiltViewModel(),
+               settingsViewModel: SettingsViewModel = hiltViewModel(),
                socialViewModel: SocialViewModel = hiltViewModel(),
                goalsViewModel: GoalsViewModel = hiltViewModel(),
 
@@ -112,6 +114,7 @@ fun MainScreen(rootNavController: NavHostController,
                          savedArticlesViewModel = savedArticlesViewModel,
                          friendsViewModel = friendsViewModel,
                          condensedNewsArticleViewModel = condensedNewsArticleViewModel,
+                         settingsViewModel = settingsViewModel,
                          socialViewModel = socialViewModel,
                          goalsViewModel = goalsViewModel,
                          selectedCategory = selectedCategory,

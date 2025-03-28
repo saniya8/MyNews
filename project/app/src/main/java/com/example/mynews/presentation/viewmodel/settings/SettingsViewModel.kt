@@ -29,12 +29,24 @@ class SettingsViewModel @Inject constructor(
     private val _username = MutableStateFlow<String?>("")
     val username: StateFlow<String?> = _username
 
+    private val _wordLimit = MutableStateFlow(100)
+    val wordLimit: StateFlow<Int> = _wordLimit
+
     fun logout() {
         viewModelScope.launch {
             val success = authRepository.logout()
             _logoutState.value = success
             Log.d("LogoutDebug", "Logout success: $success")
         }
+    }
+
+    fun getWordLimit(): Int {
+        return _wordLimit.value
+    }
+
+    fun updateWordLimit(inputWordLimit: Int) {
+        println("Updated wordlimit to $inputWordLimit")
+        _wordLimit.value = inputWordLimit
     }
 
     fun getUsername(userId: String) {
