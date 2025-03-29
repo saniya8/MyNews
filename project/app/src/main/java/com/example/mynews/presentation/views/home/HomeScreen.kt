@@ -923,7 +923,7 @@ fun ReactionBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😡", "😂")
+                val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😢", "🥹", "😡", "😂")
                 reactions.forEachIndexed { index, reaction ->
                     val isSelected = reaction == selectedReaction.value
 

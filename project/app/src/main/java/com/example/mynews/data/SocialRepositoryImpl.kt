@@ -7,7 +7,6 @@ import com.example.mynews.data.api.news.Source
 import com.example.mynews.domain.repositories.SocialRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import kotlinx.coroutines.tasks.await
 
 class SocialRepositoryImpl (
     private val firestore : FirebaseFirestore
@@ -195,7 +194,7 @@ class SocialRepositoryImpl (
                                         document.getLong("timestamp") ?: return@mapNotNull null
 
                                     Reaction(
-                                        userId = friendId,
+                                        userID = friendId,
                                         article = article,
                                         reaction = reaction,
                                         timestamp = timestamp
@@ -270,7 +269,7 @@ class SocialRepositoryImpl (
                     val timestamp = document.getLong("timestamp") ?: continue
                     reactions.add(
                         Reaction(
-                            userId = friendId,
+                            userID = friendId,
                             article = article,
                             reaction = reaction,
                             timestamp = timestamp

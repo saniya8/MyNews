@@ -1,6 +1,7 @@
 package com.example.mynews.presentation.views.social
 
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,15 +9,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PersonAddAlt1
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +35,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,7 +47,10 @@ import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.ui.theme.CaptainBlue
 import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.viewmodel.social.SocialViewModel
-import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
+
 
 @Composable
 fun SocialScreen(
@@ -74,14 +82,6 @@ fun SocialScreen(
 
     }
 
-    /*
-    LaunchedEffect(friendsIds) {
-        if (friendsIds.isNotEmpty()) {
-            socialViewModel.fetchFriendsReactions(friendsIds)
-        }
-    }
-
-     */
 
 
     Scaffold(
@@ -188,7 +188,10 @@ fun SocialScreen(
                         )
                     }
                 } else {
-                    LazyColumn {
+                    LazyColumn (
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
                         items(reactions) { reaction ->
                             ReactionItem(
                                 reaction = reaction,
@@ -212,77 +215,125 @@ fun ReactionItem(
 
     val cardHeight = 130.dp
 
-    Card(
+
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
             .height(cardHeight)
-            .clickable {
-                navController.navigate(
-                    AppScreenRoutes.NewsArticleScreen.createRoute(
-                        Uri.encode(reaction.article.url),
-                        "SocialScreen"
-                    )
-                )
-            },
-        elevation = 4.dp
+            .fillMaxWidth()
     ) {
 
-        Row (
+        Card(
             modifier = Modifier
+                .padding(8.dp)
+                .height(cardHeight)
                 .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .clickable {
+                    navController.navigate(
+                        AppScreenRoutes.NewsArticleScreen.createRoute(
+                            Uri.encode(reaction.article.url),
+                            "SocialScreen"
+                        )
+                    )
+                },
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFE9ECF5) // soft blue-grey background
+            )
         ) {
 
-            // 80% — Content section
-            Column(
-                modifier = Modifier
-                    .weight(0.85f)
-                    .background(Color.Magenta)
-            ) {
-                /*Text(
-                    text = "${reaction.username} reacted:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
-                Text(
-                    text = reaction.article.title,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                    // 85% — Content section
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(0.85f)
+                            //.background(Color.Magenta) // for testing
+                    ) {
 
-                Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = getReactionMessage(username, reaction.reaction),
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis // cuts off text with "..."
+                            //fontSize = 18.sp
+                        )
 
-                Text(
-                    text = "Timestamp: ${reaction.timestamp}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
-                )*/
+                        Spacer(modifier = Modifier.height(2.dp))
 
-            }
+                        Text(
+                            text = reaction.article.title,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis // cuts off text with "..."
+                        )
 
-            // 20% — Emoji Reaction section
-            Box(
-                modifier = Modifier
-                    .weight(0.15f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = reaction.reaction,
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            }
+                        Spacer(modifier = Modifier.height(2.dp))
 
-
-
-        }
-
+                        Text(
+                            text = getRelativeTimestamp(reaction.timestamp),
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
 
 
-    }
+
+
+
+
+
+                        /*Text(
+                        text = "${reaction.username} reacted:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = reaction.article.title,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Timestamp: ${reaction.timestamp}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )*/
+
+                    }
+
+                    // 15% — Emoji Reaction section
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(0.15f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = reaction.reaction,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    }
+
+
+                } // end of row
+        } // end of Box
+
+
+        } // end of Card
+    } // end of Box
 
 
 
@@ -338,5 +389,96 @@ fun ReactionItem(
     }
 
  */
+}
+
+val reactionMessages = mapOf(
+    "👍" to "liked",
+    "❤️" to "loved",
+    "🤯" to "was mind-blown by",
+    "😮" to "was surprised by",
+    "🤔" to "was intrigued by",
+    "😢" to "was saddened by",
+    "🥹" to "was moved by",
+    "😡" to "was angered by",
+    "😂" to "found this hilarious"
+)
+
+
+private fun getReactionMessage(username: String, reaction: String): String {
+    val reactionMessage = reactionMessages[reaction] ?: "reacted to:"
+    return "$username $reactionMessage"
+}
+
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+internal fun getRelativeTimestamp(timestamp: Long): String {
+
+    val now = System.currentTimeMillis()
+    val diff = now - timestamp
+
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(diff)
+    val hours = TimeUnit.MILLISECONDS.toHours(diff)
+    val days = TimeUnit.MILLISECONDS.toDays(diff)
+
+    val reactionDate = Date(timestamp)
+    val calendarNow = Calendar.getInstance()
+    val calendarReaction = Calendar.getInstance().apply { time = reactionDate }
+
+    return when {
+        minutes < 1 -> "Just now"
+        minutes < 60 -> "$minutes min ago"
+        hours < 24 -> "$hours hr ago"
+        days < 2 && calendarNow.get(Calendar.DAY_OF_YEAR) - calendarReaction.get(Calendar.DAY_OF_YEAR) == 1 -> "Yesterday"
+        days < 7 -> "$days days ago"
+        calendarNow.get(Calendar.YEAR) == calendarReaction.get(Calendar.YEAR) -> {
+            SimpleDateFormat("MMM d", Locale.getDefault()).format(reactionDate) // e.g., Mar 29
+        }
+        else -> {
+            SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(reactionDate) // e.g., Sep 12, 2023
+        }
+    }
+}
+
+
+// unit test also made for the function but just creating this composable regardless
+@Composable
+@Preview(showBackground = true)
+fun ReactionTimePreview() {
+    val now = System.currentTimeMillis()
+
+    val testReactions = listOf(
+        now, // Just now
+        now - TimeUnit.MINUTES.toMillis(5), // 5 min ago
+        now - TimeUnit.HOURS.toMillis(2),   // 2 hr ago
+        now - TimeUnit.DAYS.toMillis(1),    // Yesterday
+        now - TimeUnit.DAYS.toMillis(3),    // 3 days ago
+        now - TimeUnit.DAYS.toMillis(10),   // 10 days ago
+        Calendar.getInstance().apply {
+            set(Calendar.YEAR, 2023)
+            set(Calendar.MONTH, Calendar.MARCH)
+            set(Calendar.DAY_OF_MONTH, 29)
+            set(Calendar.HOUR_OF_DAY, 14)
+            set(Calendar.MINUTE, 15)
+        }.timeInMillis // Mar 29, 2023
+    )
+
+    val labels = listOf(
+        "Just now",
+        "5 min ago",
+        "2 hr ago",
+        "Yesterday",
+        "3 days ago",
+        "10 days ago",
+        "Last year"
+    )
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        testReactions.forEachIndexed { index, timestamp ->
+            Text(
+                text = "${labels[index]} → ${getRelativeTimestamp(timestamp)}",
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
 }
 
