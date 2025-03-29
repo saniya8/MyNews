@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.data.api.news.Article
+import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import kotlinx.coroutines.Job
@@ -382,6 +383,9 @@ fun HomeScreen(
                             .fillMaxSize()
                     ) {
 
+
+                        /*
+                        // unstandardized
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -430,6 +434,39 @@ fun HomeScreen(
                             }
 
                         }
+
+                         */
+
+                        // standardized
+                        ScreenHeader(
+                            useTopPadding = false,
+                            title = "My News",
+                            leftContent = {
+                                IconButton(
+                                    onClick = { showBiasLegend = true },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Info,
+                                        contentDescription = "Info",
+                                        tint = CaptainBlue
+                                    )
+                                }
+                            },
+                            rightContent = {
+                                IconButton(
+                                    onClick = {
+                                        navController.navigate(AppScreenRoutes.SavedArticlesScreen.route) {
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Bookmark,
+                                        contentDescription = "Saved Articles",
+                                        tint = CaptainBlue
+                                    )
+                                }
+                            }
+                        )
 
                         // show Bias Legend Dialog
                         if (showBiasLegend) {

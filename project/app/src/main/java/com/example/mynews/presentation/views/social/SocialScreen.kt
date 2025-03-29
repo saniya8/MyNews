@@ -1,10 +1,12 @@
 package com.example.mynews.presentation.views.social
 
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PersonAddAlt1
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.mynews.domain.model.Reaction
+import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.ui.theme.CaptainBlue
 import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.viewmodel.social.SocialViewModel
@@ -88,6 +92,10 @@ fun SocialScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+
+
+            /*
+            // unstandardized
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,6 +123,32 @@ fun SocialScreen(
                     )
                 }
             }
+
+             */
+
+            // standardized
+
+            ScreenHeader(
+                useTopPadding = false, //scaffold already adds system padding
+                title = "Friend Activity",
+                rightContent = {
+                    IconButton(
+                        onClick = {
+                            navController.navigate(AppScreenRoutes.FriendsScreen.route)
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PersonAddAlt1,
+                            contentDescription = "Saved Articles",
+                            tint = CaptainBlue
+                        )
+                    }
+                }
+            )
+
+
+
+
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -175,6 +209,93 @@ fun ReactionItem(
     username: String,
     navController: NavController
 ) {
+
+    val cardHeight = 130.dp
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .height(cardHeight)
+            .clickable {
+                navController.navigate(
+                    AppScreenRoutes.NewsArticleScreen.createRoute(
+                        Uri.encode(reaction.article.url),
+                        "SocialScreen"
+                    )
+                )
+            },
+        elevation = 4.dp
+    ) {
+
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            // 80% — Content section
+            Column(
+                modifier = Modifier
+                    .weight(0.85f)
+                    .background(Color.Magenta)
+            ) {
+                /*Text(
+                    text = "${reaction.username} reacted:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = reaction.article.title,
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Timestamp: ${reaction.timestamp}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )*/
+
+            }
+
+            // 20% — Emoji Reaction section
+            Box(
+                modifier = Modifier
+                    .weight(0.15f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = reaction.reaction,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+/*
+    // initial
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -183,7 +304,7 @@ fun ReactionItem(
                 navController.navigate(
                     AppScreenRoutes.NewsArticleScreen.createRoute(
                         Uri.encode(reaction.article.url),
-                        "SocialScreen" // fixed this: TODO might be wrong
+                        "SocialScreen"
                     )
                 )
             },
@@ -215,5 +336,7 @@ fun ReactionItem(
             )
         }
     }
+
+ */
 }
 

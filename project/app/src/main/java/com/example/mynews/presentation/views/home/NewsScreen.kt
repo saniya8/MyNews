@@ -50,11 +50,16 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.example.mynews.R
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.ui.theme.BiasColors
@@ -633,7 +638,7 @@ fun ArticleItem(
                     Log.d("CoilDebug", "Loading image URL: ${article.urlToImage}")
 
 
-                    val placeholderImage: String =
+                    /*val placeholderImage: String =
                         "https://s.france24.com/media/display/e6279b3c-db08-11ee-b7f5-005056bf30b7/w:1024/p:16x9/news_en_1920x1080.jpg"
 
                     val articleImageUrl = if (article.urlToImage?.startsWith("https") == true) {
@@ -644,16 +649,38 @@ fun ArticleItem(
                         // if article.urlToImage is null, or if article.urlToImage is not null but
                         // doesn't start with "https", then use the placeholder image
                         placeholderImage
-                    }
+                    }*/
 
-                    AsyncImage(
-                        model = articleImageUrl /*article.urlToImage?: placeholderImage*/,
+                    /*AsyncImage(
+                        model = articleImageUrl,
                         contentDescription = "Article Image",
                         modifier = Modifier.size(80.dp)
                             .size(80.dp) // fixing image to fixed square size
                             .aspectRatio(1f),
                         contentScale = ContentScale.Crop
+                    )*/
+
+                    // correctly handles errors
+                    // for images that starts with http, goes to fallback as expected
+                    // for images that result in error, goes to fallback as expected
+                    // fallback image now added to the project itself rather than retrieved
+                    // from url
+                    AsyncImage(
+                        model = article.urlToImage,
+                        contentDescription = "Article Image",
+                        //placeholder = painterResource(R.drawable.news_placeholder_image),
+                        error = painterResource(R.drawable.news_placeholder_image),
+                        fallback = painterResource(R.drawable.news_placeholder_image),
+                        modifier = Modifier
+                            .size(80.dp)
+                            .aspectRatio(1f),
+                        contentScale = ContentScale.Crop
                     )
+
+
+
+
+
 
                     Row(
                         modifier = Modifier.fillMaxSize()

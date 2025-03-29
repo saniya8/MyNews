@@ -30,7 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import com.example.mynews.presentation.components.ScreenHeader
+import com.example.mynews.ui.theme.CaptainBlue
 import com.example.mynews.utils.AppScreenRoutes
 
 
@@ -120,16 +123,38 @@ fun FriendsScreen(
             modifier = Modifier.fillMaxSize(),
 
             ) { innerPadding ->
+
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
                     .padding(innerPadding)
+                    .fillMaxSize()
             ) {
-                Text(
-                    text = "Add Friends",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
+
+                /*
+
+                // unstandardized
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text(
+                        text = "Add Friends",
+                        fontWeight = FontWeight.Bold,
+                        color = CaptainBlue,
+                        fontSize = 25.sp,
+                        fontFamily = FontFamily.SansSerif,
+                        //textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    )
+                }
+
+                 */
+
+                ScreenHeader(
+                    useTopPadding = false, // true bc this screen wrapped in top-level box, not top-level scaffold
+                    title = "Add Friends",
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))

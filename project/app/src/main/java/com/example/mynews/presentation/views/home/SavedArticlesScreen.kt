@@ -20,6 +20,7 @@ import com.example.mynews.utils.AppScreenRoutes
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
 import com.example.mynews.ui.theme.CaptainBlue
@@ -74,6 +75,9 @@ fun SavedArticlesScreen(
                     .fillMaxSize()
             ) {
 
+
+                /*
+                // unstandardized
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -90,27 +94,17 @@ fun SavedArticlesScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
 
-                    /*
-
-                // keeping commented here in case need to replicate for a return button
-                // Saved Articles Icon - Pinned to the top right
-                IconButton(
-                    onClick = { navController.navigate(AppScreenRoutes.SavedArticlesScreen.route)
-                    },
-                    modifier = Modifier.align(Alignment.TopEnd) // Ensures it stays in the top-right
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Bookmark,
-                        //imageVector = Icons.Outlined.BookmarkBorder,
-                        contentDescription = "Saved Articles",
-                        tint = CaptainBlue
-                    )
                 }
 
                  */
 
+                // standardized
+                ScreenHeader(
+                    useTopPadding = false, // this replaces `.padding(top = 8.dp)` in unstandardized version
+                    title = "Saved Articles",
+                )
 
-                }
+
 
 
                 if (articles.isEmpty()) { // user has no saved articles
