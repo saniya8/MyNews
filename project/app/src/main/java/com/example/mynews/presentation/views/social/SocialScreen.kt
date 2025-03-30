@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PersonAddAlt1
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -65,11 +66,15 @@ fun SocialScreen(
     socialViewModel: SocialViewModel = hiltViewModel(),
 ) {
     //val friendsIds by socialViewModel.friendsIds.observeAsState(emptyList())
-    val reactions by socialViewModel.reactions.collectAsState()
+
+    val searchQuery by socialViewModel.searchQuery.collectAsState()
+    //val reactions by socialViewModel.reactions.collectAsState()
+    val reactions by socialViewModel.filteredReactions.collectAsState() // implemented dynamic filtering below
     val friendsMap by socialViewModel.friendsMap.collectAsState()
     val isLoading by socialViewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
+        socialViewModel.updateSearchQuery("")
         socialViewModel.fetchFriends()
     }
 
@@ -111,19 +116,35 @@ fun SocialScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.PersonAddAlt1,
-                            contentDescription = "Saved Articles",
+                            contentDescription = "Friends",
                             tint = CaptainBlue
                         )
                     }
                 }
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
+            SocialSearchBar(searchQuery = searchQuery,
+                            onQueryChanged = { newQuery -> socialViewModel.updateSearchQuery(newQuery)},
+                            onSearchFriendsReactions = {})
+
+            Spacer(modifier = Modifier.height(7.dp))
 
             if (!isLoading) {
 
-                if (reactions.isEmpty()) {
+                // four cases: 
+                // case 1: reactions is empty and searchQuery is empty -> user isn't searching and no reactions at all
+                // case 2: reactions is empty and searchQuery is full -> user searched for something but no reactions matched search
+                // case 3: reactions is not empty and searchQuery is empty
+                // case 4: reactions is not empty and searchQuery is not empty
+                // in case 3 and 4, regardless of if the user searched or not, there are reactions, so display them
+
+                val isActuallySearching = searchQuery.isNotEmpty() && searchQuery.trim().isNotEmpty()
+
+
+                // case 1
+                if (reactions.isEmpty() && !isActuallySearching) {
 
                     Column(
                         modifier = Modifier
@@ -135,10 +156,60 @@ fun SocialScreen(
                         Text(
                             text = "No friend activity yet",
                             fontSize = 18.sp,
-                            color = Color.Gray
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
-                } else {
+
+                }
+
+                // case 2
+                else if (reactions.isEmpty() && isActuallySearching) {
+
+                    val isUsernameInFriends = friendsMap.values.any { it == searchQuery.trim() }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isUsernameInFriends)
+                                        "No activity from your friend yet"
+                                    else
+                                        "You can only view activity \n from your friends",
+                            fontSize = 18.sp,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                }
+
+                // cases 3 & 4
+                else { // searchQuery isn't empty or reactions isn't empty
+
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    ) {
+                        Text(
+                            text = "Click reaction to view what your friend read",
+                            fontSize = 16.sp,
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(7.dp))
+
                     LazyColumn (
                         modifier = Modifier
                             .fillMaxSize()
@@ -157,10 +228,12 @@ fun SocialScreen(
     }
 }
 
+
 @Composable
-fun FriendActivitySearchBar(
-    searchQuery: MutableState<String>,
-    onSearch: () -> Unit
+fun SocialSearchBar(
+    searchQuery: String,
+    onQueryChanged: (String) -> Unit,
+    onSearchFriendsReactions: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -169,10 +242,8 @@ fun FriendActivitySearchBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedTextField(
-            value = searchQuery.value,
-            onValueChange = { query ->
-                searchQuery.value = query
-            },
+            value = searchQuery,
+            onValueChange = onQueryChanged,
             modifier = Modifier
                 .weight(1f)
                 .clip(CircleShape),
@@ -180,13 +251,26 @@ fun FriendActivitySearchBar(
             textStyle = TextStyle(fontSize = 16.sp),
             singleLine = true,
             maxLines = 1,
-            placeholder = { Text("Search for friend's reactions...") },
-            trailingIcon = {
+            placeholder = { Text("Search friends...") },
+
+            /*trailingIcon = {
                 IconButton(
                     onClick = {
+                        onSearchFriendsReactions()
                     }
                 ) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search reaction")
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Add friend")
+                }
+            }*/
+
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChanged("") }) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
+                    }
+                } else {
+                    // no search icon because dynamic search so no need
+                    //Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
                 }
             }
         )
