@@ -67,6 +67,21 @@ class FriendsRepositoryImpl (
                                             .document("uid").get().await()
 
             val friendUserID = friendUserIDLocation.getString("uid") ?: return AddFriendState.UserNotFound
+
+            // check if friend already added as a friend
+
+            val alreadyFriendSnapshot = firestore.collection("friends")
+                .document(currentUserID)
+                .collection("users_friends")
+                .document(friendUserID)
+                .get()
+                .await()
+
+            if (alreadyFriendSnapshot.exists()) {
+                Log.d("Add Friend", "User $friendUsername is already a friend")
+                return AddFriendState.AlreadyAddedFriend
+            }
+
             val friendData = mapOf("username" to friendUsername,
                                    "timestamp" to System.currentTimeMillis(),
                                   )

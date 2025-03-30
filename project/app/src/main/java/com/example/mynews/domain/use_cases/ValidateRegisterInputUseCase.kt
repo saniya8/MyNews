@@ -18,7 +18,7 @@ class ValidateRegisterInputUseCase {
         if("@" !in email){
             return RegisterInputValidationType.NoEmail
         }
-        if(username.count() > 15){
+        if(username.count() > 20){
             return RegisterInputValidationType.UsernameTooLong
         }
         if(username.count() < 3){

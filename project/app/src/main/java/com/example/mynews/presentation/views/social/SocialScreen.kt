@@ -63,8 +63,6 @@ fun SocialScreen(
     val isLoading by socialViewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
-        //socialViewModel.fetchFriendIds()
-        //socialViewModel.fetchFriendIdsAndUsernames()
         socialViewModel.fetchFriends()
     }
 
@@ -93,39 +91,6 @@ fun SocialScreen(
                 .fillMaxSize()
         ) {
 
-
-            /*
-            // unstandardized
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = "Friend Activity",
-                    fontWeight = FontWeight.Bold,
-                    color = CaptainBlue,
-                    fontSize = 25.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-                IconButton(
-                    onClick = {
-                        navController.navigate(AppScreenRoutes.FriendsScreen.route)
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PersonAddAlt1,
-                        contentDescription = "Saved Articles",
-                        tint = CaptainBlue
-                    )
-                }
-            }
-
-             */
-
             // standardized
 
             ScreenHeader(
@@ -146,10 +111,6 @@ fun SocialScreen(
                 }
             )
 
-
-
-
-
             Spacer(modifier = Modifier.height(4.dp))
 
 
@@ -157,27 +118,10 @@ fun SocialScreen(
 
                 if (reactions.isEmpty()) {
 
-                    /*Box (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ){
-                    Text(
-                        text = "No Friend Activity Yet",
-                        fontWeight = FontWeight.Bold,
-                        color = CaptainBlue,
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily.SansSerif,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-
-                 */
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(innerPadding)
-                            .padding(16.dp),
+                            .padding(innerPadding),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -285,33 +229,6 @@ fun ReactionItem(
                             color = Color.Gray
                         )
 
-
-
-
-
-
-
-                        /*Text(
-                        text = "${reaction.username} reacted:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = reaction.article.title,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = "Timestamp: ${reaction.timestamp}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
-                        )*/
-
                     }
 
                     // 15% — Emoji Reaction section
@@ -334,61 +251,6 @@ fun ReactionItem(
 
         } // end of Card
     } // end of Box
-
-
-
-
-
-
-
-
-
-
-
-/*
-    // initial
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable {
-                navController.navigate(
-                    AppScreenRoutes.NewsArticleScreen.createRoute(
-                        Uri.encode(reaction.article.url),
-                        "SocialScreen"
-                    )
-                )
-            },
-        elevation = 4.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "$username reacted:",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = reaction.reaction,
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Article: ${reaction.article.title}",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-            Text(
-                text = "Timestamp: ${Date(reaction.timestamp)}",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-        }
-    }
-
- */
 }
 
 val reactionMessages = mapOf(

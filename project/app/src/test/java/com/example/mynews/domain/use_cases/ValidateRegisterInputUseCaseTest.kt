@@ -48,7 +48,7 @@ class ValidateRegisterInputUseCaseTest {
 
     @Test
     fun `case 5 - username too long - should return UsernameTooLong`() {
-        val result = validateRegisterInputUseCase("email@example.com", "verylongusername1234", "password", "password")
+        val result = validateRegisterInputUseCase("email@example.com", "verylongusername12345", "password", "password")
         assertEquals(RegisterInputValidationType.UsernameTooLong, result)
     }
 

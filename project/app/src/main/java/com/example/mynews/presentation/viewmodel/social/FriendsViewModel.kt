@@ -53,12 +53,10 @@ class FriendsViewModel @Inject constructor(
     val isFriendNotFound = mutableStateOf(false)
 
     private var _selfAddAttemptErrorMessage = "You cannot add yourself \n as a friend."
+    private var _alreadyAddedFriendErrorMessage = "is already your friend."
     private var _userNotFoundErrorMessage = "This user does not exist. \n Please check the username."
     private var _defaultErrorMessage = "Something went wrong. \n Please try again."
 
-    // TODO update types
-    private val _friendsMap = MutableStateFlow<Map<Any?, Any?>>(emptyMap())
-    val friendsMap: StateFlow<Map<Any?, Any?>> = _friendsMap
 
     // SK: rewrite this function to be identical to savedArticlesViewModel's getSavedArticles
     // EXCEPT here, call,
@@ -116,6 +114,11 @@ class FriendsViewModel @Inject constructor(
 
                     is AddFriendState.SelfAddAttempt -> {
                         errorDialogMessage = _selfAddAttemptErrorMessage
+                        showErrorDialog = true
+                    }
+
+                    is AddFriendState.AlreadyAddedFriend -> {
+                        errorDialogMessage = "$friendUsername $_alreadyAddedFriendErrorMessage"
                         showErrorDialog = true
                     }
 
