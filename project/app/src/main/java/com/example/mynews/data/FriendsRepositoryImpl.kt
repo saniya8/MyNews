@@ -43,20 +43,23 @@ class FriendsRepositoryImpl (
                                    isFriendNotFound: MutableState<Boolean>
     ): AddFriendState {
         try {
+
+            val normalizedFriendUsername = friendUsername.trim().lowercase()
+
             val currentUserUsername = firestore.collection("users").document(currentUserID).get().await().getString("username")
             val friendLocation = firestore.collection("usernames")
-                                          .document(friendUsername).get().await()
+                                          .document(normalizedFriendUsername).get().await()
 
             // check if valid username or if the username is the user (cant add yourself)
 
-            if (currentUserUsername == friendUsername) {
-                Log.e("Add Friend", "Username '${friendUsername}' does not exist in Firestore")
+            if (currentUserUsername == normalizedFriendUsername) {
+                Log.e("Add Friend", "Username '${normalizedFriendUsername}' does not exist in Firestore")
                 isFriendNotFound.value = true
                 return AddFriendState.SelfAddAttempt
             }
 
             if (!friendLocation.exists()) {
-                Log.e("Add Friend", "Username '${friendUsername}' does not exist in Firestore")
+                Log.e("Add Friend", "Username '${normalizedFriendUsername}' does not exist in Firestore")
                 isFriendNotFound.value = true
                 return AddFriendState.UserNotFound
             }
@@ -64,7 +67,7 @@ class FriendsRepositoryImpl (
 
 
             val friendUserIDLocation = firestore.collection("usernames")
-                                            .document(friendUsername)
+                                            .document(normalizedFriendUsername)
                                             .collection("private")
                                             .document("uid").get().await()
 
@@ -80,11 +83,11 @@ class FriendsRepositoryImpl (
                 .await()
 
             if (alreadyFriendSnapshot.exists()) {
-                Log.d("Add Friend", "User $friendUsername is already a friend")
+                Log.d("Add Friend", "User $normalizedFriendUsername is already a friend")
                 return AddFriendState.AlreadyAddedFriend
             }
 
-            val friendData = mapOf("username" to friendUsername,
+            val friendData = mapOf("username" to normalizedFriendUsername,
                                    "timestamp" to System.currentTimeMillis(),
                                   )
 
@@ -94,7 +97,7 @@ class FriendsRepositoryImpl (
                 .collection("users_friends")
                 .document(friendUserID).set(friendData).await()
 
-            Log.d("Add Friend", "Successfully added friend: $friendUsername ($friendUserID)")
+            Log.d("Add Friend", "Successfully added friend: $normalizedFriendUsername ($friendUserID)")
 
             return AddFriendState.Success
 
@@ -111,17 +114,19 @@ class FriendsRepositoryImpl (
 
         try {
 
+            val normalizedFriendUsername = friendUsername.trim().lowercase()
+
             // check if friend exists (should always be true because in the UI, user can only click
             // delete for friends that they see
             val friendLocation = firestore.collection("usernames")
-                .document(friendUsername).get().await()
+                .document(normalizedFriendUsername).get().await()
             if (!friendLocation.exists()) {
-                Log.e("Remove Friend", "Username '${friendUsername}' does not exist in Firestore")
+                Log.e("Remove Friend", "Username '${normalizedFriendUsername}' does not exist in Firestore")
                 return false
             }
 
             val friendUserIDLocation = firestore.collection("usernames")
-                .document(friendUsername)
+                .document(normalizedFriendUsername)
                 .collection("private")
                 .document("uid").get().await()
 
@@ -132,7 +137,7 @@ class FriendsRepositoryImpl (
                 .collection("users_friends")
                 .document(friendUserID).delete().await()
 
-            Log.d("Remove Friend", "Successfully removed friend: $friendUsername ($friendUserID)")
+            Log.d("Remove Friend", "Successfully removed friend: $normalizedFriendUsername ($friendUserID)")
             return true
         } catch (e: Exception) {
             Log.e("Remove Friend", "Error adding friend: ${e.message}", e)

@@ -47,7 +47,6 @@ fun NewsArticleScreen(
             .pointerInput(Unit) {
                 detectHorizontalDragGestures { _, dragAmount ->
                     if (dragAmount > 50) { // Detect swipe right to go back
-                        //navController.popBackStack()
                         if (origin == "HomeScreen") {
                             navController.popBackStack(AppScreenRoutes.HomeScreen.route, false)
                         } else if (origin == "SavedArticlesScreen") {

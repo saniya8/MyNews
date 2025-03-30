@@ -28,7 +28,10 @@ class AuthRepositoryImpl (
 
     override suspend fun login(email: String, password: String): Boolean {
         try {
-            val authResult = auth.signInWithEmailAndPassword(email, password).await()
+
+            val normalizedEmail = email.trim().lowercase()
+
+            val authResult = auth.signInWithEmailAndPassword(normalizedEmail, password).await()
             val firebaseUser = authResult.user
 
             if (firebaseUser != null) {
@@ -67,16 +70,20 @@ class AuthRepositoryImpl (
         return withContext(Dispatchers.IO) {
             try {
 
-                Log.d("UsernameDebug", "Checking if username '$username' is taken...")
-                if (userRepository.isUsernameTaken(username)) {
-                    Log.d("AuthRepository", "Username '$username' is already taken")
+                val normalizedEmail = email.trim().lowercase()
+                val normalizedUsername = username.trim().lowercase()
+
+
+                Log.d("UsernameDebug", "Checking if username '$normalizedUsername' is taken...")
+                if (userRepository.isUsernameTaken(normalizedUsername)) {
+                    Log.d("AuthRepository", "Username '$normalizedUsername' is already taken")
                     isUsernameTaken.value = true
                     return@withContext false
                 }
 
                 Log.d("UsernameDebug", "Username is available. Continuing registration...")
 
-                val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+                val authResult = auth.createUserWithEmailAndPassword(normalizedEmail, password).await()
                 val firebaseUser = authResult.user
 
                 if (firebaseUser != null) {
@@ -90,15 +97,15 @@ class AuthRepositoryImpl (
                             // User doesn't exist in Firestore, so add them
                             val newUser = User(
                                 uid = firebaseUser.uid,
-                                username = username,
-                                email = email,
+                                username = normalizedUsername,
+                                email = normalizedEmail,
                                 loggedIn = true
                             )
 
                             // also ensures that reserveUsername waits for addUser to complete,
                             // and then only triggers
                             userRepository.addUser(newUser).also {
-                                userRepository.reserveUsername(username, firebaseUser.uid)
+                                userRepository.reserveUsername(normalizedUsername, firebaseUser.uid)
                             }
 
                             Log.d(

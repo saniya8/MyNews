@@ -121,18 +121,4 @@ class HomeRepositoryImpl @Inject constructor(
             }
     }
 
-
-//    private suspend fun getFriendUsername(friendId: String): String? {
-//        return try {
-//            val userDocument = firestore.collection("users")
-//                .document(friendId)
-//                .get()
-//                .await()
-//
-//            userDocument.getString("username")
-//        } catch (e: Exception) {
-//            Log.e("GetFriendUsername", "Error fetching username for friend $friendId: ${e.message}", e)
-//            null
-//        }
-//    }
 }

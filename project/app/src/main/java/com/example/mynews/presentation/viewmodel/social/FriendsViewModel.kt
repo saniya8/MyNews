@@ -107,11 +107,15 @@ class FriendsViewModel @Inject constructor(
         if (friendUsername.isEmpty()) return
         viewModelScope.launch {
             try {
+
+
+
                 val userID = userRepository.getCurrentUserId()
                 if (userID.isNullOrEmpty()) {
                     Log.e("FriendsViewModel", "Error: User ID is null, cannot fetch friends")
                     return@launch
                 }
+                // normalized friendUsername in friendsRepository.addFriend
                 val isAdded = friendsRepository.addFriend(userID, friendUsername, isFriendNotFound)
 
                 /*if (isAdded) {
@@ -120,11 +124,13 @@ class FriendsViewModel @Inject constructor(
                     fetchFriends()
                 }*/
 
+                val normalizedFriendUsername = friendUsername.trim().lowercase() // normalize here for local storing in _recentlyAddedFriend
+
                 when (isAdded) {
 
                     is AddFriendState.Success -> {
                         _searchQuery.value = "" // clear search bar
-                        _recentlyAddedFriend.value = friendUsername
+                        _recentlyAddedFriend.value = normalizedFriendUsername
                         fetchFriends()         // refresh friends list
 
                         viewModelScope.launch {
@@ -175,7 +181,7 @@ class FriendsViewModel @Inject constructor(
                     return@launch
                 }
                 // Call the repository to remove the friend
-                val isRemoved = friendsRepository.removeFriend(userID, friendUsername)
+                val isRemoved = friendsRepository.removeFriend(userID, friendUsername) // normalizes friendUsername in friendsRepository.removeFriend
                 if (isRemoved) {
                     fetchFriends()
                 }

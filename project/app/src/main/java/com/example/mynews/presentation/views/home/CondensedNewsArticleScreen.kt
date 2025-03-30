@@ -35,24 +35,8 @@ fun CondensedNewsArticleScreen(
     var showErrorDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(articleUrl) {
-        //condensedNewsArticleViewModel.clearCondensedArticleState().also {
-        //    condensedNewsArticleViewModel.updateSummarizedText(text = "Loading...")
-        //    condensedNewsArticleViewModel.fetchArticleText(url = articleUrl)
-       // }
         condensedNewsArticleViewModel.fetchArticleText(articleUrl)
     }
-
-    /*LaunchedEffect(articleText, currentArticleUrl) {
-        if (articleText.isNotEmpty() && currentArticleUrl == articleUrl) {
-            println("word limit: ${settingsViewModel.getWordLimit()}")
-            condensedNewsArticleViewModel.fetchSummarizedText(
-                url = articleUrl,
-                text = articleText,
-                wordLimit = settingsViewModel.getWordLimit() ?: 101
-            )
-        }
-    }*/
-
 
     LaunchedEffect(articleText, currentArticleUrl) {
         val articleErrorMessages = listOf(
@@ -93,20 +77,6 @@ fun CondensedNewsArticleScreen(
             condensedNewsArticleViewModel.clearCondensedArticleState()
         }
     }
-
-
-    /*
-    // Reset summary when user leaves the screen
-    LaunchedEffect(navController.currentBackStackEntry) {
-        snapshotFlow { navController.currentBackStackEntry }
-            .collect {
-                condensedNewsArticleViewModel.clearSummarizedText()
-                condensedNewsArticleViewModel.clearArticleText()
-            }
-    }
-
-     */
-
 
     if (showErrorDialog) {
         AlertDialog(
@@ -211,36 +181,6 @@ fun CondensedNewsArticleScreen(
                             modifier = Modifier.padding(8.dp)
                         )
                     }
-
-
-                    /*
-                    // pre circular loading indicator - works, removed race condition
-                    // Display summarizedText
-                    if (currentArticleUrl == articleUrl) {
-                        Text(
-                            text = summarizedText,
-                            style = androidx.compose.ui.text.TextStyle(
-                                fontWeight = FontWeight.Normal,
-                                color = Color.Black,
-                                fontSize = 18.sp
-                            ),
-                            modifier = Modifier.padding(8.dp) // Padding around the text
-                        )
-                    } else {
-
-                        Text(
-                            text = "Loading...",
-                            style = androidx.compose.ui.text.TextStyle(
-                                fontWeight = FontWeight.Normal,
-                                color = Color.Black,
-                                fontSize = 18.sp
-                            ),
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-
-                     */
-
                 }
             }
         }

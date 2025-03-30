@@ -15,6 +15,8 @@ class UserRepositoryImpl (
 
     override suspend fun addUser(user: User): Boolean {
         try {
+            // user's username and email already normalized in AuthRepository's register,
+            // where this function is called from
             firestore.collection("users").document(user.uid).set(user).await()
             return true
         } catch (e: Exception) {
@@ -27,7 +29,8 @@ class UserRepositoryImpl (
     override suspend fun isUsernameTaken(username: String): Boolean {
         Log.d("UsernameDebug", "In isUsernameTaken")
         try {
-            val doc = firestore.collection("usernames").document(username).get().await()
+            val normalizedUsername = username.trim().lowercase()
+            val doc = firestore.collection("usernames").document(normalizedUsername).get().await()
             Log.d("UsernameDebug", "Username taken? : ${doc.exists()}")
             return doc.exists() // doc.exists() is true if username is taken, false otherwise,
         } catch (e: Exception) {
@@ -39,14 +42,17 @@ class UserRepositoryImpl (
     // reserveUsername: reserves username for the user so no one else can take it
     override suspend fun reserveUsername(username: String, uid: String) {
         try {
+
+            val normalizedUsername = username.trim().lowercase()
+
             // create the username document
-            firestore.collection("usernames").document(username).set(mapOf<String, Any>()).await()
+            firestore.collection("usernames").document(normalizedUsername).set(mapOf<String, Any>()).await()
 
             // store the UID in the private subcollection
-            firestore.collection("usernames").document(username)
+            firestore.collection("usernames").document(normalizedUsername)
                 .collection("private").document("uid")
                 .set(mapOf("uid" to uid)).await()
-            Log.d("UsernameDebug", "Username '$username' reserved for UID: $uid")
+            Log.d("UsernameDebug", "Username '$normalizedUsername' reserved for UID: $uid")
         } catch (e: Exception) {
             Log.e("UsernameDebug", "Error reserving username: ${e.message}", e)
         }

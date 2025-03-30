@@ -75,37 +75,11 @@ fun SavedArticlesScreen(
                     .fillMaxSize()
             ) {
 
-
-                /*
-                // unstandardized
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp) // REMOVE IF BACK BUTTON IS ADDED IN LINE W HEADER
-                ) {
-                    // "Saved Articles" - Exactly centered
-                    Text(
-                        text = "Saved Articles",
-                        fontWeight = FontWeight.Bold,
-                        color = CaptainBlue,
-                        fontSize = 25.sp,
-                        fontFamily = FontFamily.SansSerif,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-
-                }
-
-                 */
-
                 // standardized
                 ScreenHeader(
                     useTopPadding = false, // this replaces `.padding(top = 8.dp)` in unstandardized version
                     title = "Saved Articles",
                 )
-
-
-
 
                 if (articles.isEmpty()) { // user has no saved articles
                     Column(

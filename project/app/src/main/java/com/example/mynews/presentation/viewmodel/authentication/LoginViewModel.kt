@@ -45,7 +45,7 @@ class LoginViewModel @Inject constructor(
             loginState = loginState.copy(isLoading = true)
             try {
                 val loginResult = authRepository.login(
-                    email = loginState.emailInput,
+                    email = loginState.emailInput, // normalized in authRepository.login
                     password = loginState.passwordInput
                 )
 

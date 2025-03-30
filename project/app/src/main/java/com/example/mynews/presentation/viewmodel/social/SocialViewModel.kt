@@ -15,9 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.CoroutineScope
-import androidx.lifecycle.viewModelScope
 
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,14 +53,14 @@ class SocialViewModel @Inject constructor(
         _reactions, _searchQuery, _friendsMap
     ) { allReactions, query, map ->
 
-        val trimmedQuery = query.trim() /*.lowercase()*/
+        val normalizedQuery = query.trim().lowercase()
 
-        if (trimmedQuery.isEmpty()) {
+        if (normalizedQuery.isEmpty()) {
             allReactions
         } else {
             allReactions.filter { reaction ->
                 val username = map[reaction.userID].orEmpty().lowercase()
-                username.contains(trimmedQuery)
+                username.contains(normalizedQuery)
             }
         }
     }.stateIn(

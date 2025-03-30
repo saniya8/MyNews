@@ -91,7 +91,7 @@ fun todayDateText() : String {
 
 @Composable
 fun HomeScreen(
-    navController: NavHostController /*= rememberNavController()*/,
+    navController: NavHostController,
     homeViewModel: HomeViewModel,
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
     savedArticlesViewModel: SavedArticlesViewModel,
@@ -111,8 +111,6 @@ fun HomeScreen(
     var activeReactionArticle by remember { mutableStateOf<Article?>(null)}
     var activeReactionArticleYCoord by remember { mutableFloatStateOf(0f) }
 
-    //val reactionBarBounds = remember { mutableStateOf<Rect?>(null) }
-    //var reactionBarBounds = remember { null as Rect? }
     var reactionBarBounds by remember { mutableStateOf<Rect?>(null) } //  does NOT trigger recompositions unless the variable is directly used inside a Composable UI element (which this isn't)
     val listState = rememberLazyListState()
 
@@ -122,12 +120,6 @@ fun HomeScreen(
     var closeJob by remember { mutableStateOf<Job?>(null) } // to track closing job - for if user selects another reaction before automatically closure
 
     var showBiasLegend by remember { mutableStateOf(false) } // state to track visibility of legend dialog box
-
-    /*val displayedReaction by remember {
-        derivedStateOf { selectedReaction } // ensures immediate recomposition
-    }
-
-     */
 
     fun openDrawer() {
         scope.launch { drawerState.open() }
@@ -146,14 +138,11 @@ fun HomeScreen(
         Log.i("FlickerBug", "searchQuery: ${searchQuery.value}")
         Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
 
-
         // searchQuery.value and selectedCategory.value
         // isNotEmpty && != null -> not possible, currently mutually exclusive
         // isEmpty && == null -> possible, fetch top headlines - in all three LaunchedEffects
         // isNotEmpty && null -> possible, fetch everything by search - in LaunchedEffect(Unit)
         // isEmpty && != null -> possible, fetch top headlines by category - in LaunchedEffect(S
-
-
 
         if (searchQuery.value.isNotEmpty() && selectedCategory.value == null) {
             // when recreating home screen, if there is a search query, it should load search
@@ -207,45 +196,6 @@ fun HomeScreen(
         // fetches everything by search in LaunchedEffect(Unit)
         Log.i("FlickerBug", "----------------------")
     }
-
-    /*
-    LaunchedEffect(activeReactionArticle) {
-        activeReactionArticle?.let { article ->
-
-            /*
-            val storedReaction = articleReactions[article.url]
-
-            // this launched effect is use as a backup to ensure UI updates in real-time
-            // it only runs if onLongPressRelease was delayed in updating selectedReaction
-
-
-            if (selectedReaction.value != storedReaction) { // meaning onLongPressRelease did not update selectedReaction in time to be the stored reaction
-                Log.d("GestureDebug", "Syncing selectedReaction: $selectedReaction -> $storedReaction")
-                selectedReaction.value = storedReaction
-            }
-
-             */
-
-            selectedReaction.value = articleReactions[article.url] //  immediately set UI
-
-            newsViewModel.fetchReaction(article) { reaction ->
-                if (reaction != selectedReaction.value) {
-                    selectedReaction.value = reaction // ensure accuracy without flicker
-                }
-            }
-
-        }
-    }
-
-     */
-
-
-    // CL: Add a remember state to track drawer drag gesture
-    val isDraggingDrawer = remember { mutableStateOf(false) }
-    // CL: Add a remember state to track scroll gesture
-    val isScrolling = remember { mutableStateOf(false) }
-
-
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -323,19 +273,8 @@ fun HomeScreen(
 
                                     // Horizontal right drag (for drawer) needs to be significantly stronger
                                     // than vertical to avoid confusion with scroll
-                                    /*
-                                    if (abs(totalDragX) > abs(totalDragY) * 2f && totalDragX > 0) {
-                                        isDrawerGesture = true
-                                        Log.d("GestureDebug", "Detected drawer drag")
-                                    } else if (abs(totalDragY) > abs(totalDragX)) {
-                                        isScrollGesture = true
-                                        Log.d("GestureDebug", "Detected scroll gesture")
-                                    }
-
-                                     */
 
                                     if (abs(totalDragY) > abs(totalDragX)) {
-                                        isScrollGesture = true
                                         lockScrollMode = true
                                     } else if (!lockScrollMode && abs(totalDragX) > abs(totalDragY) * 2f && totalDragX > 0) {
                                         isDrawerGesture = true
@@ -343,10 +282,6 @@ fun HomeScreen(
 
                                 }
 
-                                // For scrolling, don't consume events to let them propagate
-                                //if (isScrollGesture) {
-                                //    // Intentionally not consuming events
-                               // }
 
                                 if (lockScrollMode) {
                                     continue
@@ -362,8 +297,6 @@ fun HomeScreen(
                                         break
                                     }
                                 }
-
-
                             }
                         }
                     }
@@ -382,60 +315,6 @@ fun HomeScreen(
                             .padding(innerPadding)
                             .fillMaxSize()
                     ) {
-
-
-                        /*
-                        // unstandardized
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                            //.padding(horizontal = 16.dp)
-                        ) {
-
-                            // Info Icon - Pinned to the top left
-                            IconButton(
-                                onClick = { showBiasLegend = true }, // open the dialog box
-                                modifier = Modifier.align(Alignment.TopStart) // stays in the top-left
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Info,
-                                    contentDescription = "Info",
-                                    tint = CaptainBlue
-                                )
-                            }
-
-                            // "My News" - Exactly centered
-                            Text(
-                                text = "My News",
-                                fontWeight = FontWeight.Bold,
-                                color = CaptainBlue,
-                                fontSize = 25.sp,
-                                fontFamily = FontFamily.SansSerif,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-
-
-                            // Saved Articles Icon - Pinned to the top right
-                            IconButton(
-                                onClick = {
-                                    navController.navigate(AppScreenRoutes.SavedArticlesScreen.route) {
-                                    }
-                                },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd) // stays in the top-right
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Bookmark,
-                                    //imageVector = Icons.Outlined.BookmarkBorder,
-                                    contentDescription = "Saved Articles",
-                                    tint = CaptainBlue
-                                )
-                            }
-
-                        }
-
-                         */
 
                         // standardized
                         ScreenHeader(
@@ -520,7 +399,6 @@ fun HomeScreen(
 
                                     // fetch the selected reaction for initial UI update when reaction bar loads
 
-                                    // NEWFIX
                                     // set this immediately based on what is in articleReactions to immediately
                                     // update UI
 
@@ -547,13 +425,7 @@ fun HomeScreen(
 
 
                             // render the Reaction Bar if an article is long pressed and released
-                            // CL: Fixed reaction bar handling with proper positioning and event bubbling prevention
                             if (activeReactionArticle != null) {
-
-                                //val currentReaction = articleReactions[activeReactionArticle!!.url] // get the selected reaction -> for live updates during changes to selection
-                                //selectedReaction.value = articleReactions[activeReactionArticle!!.url]
-                                // CL: Semi-transparent overlay to capture clicks outside reaction bar
-
 
                                 Box(
 
@@ -571,9 +443,6 @@ fun HomeScreen(
                                         }
 
                                 )
-
-
-
 
                                 // works - without animation
                                 if (!isFetchingReaction) {
@@ -797,68 +666,6 @@ fun DrawerContent(
     }
 }
 
-
-/*
-// works - no animation
-@Composable
-fun ReactionBar(
-    article: Article,
-    newsViewModel: NewsViewModel,
-    selectedReaction: MutableState<String?>,
-    onReactionSelected: (String?) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .wrapContentWidth()
-            .height(50.dp)
-            .background(Color.White, shape = RoundedCornerShape(25.dp)) // i think can remove this
-            .shadow(8.dp, shape = RoundedCornerShape(25.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White), // Reaction Bar is white
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .horizontalScroll(rememberScrollState()),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😡", "😂")
-
-            reactions.forEach { reaction ->
-
-                val isSelected = reaction == selectedReaction.value // true if the reaction is the selectedReaction, false otherwise
-
-
-                Text(
-                    text = reaction,
-                    fontSize = 24.sp,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable {
-                            Log.d("GestureDebug", "isSelected for ${selectedReaction} is: ${isSelected}")
-                            val newReaction = if (isSelected) null else reaction // toggle selection
-                            onReactionSelected(newReaction) // update the selectedReaction.value, close the reaction bar after 1 sec delay, do this first so UI doesnt flicker
-                            newsViewModel.updateReaction(article, newReaction) // then update in backend
-
-                        }
-                        .background(
-                            if (isSelected) Color(0xFFD2E4FF) else Color.Transparent, // highlight selected reaction to indicate selected
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(4.dp)
-                )
-            }
-        }
-    }
-}
-
- */
-
-
-
-// works - wave
 @Composable
 fun ReactionBar(
     article: Article,

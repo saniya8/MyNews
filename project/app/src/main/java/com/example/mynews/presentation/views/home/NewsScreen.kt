@@ -212,110 +212,6 @@ fun ArticleItem(
                     articleLayoutCoordinates = coordinates
                 }
 
-
-
-
-                /*
-                // WORKS - pre-adding reaction bar long press
-                .pointerInput(Unit) {
-
-                    //Log.d("NewsScreen", "SwipeLocation: $swipeLocation for article: ${article.title}")
-
-                    if (origin == "HomeScreen") {
-                        detectHorizontalDragGestures(
-                            onDragEnd = {
-                                scope.launch {
-                                    if (swipeOffset.value < -0.4f * itemWidth.value) {
-                                        // if swiped past threshold then save article & reset position
-                                        Log.d(
-                                            "NewsScreen",
-                                            "Swiped LEFT on article: ${article.title}"
-                                        )
-
-                                        savedArticlesViewModel.saveArticle(article)
-                                        swipeOffset.animateTo(0f) // reset to original position after saving article
-                                    } else {
-                                        // snap back if not swiped enough
-                                        swipeOffset.animateTo(0f)
-                                    }
-                                }
-                            },
-                            onHorizontalDrag = { _, dragAmount ->
-                                scope.launch {
-
-                                    // only handle right-to-left swipes
-                                    if (dragAmount < 0) {
-                                        swipeOffset.snapTo(
-                                            (swipeOffset.value + dragAmount).coerceIn(
-                                                -itemWidth.value,
-                                                0f
-                                            )
-                                        )
-                                    } else if (swipeOffset.value == 0f && dragAmount > 50) {
-                                        // left to right swipes: Open drawer ONLY if swipe starts at zero and is strong enough
-                                        Log.d(
-                                            "GestureDebug",
-                                            "Swiped RIGHT on article → Opening Drawer"
-                                        )
-                                        openDrawer()
-                                    } else {
-                                        // left to right swipes: Just reset position (DO NOT open drawer)
-                                        Log.d(
-                                            "GestureDebug",
-                                            "Swiped RIGHT on article (Resetting) → No Drawer"
-                                        )
-                                        swipeOffset.animateTo(0f)
-                                    }
-                                }
-                            }
-                        )
-                    } else if (origin == "SavedArticlesScreen") {
-                        detectHorizontalDragGestures(
-                            onDragEnd = {
-                                scope.launch {
-                                    if (swipeOffset.value > 0.4f * itemWidth.value) {
-                                        // if swiped past threshold then delete article & reset position
-                                        Log.d(
-                                            "NewsScreen",
-                                            "Swiped RIGHT on article: ${article.title}"
-                                        )
-
-                                        savedArticlesViewModel.deleteSavedArticle(article)
-                                        swipeOffset.animateTo(0f) // reset to original position after deleting article
-                                    } else {
-                                        // snap back if not swiped enough
-                                        swipeOffset.animateTo(0f)
-                                    }
-                                }
-                            },
-
-                            onHorizontalDrag = { _, dragAmount ->
-                                scope.launch {
-
-                                    // only handle left-to-right swipes
-                                    if (dragAmount > 0) {
-                                        swipeOffset.snapTo(
-                                            (swipeOffset.value + dragAmount).coerceIn(
-                                                0f,
-                                                itemWidth.value
-                                            )
-                                        )
-                                    }
-
-                                    // for right to left swipes, do nothing
-                                }
-                            }
-                        )
-
-                    } else {
-                        Log.e("NewsScreen", "Caller was neither HomeScreen nor SavedArticlesScreen")
-                    }
-
-                }
-
-                 */
-
-
                 .pointerInput(Unit) {
                     var wasLongPress = false
 
@@ -414,86 +310,6 @@ fun ArticleItem(
                                     }
                                 } while (event.changes.any { it.pressed })
 
-                                // BUG - DOESNT position in right spot when article is scrolled
-                                // When finger is lifted, handle the completed gesture
-                                /*if (wasLongPress && !hasMoved) {
-                                    Log.d("GestureDebug", "Long press released, showing reaction bar")
-                                    //val updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
-                                    var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
-                                    val totalScrollOffset = (listState.firstVisibleItemIndex * 130) + listState.firstVisibleItemScrollOffset
-
-                                    if (updatedYCoord < totalScrollOffset) {
-                                        Log.d("GestureDebug", "Updated y coord is less than 0")
-                                        updatedYCoord = totalScrollOffset.toFloat()
-                                    }
-
-                                    onLongPressRelease(article, updatedYCoord)
-                                    continue
-                                }*/
-
-                                /*
-                                if (wasLongPress && !hasMoved) {
-                                    Log.d("GestureDebug", "Long press released, showing reaction bar")
-
-                                    // get the real Y position of the article
-                                    var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
-                                    val totalScrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
-
-                                    Log.d("GestureDebug", "Original updatedYCoord: $updatedYCoord")
-                                    Log.d("GestureDebug", "Total Scroll Offset: $totalScrollOffset")
-
-                                    // if the article is partially cut off at the top, adjust Y coordinate
-                                    if (updatedYCoord < totalScrollOffset) {
-                                        Log.d("GestureDebug", "Adjusting Y because article is partially out of view")
-                                        updatedYCoord += totalScrollOffset
-                                    }
-
-                                    // if it's the first fully visible article, position correctly
-                                    val firstVisibleItemIndex = listState.firstVisibleItemIndex
-                                    if (firstVisibleItemIndex == 0) {
-                                        updatedYCoord = totalScrollOffset // Ensures reaction bar is slightly over the search bar
-                                    }
-
-                                    Log.d("GestureDebug", "Final updatedYCoord: $updatedYCoord")
-
-                                    onLongPressRelease(article, updatedYCoord)
-                                    continue
-                                }
-
-                                 */
-
-                                // y coord correct for all articles, even on scroll, except
-                                // top article if partially cut off
-                                /*if (wasLongPress && !hasMoved) {
-                                    Log.d("GestureDebug", "Long press released, showing reaction bar")
-
-                                    var updatedYCoord = articleLayoutCoordinates?.positionInRoot()?.y ?: articleYCoord
-
-                                    // total scroll offset considering LazyColumn's scroll state
-                                    val totalScrollOffset = (listState.firstVisibleItemIndex * 130) + listState.firstVisibleItemScrollOffset
-                                    val firstVisibleItemOffset = listState.firstVisibleItemScrollOffset.toFloat()
-
-                                    Log.d("GestureDebug", "Original updatedYCoord: $updatedYCoord")
-                                    Log.d("GestureDebug", "Total Scroll Offset: $totalScrollOffset")
-                                    Log.d("GestureDebug", "First Visible Item Offset: $firstVisibleItemOffset")
-
-                                    // if the article is partially cut off at the top, adjust Y coordinate
-                                    if (updatedYCoord < firstVisibleItemOffset) {
-                                        Log.d("GestureDebug", "Adjusting Y because article is partially out of view")
-                                        updatedYCoord += firstVisibleItemOffset
-                                    }
-
-                                    // ensure reaction bar is slightly above the article (for topmost visible items)
-                                    if (listState.firstVisibleItemIndex == 0) {
-                                        updatedYCoord = firstVisibleItemOffset
-                                    }
-
-                                    Log.d("GestureDebug", "Final updatedYCoord: $updatedYCoord")
-
-                                    onLongPressRelease(article, updatedYCoord)
-                                    continue
-                                }*/
-
                                 // y coord correct for all articles, even on scroll, and also correct for
                                 // top article if partially cut off
                                 if (wasLongPress && !hasMoved) {
@@ -590,11 +406,6 @@ fun ArticleItem(
 
                 isTapValid.value = true
 
-
-
-
-
-
             }
         ) {
 
@@ -637,29 +448,6 @@ fun ArticleItem(
 
                     Log.d("CoilDebug", "Loading image URL: ${article.urlToImage}")
 
-
-                    /*val placeholderImage: String =
-                        "https://s.france24.com/media/display/e6279b3c-db08-11ee-b7f5-005056bf30b7/w:1024/p:16x9/news_en_1920x1080.jpg"
-
-                    val articleImageUrl = if (article.urlToImage?.startsWith("https") == true) {
-                        // use the article.urlToImage only if it is non-null and starts with "https"
-                        // so image is retrieved correctly
-                        article.urlToImage
-                    } else {
-                        // if article.urlToImage is null, or if article.urlToImage is not null but
-                        // doesn't start with "https", then use the placeholder image
-                        placeholderImage
-                    }*/
-
-                    /*AsyncImage(
-                        model = articleImageUrl,
-                        contentDescription = "Article Image",
-                        modifier = Modifier.size(80.dp)
-                            .size(80.dp) // fixing image to fixed square size
-                            .aspectRatio(1f),
-                        contentScale = ContentScale.Crop
-                    )*/
-
                     // correctly handles errors
                     // for images that starts with http, goes to fallback as expected
                     // for images that result in error, goes to fallback as expected
@@ -676,11 +464,6 @@ fun ArticleItem(
                             .aspectRatio(1f),
                         contentScale = ContentScale.Crop
                     )
-
-
-
-
-
 
                     Row(
                         modifier = Modifier.fillMaxSize()
@@ -745,65 +528,7 @@ fun ArticleItem(
 
             }
 
-
-
-
-
-
-
-
         } // end of Card
     } // end of Box
 
 }
-
-/*
-@Composable
-fun ReactionBar(
-    onReactionSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .wrapContentWidth()
-            .height(50.dp)
-            .background(Color.White, shape = RoundedCornerShape(25.dp))
-            .shadow(8.dp, shape = RoundedCornerShape(25.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .horizontalScroll(rememberScrollState()),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            val reactions = listOf("👍", "❤️", "🤯", "😮", "🤔", "😡", "😂")
-
-            reactions.forEach { reaction ->
-                Text(
-                    text = reaction,
-                    fontSize = 24.sp,
-                    modifier = Modifier
-                        .clickable { onReactionSelected(reaction) }
-                        .padding(4.dp)
-                )
-            }
-        }
-    }
-}
-
- */
-
-
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun PreviewReactionBar() {
-    ReactionBar(
-        onReactionSelected = { reaction -> Log.d("ReactionBar", "Selected: $reaction") }
-    )
-}
-
- */

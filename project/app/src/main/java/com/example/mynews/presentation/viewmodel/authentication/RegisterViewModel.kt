@@ -72,8 +72,8 @@ class RegisterViewModel @Inject constructor(
 
             try {
                 val registerResult = authRepository.register(
-                    email = registerState.emailInput,
-                    username = registerState.usernameInput,
+                    email = registerState.emailInput, // normalized in authRepository.register
+                    username = registerState.usernameInput, // normalized in authRepository.register
                     password = registerState.passwordInput,
                     isUsernameTaken = _isUsernameTaken,
                     isEmailAlreadyUsed = _isEmailAlreadyUsed,
