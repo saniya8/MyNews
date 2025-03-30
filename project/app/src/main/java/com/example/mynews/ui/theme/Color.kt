@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 val DarkText = Color(0xFF040316)
 val LightBackground = Color(0xFFFBFBFE)
 val CaptainBlue = Color(0xFF1A284F)
-val Lavender = Color(0xFFEDF3F5)
+val SkyBlue = Color(0xFFEDF3F5)
 val BluePurple = Color(0xFF443DFF)
 
 val LightText = Color(0xFFEAE9FC)

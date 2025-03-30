@@ -1,6 +1,5 @@
 package com.example.mynews.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +23,7 @@ private val DarkColorScheme = darkColorScheme(
 
 private val LightColorScheme = lightColorScheme(
     primary = CaptainBlue,
-    secondary = Lavender,
+    secondary = SkyBlue,
     tertiary = BluePurple,
 
     background = LightBackground,

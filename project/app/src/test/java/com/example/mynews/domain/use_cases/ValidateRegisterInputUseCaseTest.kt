@@ -17,62 +17,313 @@ class ValidateRegisterInputUseCaseTest {
 
     private lateinit var validateRegisterInputUseCase: ValidateRegisterInputUseCase
 
+    private val valid_email = "email@example.com"
+    private val valid_username = "my_username.1"
+    private val valid_password = "Password1!"
+
     @Before
     fun setUp() {
         validateRegisterInputUseCase = ValidateRegisterInputUseCase()
     }
 
+    // -----------------------------------------------
+
+    // fields
+
     @Test
-    fun `case 1 - empty email - should return EmptyField`() {
-        val result = validateRegisterInputUseCase("", "username", "password", "password")
+    fun `blank email no spaces - should return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = "",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
         assertEquals(RegisterInputValidationType.EmptyField, result)
     }
 
     @Test
-    fun `case 2 - empty password - should return EmptyField`() {
-        val result = validateRegisterInputUseCase("email@example.com", "username", "", "")
+    fun `blank email with spaces - should return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = " ",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
         assertEquals(RegisterInputValidationType.EmptyField, result)
     }
 
     @Test
-    fun `case 3 - empty repeated password - should return EmptyField`() {
-        val result = validateRegisterInputUseCase("email@example.com", "username", "password", "")
+    fun `blank username no spaces - should return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = "",
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
         assertEquals(RegisterInputValidationType.EmptyField, result)
     }
 
     @Test
-    fun `case 4 - no email - should return NoEmail`() {
-        val result = validateRegisterInputUseCase("emailexample.com", "username", "password", "password")
-        assertEquals(RegisterInputValidationType.NoEmail, result)
+    fun `blank username with spaces - should return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = "   ",
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.EmptyField, result)
     }
 
     @Test
-    fun `case 5 - username too long - should return UsernameTooLong`() {
-        val result = validateRegisterInputUseCase("email@example.com", "verylongusername12345", "password", "password")
+    fun `empty password no spaces - should return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = "",
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.EmptyField, result)
+    }
+
+    @Test
+    fun `empty password with spaces - should not return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = " ",
+            passwordRepeated = valid_password,
+        )
+        assertNotEquals(RegisterInputValidationType.EmptyField, result)
+    }
+
+    @Test
+    fun `empty password repeated no spaces - should return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = "",
+        )
+        assertEquals(RegisterInputValidationType.EmptyField, result)
+    }
+
+    @Test
+    fun `empty password repeated with spaces - should not return EmptyField`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = "        ",
+        )
+        assertNotEquals(RegisterInputValidationType.EmptyField, result)
+    }
+
+    // -----------------------------------------------
+
+    // emails
+
+    @Test
+    fun `invalid email no @ - should return InvalidEmail`() {
+        val result = validateRegisterInputUseCase(
+            email = "emailexample.com",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidEmail, result)
+    }
+
+    @Test
+    fun `invalid email missing domain - should return InvalidEmail`() {
+        val result = validateRegisterInputUseCase(
+            email = "email@",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidEmail, result)
+    }
+
+    @Test
+    fun `invalid email missing part before @ - should return InvalidEmail`() {
+        val result = validateRegisterInputUseCase(
+            email = "@example..com",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidEmail, result)
+    }
+
+    @Test
+    fun `invalid email with no dot after domain - should return InvalidEmail`() {
+        val result = validateRegisterInputUseCase(
+            email = "email@example",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidEmail, result)
+    }
+
+    @Test
+    fun `invalid email with invalid characters - should return InvalidEmail`() {
+        val result = validateRegisterInputUseCase(
+            email = "ema!l~@example.com",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidEmail, result)
+    }
+
+    @Test
+    fun `invalid email with spaces - should return InvalidEmail`() {
+        val result = validateRegisterInputUseCase(
+            email = "email @example.com",
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidEmail, result)
+    }
+
+
+    // -----------------------------------------------
+
+    // usernames
+
+    @Test
+    fun `username with space - should return InvalidUsernameCharacters`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = "user name",
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidUsernameCharacters, result)
+    }
+
+    @Test
+    fun `username with special char - should return InvalidUsernameCharacters`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = "user!name",
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidUsernameCharacters, result)
+    }
+
+    @Test
+    fun `username with emoji - should return InvalidUsernameCharacters`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = "user😀",
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
+        assertEquals(RegisterInputValidationType.InvalidUsernameCharacters, result)
+    }
+
+
+    @Test
+    fun `username too long - should return UsernameTooLong`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = "verylongusername12345",
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
         assertEquals(RegisterInputValidationType.UsernameTooLong, result)
     }
 
     @Test
-    fun `case 6 - username too short - should return UsernameTooShort`() {
-        val result = validateRegisterInputUseCase("email@example.com", "u", "password", "password")
+    fun `username too short - should return UsernameTooShort`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = "um",
+            password = valid_password,
+            passwordRepeated = valid_password,
+        )
         assertEquals(RegisterInputValidationType.UsernameTooShort, result)
     }
 
-    @Test
-    fun `case 7 - passwords do not match - should return PasswordsDoNotMatch`() {
-        val result = validateRegisterInputUseCase("email@example.com", "username", "password", "differentpassword")
-        assertEquals(RegisterInputValidationType.PasswordsDoNotMatch, result)
-    }
+    // -----------------------------------------------
+
+    // passwords
 
     @Test
-    fun `case 8 - password too short - should return PasswordTooShort`() {
-        val result = validateRegisterInputUseCase("email@example.com", "username", "pass123", "pass123")
+    fun `password too short - should return PasswordTooShort`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = "Pass!23",
+            passwordRepeated = "Pass!23",
+        )
         assertEquals(RegisterInputValidationType.PasswordTooShort, result)
     }
 
+
     @Test
-    fun `case 9 - valid input - should return Valid`() {
-        val result = validateRegisterInputUseCase("email@example.com", "username", "Password1!", "Password1!")
+    fun `passwords valid individually but do not match - should return PasswordsDoNotMatch`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = "Password1!",
+            passwordRepeated = "Password2!",
+        )
+        assertEquals(RegisterInputValidationType.PasswordsDoNotMatch, result)
+    }
+
+
+    @Test
+    fun `password missing uppercase - should return PasswordUpperCaseMissing`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = "password1!",
+            passwordRepeated = "password1!",
+        )
+        assertEquals(RegisterInputValidationType.PasswordUpperCaseMissing, result)
+    }
+
+    @Test
+    fun `password missing number - should return PasswordNumberMissing`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = "Password!",
+            passwordRepeated = "Password!",
+        )
+        assertEquals(RegisterInputValidationType.PasswordNumberMissing, result)
+    }
+
+
+    @Test
+    fun `password missing special character - should return PasswordSpecialCharMissing`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = "Password1",
+            passwordRepeated = "Password1",
+        )
+        assertEquals(RegisterInputValidationType.PasswordSpecialCharMissing, result)
+    }
+
+
+    // -----------------------------------------------
+
+    // valid
+
+    @Test
+    fun `valid input - should return Valid`() {
+        val result = validateRegisterInputUseCase(
+            email = valid_email,
+            username = valid_username,
+            password = valid_password,
+            passwordRepeated = valid_password
+        )
         assertEquals(RegisterInputValidationType.Valid, result)
     }
 

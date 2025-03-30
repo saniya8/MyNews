@@ -84,7 +84,7 @@ class LoginViewModel @Inject constructor(
             LoginInputValidationType.EmptyField -> {
                 loginState.copy(errorMessageInput = "Please fill in empty fields", isInputValid = false)
             }
-            LoginInputValidationType.NoEmail -> {
+            LoginInputValidationType.InvalidEmail -> {
                 loginState.copy(errorMessageInput = "Please enter a valid email", isInputValid = false)
             }
             LoginInputValidationType.Valid -> {

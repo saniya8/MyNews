@@ -7,6 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mynews.ui.theme.*
@@ -34,7 +35,7 @@ fun AuthButton(
             backgroundColor = backgroundColour,
             contentColor = contentColour,
             disabledBackgroundColor = backgroundColour,
-            disabledContentColor = contentColour
+            disabledContentColor = contentColour,
         ),
 
         enabled = enabled
@@ -47,7 +48,8 @@ fun AuthButton(
         } else { // not loading
             Text(
                 text = text,
-                style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.Bold,
+                //style = MaterialTheme.typography.body1,
             )
         }
     }
@@ -58,7 +60,7 @@ fun AuthButton(
 fun AuthButtonPreview() {
     AuthButton(
         text = "Login",
-        backgroundColour = Lavender,
+        backgroundColour = SkyBlue,
         contentColour = Color.White,
         onButtonClick = { /*TODO*/ },
         isLoading = true,

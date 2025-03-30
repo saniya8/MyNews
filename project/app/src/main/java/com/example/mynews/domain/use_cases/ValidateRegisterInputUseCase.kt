@@ -12,18 +12,31 @@ class ValidateRegisterInputUseCase {
         password: String,
         passwordRepeated: String
     ): RegisterInputValidationType {
-        if(email.isEmpty() || password.isEmpty() || passwordRepeated.isEmpty()){
+
+        // emails and usernames can't have spaces, so can't be blank (empty or whitespaced)
+        // passwords can have spaces, so just check if empty
+        if (email.isBlank() || username.isBlank() || password.isEmpty() || passwordRepeated.isEmpty()) {
             return RegisterInputValidationType.EmptyField
         }
-        if("@" !in email){
-            return RegisterInputValidationType.NoEmail
+
+        val trimmedEmail = email.trim()
+        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,20}$")
+
+        if (!emailRegex.matches(trimmedEmail)) {
+            return RegisterInputValidationType.InvalidEmail
         }
+
+        if (!username.matches(Regex("^[a-zA-Z0-9._]+$"))) {
+            return RegisterInputValidationType.InvalidUsernameCharacters
+        }
+
         if(username.count() > 20){
             return RegisterInputValidationType.UsernameTooLong
         }
         if(username.count() < 3){
             return RegisterInputValidationType.UsernameTooShort
         }
+
         if(password!= passwordRepeated){
             return RegisterInputValidationType.PasswordsDoNotMatch
         }

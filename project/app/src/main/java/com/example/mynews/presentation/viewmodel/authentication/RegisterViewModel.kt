@@ -118,33 +118,47 @@ class RegisterViewModel @Inject constructor(
 
     private fun processInputValidationType(type: RegisterInputValidationType){
         registerState = when(type){
+
             RegisterInputValidationType.EmptyField -> {
                 registerState.copy(errorMessageInput = "Please fill in empty fields", isInputValid = false)
             }
-            RegisterInputValidationType.NoEmail -> {
+
+            RegisterInputValidationType.InvalidEmail -> {
                 registerState.copy(errorMessageInput = "Please enter a valid email", isInputValid = false)
             }
+
+            RegisterInputValidationType.InvalidUsernameCharacters -> {
+                registerState.copy(errorMessageInput = "Username can only include letters, numbers, periods, or underscores", isInputValid = false)
+            }
+
             RegisterInputValidationType.UsernameTooLong -> {
-                registerState.copy(errorMessageInput = "Username too long, must be less than 15 characters")
+                registerState.copy(errorMessageInput = "Username too long, can only be up to 20 characters", isInputValid = false)
             }
+
             RegisterInputValidationType.UsernameTooShort -> {
-                registerState.copy(errorMessageInput = "Username too short, must be more than 2 characters")
+                registerState.copy(errorMessageInput = "Username too short, must be at least 3 characters", isInputValid = false)
             }
+
             RegisterInputValidationType.PasswordTooShort -> {
                 registerState.copy(errorMessageInput = "Password must be at least 8 characters", isInputValid = false)
             }
+
             RegisterInputValidationType.PasswordsDoNotMatch -> {
                 registerState.copy(errorMessageInput = "Passwords do not match", isInputValid = false)
             }
+
             RegisterInputValidationType.PasswordUpperCaseMissing -> {
                 registerState.copy(errorMessageInput = "Password needs to contain at least one upper case character", isInputValid = false)
             }
-            RegisterInputValidationType.PasswordSpecialCharMissing -> {
-                registerState.copy(errorMessageInput = "Password needs to contain at least one special character", isInputValid = false)
-            }
+
             RegisterInputValidationType.PasswordNumberMissing -> {
                 registerState.copy(errorMessageInput = "Password needs to contain at least one number", isInputValid = false)
             }
+
+            RegisterInputValidationType.PasswordSpecialCharMissing -> {
+                registerState.copy(errorMessageInput = "Password needs to contain at least one special character", isInputValid = false)
+            }
+
             RegisterInputValidationType.Valid -> {
                 registerState.copy(errorMessageInput = null, isInputValid = true)
             }

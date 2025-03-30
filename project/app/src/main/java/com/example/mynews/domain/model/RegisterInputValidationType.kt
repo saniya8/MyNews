@@ -2,13 +2,14 @@ package com.example.mynews.domain.model
 
 enum class RegisterInputValidationType {
     EmptyField,
-    NoEmail,
+    InvalidEmail,
+    InvalidUsernameCharacters,
     UsernameTooLong,
     UsernameTooShort,
+    PasswordTooShort,
     PasswordsDoNotMatch,
     PasswordUpperCaseMissing,
     PasswordNumberMissing,
     PasswordSpecialCharMissing,
-    PasswordTooShort,
     Valid
 }

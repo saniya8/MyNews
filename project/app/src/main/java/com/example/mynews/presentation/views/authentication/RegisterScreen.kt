@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.mynews.presentation.components.*
 import com.example.mynews.ui.theme.*
 
@@ -138,13 +139,14 @@ fun RegisterScreen(
         )
         Row(
             modifier = Modifier
-                .padding(bottom = 10.dp)
+                .padding(bottom = 20.dp)
                 .align(Alignment.BottomCenter),
             horizontalArrangement = Arrangement.Center
         ){
             Text(
                 "Already have an account?",
                 style = MaterialTheme.typography.body2,
+                fontSize = 16.sp,
             )
             Text(
                 modifier = Modifier
@@ -155,6 +157,7 @@ fun RegisterScreen(
                 text = "Login",
                 color = BrightBlue,
                 fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
                 style = MaterialTheme.typography.body2
             )
         }
@@ -259,7 +262,7 @@ fun RegisterContainer(
         ) {
             AuthButton(
                 text = "Register",
-                backgroundColour = Lavender,
+                backgroundColour = SkyBlue,
                 contentColour = CaptainBlue,
                 enabled = buttonEnabled(),
                 modifier = Modifier
