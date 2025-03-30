@@ -13,6 +13,7 @@ import com.example.mynews.domain.repositories.UserRepository
 import com.example.mynews.presentation.state.AddFriendState
 import com.example.mynews.presentation.state.RegisterState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -49,14 +50,28 @@ class FriendsViewModel @Inject constructor(
     //private val _username = MutableStateFlow<String?>("")
     //val username: StateFlow<String?> = _username
 
-    val searchQuery = mutableStateOf("")
-    val isFriendNotFound = mutableStateOf(false)
+    //val searchQuery = mutableStateOf("")
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _recentlyAddedFriend = MutableStateFlow<String?>(null)
+    val recentlyAddedFriend: StateFlow<String?> = _recentlyAddedFriend
+
+
+
+
+    private val isFriendNotFound = mutableStateOf(false)
 
     private var _selfAddAttemptErrorMessage = "You cannot add yourself \n as a friend."
     private var _alreadyAddedFriendErrorMessage = "is already your friend."
     private var _userNotFoundErrorMessage = "This user does not exist. \n Please check the username."
     private var _defaultErrorMessage = "Something went wrong. \n Please try again."
 
+
+    fun updateSearchQuery(newQuery: String) {
+        _searchQuery.value = newQuery
+    }
 
     // SK: rewrite this function to be identical to savedArticlesViewModel's getSavedArticles
     // EXCEPT here, call,
@@ -108,8 +123,14 @@ class FriendsViewModel @Inject constructor(
                 when (isAdded) {
 
                     is AddFriendState.Success -> {
-                        searchQuery.value = "" // clear search bar
+                        _searchQuery.value = "" // clear search bar
+                        _recentlyAddedFriend.value = friendUsername
                         fetchFriends()         // refresh friends list
+
+                        viewModelScope.launch {
+                            delay(1500) // 2 second highlight
+                            _recentlyAddedFriend.value = null // reset after animation
+                        }
                     }
 
                     is AddFriendState.SelfAddAttempt -> {

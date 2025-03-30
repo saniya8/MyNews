@@ -5,6 +5,8 @@ import com.example.mynews.domain.repositories.FriendsRepository
 import com.example.mynews.presentation.state.AddFriendState
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.firestore.Query
+
 
 // Implementation of the FriendsRepository interface in .com.example.mynews/domain/repositories
 
@@ -145,6 +147,7 @@ class FriendsRepositoryImpl (
         firestore.collection("friends")
             .document(currentUserID)
             .collection("users_friends")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot != null) {

@@ -16,22 +16,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PersonAddAlt1
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -147,6 +154,42 @@ fun SocialScreen(
                 }
             } // else isLoading == true, show nothing
         }
+    }
+}
+
+@Composable
+fun FriendActivitySearchBar(
+    searchQuery: MutableState<String>,
+    onSearch: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = searchQuery.value,
+            onValueChange = { query ->
+                searchQuery.value = query
+            },
+            modifier = Modifier
+                .weight(1f)
+                .clip(CircleShape),
+            shape = CircleShape,
+            textStyle = TextStyle(fontSize = 16.sp),
+            singleLine = true,
+            maxLines = 1,
+            placeholder = { Text("Search for friend's reactions...") },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search reaction")
+                }
+            }
+        )
     }
 }
 

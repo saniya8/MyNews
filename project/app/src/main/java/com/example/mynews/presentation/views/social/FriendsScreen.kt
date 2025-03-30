@@ -1,8 +1,8 @@
 package com.example.mynews.presentation.views.social
 
-import android.net.Uri
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,16 +32,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -49,7 +43,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.ui.theme.CaptainBlue
 import com.example.mynews.utils.AppScreenRoutes
@@ -60,10 +53,14 @@ fun FriendsScreen(
     navController: NavHostController,
     friendsViewModel: FriendsViewModel,
 ) {
-    val searchQuery = remember { mutableStateOf("") }
+    //val searchQuery = remember { mutableStateOf("") }
+
+    val searchQuery by friendsViewModel.searchQuery.collectAsState()
+    val recentlyAddedFriend by friendsViewModel.recentlyAddedFriend.collectAsState()
     val friends by friendsViewModel.friends.observeAsState(emptyList())
 
     LaunchedEffect(Unit) {
+        friendsViewModel.updateSearchQuery("")
         friendsViewModel.fetchFriends()
     }
 
@@ -135,7 +132,8 @@ fun FriendsScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 FriendsSearchBar(searchQuery = searchQuery,
-                                 onAddNewFriend = { friendsViewModel.addFriend(searchQuery.value) } )
+                                 onQueryChanged = { newQuery -> friendsViewModel.updateSearchQuery(newQuery)},
+                                 onAddNewFriend = { friendsViewModel.addFriend(searchQuery)})
 
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -175,6 +173,7 @@ fun FriendsScreen(
                         items(friends) { friend ->
                             FriendItem(
                                 friend = friend,
+                                isRecentlyAdded = (friend == recentlyAddedFriend),
                                 onRemoveFriend = { friendsViewModel.removeFriend(friend) }
                             )
                         }
@@ -191,7 +190,8 @@ fun FriendsScreen(
 
 @Composable
 fun FriendsSearchBar(
-    searchQuery: MutableState<String>,
+    searchQuery: String,
+    onQueryChanged: (String) -> Unit,
     onAddNewFriend: () -> Unit
 ) {
     Row(
@@ -201,10 +201,8 @@ fun FriendsSearchBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedTextField(
-            value = searchQuery.value,
-            onValueChange = { query ->
-                searchQuery.value = query
-            },
+            value = searchQuery,
+            onValueChange = onQueryChanged,
             modifier = Modifier
                 .weight(1f)
                 .clip(CircleShape),
@@ -234,52 +232,22 @@ fun FriendsSearchBar(
     }
 }
 
-@Composable
-fun AddedFriendsList(
-    friends: List<String>,
-    viewModel: FriendsViewModel,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Text(
-            text = "Your Friends",
-            fontSize = 20.sp,
-            color = CaptainBlue,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(start = 16.dp)
-        )
-
-        if (friends.isEmpty()) {
-            Text(
-                text = "No friends added yet",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-        } else {
-            LazyColumn {
-                items(friends) { friend ->
-                    FriendItem(
-                        friend = friend,
-                        onRemoveFriend = { viewModel.removeFriend(friend) }
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun FriendItem(
     friend: String,
+    isRecentlyAdded: Boolean,
     onRemoveFriend: () -> Unit
 ) {
 
     val cardHeight = 80.dp
 
+    // animate background color
+    val animatedBackgroundColor by animateColorAsState(
+        targetValue = if (isRecentlyAdded) Color(0xFFD8EAFE) else Color(0xFFF1F4FA),
+        animationSpec = tween(durationMillis = 600),
+        label = "recently-added-friend-bg"
+    )
 
     Box(
         modifier = Modifier
@@ -294,8 +262,7 @@ fun FriendItem(
                 .fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFF1F4FA) // light bluish-grey background
-            )
+                containerColor = animatedBackgroundColor /*0xFFF1F4FA*/) // light bluish-grey background
         ) {
 
             Box(modifier = Modifier.fillMaxSize()) {
