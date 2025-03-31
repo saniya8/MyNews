@@ -136,7 +136,6 @@ fun HomeNavGraph(rootNavController: NavHostController,
                         popUpTo(Graph.ROOT) { inclusive = true}
                     }
                 },
-                userRepository = UserRepositoryImpl(FirebaseFirestore.getInstance()),
             )
         }
 

@@ -29,6 +29,10 @@ class SettingsViewModel @Inject constructor(
     private val _username = MutableStateFlow<String?>("")
     val username: StateFlow<String?> = _username
 
+    private val _email = MutableStateFlow<String?>("")
+    val email: StateFlow<String?> = _email
+
+
     private val _wordLimit = MutableStateFlow(100)
     val wordLimit: StateFlow<Int> = _wordLimit
 
@@ -44,17 +48,51 @@ class SettingsViewModel @Inject constructor(
         return _wordLimit.value
     }
 
-    fun updateWordLimit(inputWordLimit: Int) {
-        println("Updated wordlimit to $inputWordLimit")
-        _wordLimit.value = inputWordLimit
+    fun updateWordLimit(newLimit: Int) {
+        if (newLimit in 50..200) {
+            Log.d("SettingsDebug", "Updated wordlimit to $newLimit")
+            _wordLimit.value = newLimit
+        } else {
+            Log.d("SettingsDebug", "Out of range $newLimit. Kept word limit at ${_wordLimit.value}")
+        }
     }
 
-    fun getUsername(userId: String) {
-        viewModelScope.launch {
-            val user = userRepository.getUserById(userId)
+    fun fetchUsername() {
+
+        viewModelScope.launch { // firestore operations are async so need this
+            // get current user
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("SettingsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            val user = userRepository.getUserById(userID)
             _username.value = user?.username
         }
     }
+
+
+    fun fetchEmail() {
+
+        viewModelScope.launch { // firestore operations are async so need this
+            // get current user
+            val userID = userRepository.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                Log.e("SettingsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            val user = userRepository.getUserById(userID)
+            _email.value = user?.email
+        }
+    }
+
+
+
+
 
     fun resetLogoutState() {
         _logoutState.value = null

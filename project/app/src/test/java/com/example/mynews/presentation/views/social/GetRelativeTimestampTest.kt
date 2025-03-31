@@ -15,23 +15,39 @@ class GetRelativeTimestampTest {
     }
 
     @Test
-    fun `timestamp 5 minutes ago - should return 5 min ago`() {
+    fun `timestamp 1 minute ago - should return 1 min ago`() {
         val now = System.currentTimeMillis()
-        val fiveMinAgo = now - TimeUnit.MINUTES.toMillis(5)
+        val fiveMinAgo = now - TimeUnit.MINUTES.toMillis(1)
         val result = getRelativeTimestamp(fiveMinAgo)
-        assertEquals("5 min ago", result)
+        assertEquals("1 min ago", result)
     }
 
     @Test
-    fun `timestamp 2 hours ago - should return 2 hr ago`() {
+    fun `timestamp 59 minutes ago - should return 59 min ago`() {
         val now = System.currentTimeMillis()
-        val twoHoursAgo = now - TimeUnit.HOURS.toMillis(2)
-        val result = getRelativeTimestamp(twoHoursAgo)
-        assertEquals("2 hr ago", result)
+        val fiveMinAgo = now - TimeUnit.MINUTES.toMillis(59)
+        val result = getRelativeTimestamp(fiveMinAgo)
+        assertEquals("59 min ago", result)
     }
 
     @Test
-    fun `timestamp 1 day ago - should return Yesterday`() {
+    fun `timestamp exactly 60 minutes ago - should return 1 hr ago`() {
+        val now = System.currentTimeMillis()
+        val sixtyMinAgo = now - TimeUnit.MINUTES.toMillis(60)
+        val result = getRelativeTimestamp(sixtyMinAgo)
+        assertEquals("1 hr ago", result)
+    }
+
+    @Test
+    fun `timestamp 23 hours ago - should return 23 hr ago`() {
+        val now = System.currentTimeMillis()
+        val twoHoursAgo = now - TimeUnit.HOURS.toMillis(23)
+        val result = getRelativeTimestamp(twoHoursAgo)
+        assertEquals("23 hr ago", result)
+    }
+
+    @Test
+    fun `timestamp previous calendar day - should return Yesterday`() {
         val now = System.currentTimeMillis()
         val yesterday = now - TimeUnit.DAYS.toMillis(1)
         val result = getRelativeTimestamp(yesterday)
@@ -39,17 +55,43 @@ class GetRelativeTimestampTest {
     }
 
     @Test
-    fun `timestamp 3 days ago - should return 3 days ago`() {
-        val now = System.currentTimeMillis()
-        val threeDaysAgo = now - TimeUnit.DAYS.toMillis(3)
-        val result = getRelativeTimestamp(threeDaysAgo)
-        assertEquals("3 days ago", result)
+    fun `timestamp over 24 hours ago but under 48 hours ago and not yesterday - should return 1 day ago`() {
+        val calendarNow = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 1)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        // Subtract 25 hours from early morning = 2 calendar days ago, but days == 1
+        val twentySixHoursAgo = calendarNow.timeInMillis - TimeUnit.HOURS.toMillis(26)
+
+        val result = getRelativeTimestamp(twentySixHoursAgo)
+
+        // Since this is >24h ago, but NOT "yesterday" by calendar day logic, we expect "1 day ago"
+        assertEquals("1 day ago", result)
     }
 
     @Test
-    fun `timestamp 10 days ago - should return formatted date this year`() {
+    fun `timestamp 2 days ago - should return 2 days ago`() {
         val now = System.currentTimeMillis()
-        val tenDaysAgo = now - TimeUnit.DAYS.toMillis(10)
+        val twoDaysAgo = now - TimeUnit.DAYS.toMillis(2)
+        val result = getRelativeTimestamp(twoDaysAgo)
+        assertEquals("2 days ago", result)
+    }
+
+    @Test
+    fun `timestamp 6 days ago - should return 6 days ago`() {
+        val now = System.currentTimeMillis()
+        val twoDaysAgo = now - TimeUnit.DAYS.toMillis(6)
+        val result = getRelativeTimestamp(twoDaysAgo)
+        assertEquals("6 days ago", result)
+    }
+
+    @Test
+    fun `timestamp 7 days ago - should return formatted date this year`() {
+        val now = System.currentTimeMillis()
+        val tenDaysAgo = now - TimeUnit.DAYS.toMillis(7)
         val result = getRelativeTimestamp(tenDaysAgo)
         // Format will vary depending on today’s date
         // We only assert it does NOT contain "ago" or "Yesterday"
@@ -59,7 +101,7 @@ class GetRelativeTimestampTest {
     @Test
     fun `timestamp from last year - should return formatted date with year`() {
         val calendar = Calendar.getInstance().apply {
-            set(Calendar.YEAR, 2023)
+            set(Calendar.YEAR, 2024)
             set(Calendar.MONTH, Calendar.MARCH)
             set(Calendar.DAY_OF_MONTH, 29)
             set(Calendar.HOUR_OF_DAY, 14)
@@ -67,6 +109,6 @@ class GetRelativeTimestampTest {
         }
 
         val result = getRelativeTimestamp(calendar.timeInMillis)
-        assert(result.contains("2023"))
+        assert(result.contains("2024"))
     }
 }
