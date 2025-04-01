@@ -8,5 +8,5 @@ interface UserRepository {
     suspend fun reserveUsername(username: String, uid: String)
     suspend fun getUserById(userId: String): User?
     suspend fun getCurrentUserId():String?
-    suspend fun deleteUserById(userId: String): Boolean
+    suspend fun clearUserDataById(userId: String): Boolean
 }

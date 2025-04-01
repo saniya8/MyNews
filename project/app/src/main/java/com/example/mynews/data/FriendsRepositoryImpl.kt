@@ -91,6 +91,12 @@ class FriendsRepositoryImpl (
                                    "timestamp" to System.currentTimeMillis(),
                                   )
 
+            // add uid field - this is mainly for delete account's collection query to work
+            firestore.collection("friends")
+                .document(currentUserID)
+                .set(mapOf("uid" to currentUserID))
+                .await()
+
             // add friend to user's friends in firestore
             firestore.collection("friends")
                 .document(currentUserID)
