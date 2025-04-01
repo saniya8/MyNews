@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +30,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mynews.domain.model.Mission
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
+
 
 @Composable
 fun GoalsScreen(
@@ -38,6 +41,7 @@ fun GoalsScreen(
 ) {
     val streakCount by goalsViewModel.streakCount.observeAsState(0)
     val hasLoggedToday by goalsViewModel.hasLoggedToday
+    val missions by goalsViewModel.missions.observeAsState(emptyList())
 
     // these are still hard coded but to be replaced with Firestore data later
     val sampleAchievements = listOf(
@@ -89,36 +93,43 @@ fun GoalsScreen(
             }
         }
 
-
-
-
-
+        // Missions Section
+        Text(
+            text = "Missions",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp),
+            color = Color.Black
+        )
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .background(Color(0xFFD8E6FF))
+                .background(Color(0xFFF0F4FF))
                 .clip(RoundedCornerShape(12.dp))
                 .padding(vertical = 16.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Achievement Grid
-                sampleAchievements.chunked(3).forEach { rowItems ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        rowItems.forEach { achievement ->
-                            AchievementItem(achievement)
-                        }
+                if (missions.isEmpty()) {
+                    Text(
+                        text = "No missions available.",
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    missions.forEach { mission ->
+                        MissionItem(mission)
                     }
                 }
             }
         }
+
+        // Achievements Section
 
 
     }
@@ -144,6 +155,70 @@ fun AchievementItem(achievement: Achievement) {
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp)
         )
+    }
+}
+
+
+@Composable
+fun MissionItem(mission: Mission) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (mission.isCompleted) Color(0xFFCCFFCC) else Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Text(
+                text = mission.name,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Text(
+                text = mission.description,
+                fontSize = 14.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LinearProgressIndicator(
+                    progress = { mission.currentCount.toFloat() / mission.targetCount },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    color = Color(0xFF2E3D83),
+                    trackColor = Color.LightGray
+                )
+                Text(
+                    text = "${mission.currentCount}/${mission.targetCount}",
+                    fontSize = 14.sp,
+                    color = Color.Black
+                )
+            }
+            if (mission.isCompleted) {
+                Text(
+                    text = "Completed!",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2E3D83),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        }
     }
 }
 

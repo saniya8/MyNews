@@ -119,7 +119,6 @@ fun MainScreen(rootNavController: NavHostController,
                          goalsViewModel = goalsViewModel,
                          selectedCategory = selectedCategory,
                          searchQuery = searchQuery)
-
         }
     }
 }
