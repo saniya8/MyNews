@@ -23,6 +23,9 @@ class SettingsViewModel @Inject constructor(
     private val _logoutState = MutableStateFlow<Boolean?>(null)
     val logoutState: StateFlow<Boolean?> = _logoutState
 
+    private val _isDeletingAccount = MutableStateFlow(false)
+    val isDeletingAccount: StateFlow<Boolean> = _isDeletingAccount
+
     private val _deleteAccountState = MutableStateFlow<DeleteAccountResult?>(null)
     val deleteAccountState: StateFlow<DeleteAccountResult?> = _deleteAccountState
 
@@ -36,13 +39,7 @@ class SettingsViewModel @Inject constructor(
     private val _wordLimit = MutableStateFlow(100)
     val wordLimit: StateFlow<Int> = _wordLimit
 
-    fun logout() {
-        viewModelScope.launch {
-            val success = authRepository.logout()
-            _logoutState.value = success
-            Log.d("LogoutDebug", "Logout success: $success")
-        }
-    }
+
 
     fun getWordLimit(): Int {
         return _wordLimit.value
@@ -90,9 +87,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-
-
-
+    fun logout() {
+        viewModelScope.launch {
+            val result = authRepository.logout()
+            _logoutState.value = result
+            Log.d("LogoutDebug", "Logout success: $result")
+        }
+    }
 
     fun resetLogoutState() {
         _logoutState.value = null
@@ -100,13 +101,14 @@ class SettingsViewModel @Inject constructor(
 
     // TO DO: when deleting account delete from all relevant subcollections
     fun deleteAccount(password: String) {
+
         viewModelScope.launch {
+            _isDeletingAccount.value = true
             val result = authRepository.deleteAccount(password)
             _deleteAccountState.value = result
+            _isDeletingAccount.value = false
+            Log.d("LogoutDebug", "Delete account success: $result")
 
-            if (result == DeleteAccountResult.Success) {
-                _logoutState.value = true
-            }
         }
     }
 

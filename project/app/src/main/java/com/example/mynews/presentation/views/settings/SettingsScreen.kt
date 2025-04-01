@@ -8,6 +8,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,7 +30,11 @@ import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.ui.theme.CaptainBlue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import com.example.mynews.presentation.components.ScreenHeader
+import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
 
 
 @Composable
@@ -39,14 +46,11 @@ fun SettingsScreen(
     val logoutState by settingsViewModel.logoutState.collectAsState()
     val username by settingsViewModel.username.collectAsState()
     val email by settingsViewModel.email.collectAsState()
-    var articleLength by remember { mutableStateOf(100) } // Default value
-    var articleLengthText by remember { mutableStateOf(articleLength.toString()) }
-    var isValidInput by rememberSaveable { mutableStateOf(true) }
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    val deleteAccountState by settingsViewModel.deleteAccountState.collectAsState()
+    val isDeletingAccount by settingsViewModel.isDeletingAccount.collectAsState()
 
 
-
-    //val wordLimit by settingsViewModel.wordLimit.collectAsState()
-    //var tempInputWordLimit by rememberSaveable { mutableStateOf(wordLimit.toString()) }
 
 
     LaunchedEffect(Unit) {
@@ -54,9 +58,23 @@ fun SettingsScreen(
         settingsViewModel.fetchEmail()
     }
 
+    // navigate back to auth after logout
+    LaunchedEffect(logoutState) {
+        if (logoutState == true) {
+            onNavigateToAuthScreen()
+            settingsViewModel.resetLogoutState() // reset to avoid retriggers
+        }
+    }
+
+    // navigate back to auth after delete account
+    LaunchedEffect(deleteAccountState) {
+        if (deleteAccountState == DeleteAccountResult.Success) {
+            onNavigateToAuthScreen()
+            settingsViewModel.resetDeleteAccountState()
+        }
+    }
+
     val focusManager = LocalFocusManager.current
-
-
 
     Box(
         modifier = Modifier
@@ -215,7 +233,7 @@ fun SettingsScreen(
                     Button(
                         onClick = {
                             settingsViewModel.logout()
-                            onNavigateToAuthScreen()
+                            //onNavigateToAuthScreen() // done in launched effect
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -232,7 +250,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(25.dp))
 
                     Text(
-                        text = "Delete your account. This will permanently remove all your data",
+                        text = "Delete your account",
                         fontWeight = FontWeight.Normal,
                         color = CaptainBlue,
                         fontSize = 16.sp,
@@ -247,7 +265,8 @@ fun SettingsScreen(
                     Button(
                         onClick = {
                             //settingsViewModel.logout()
-                            onNavigateToAuthScreen()
+                            showDeleteDialog = true
+                            //onNavigateToAuthScreen()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -269,7 +288,46 @@ fun SettingsScreen(
 
             }
 
+            // Show delete confirmation dialog
+            if (showDeleteDialog) {
+                DeleteAccountDialog(
+                    settingsViewModel = settingsViewModel,
+                    onNavigateToAuthScreen = onNavigateToAuthScreen,
+                    onConfirm = { password ->
+                        showDeleteDialog = false
+                        settingsViewModel.deleteAccount(password)
+                    },
+                    onDismiss = {
+                        showDeleteDialog = false
+                        settingsViewModel.resetDeleteAccountState()
+                    },
+                    deleteAccountState = deleteAccountState,
+                )
+            }
+
+
         } // end of scaffold
+    }
+
+    if (isDeletingAccount) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)) // dims background
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {}, // consumes clicks
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.Center) // Center the loading circle
+                    .size(32.dp),
+                color = Color.White,
+                strokeWidth = 4.dp
+            )
+        }
     }
 
 }
@@ -414,6 +472,85 @@ fun WordLimitInputField(
         )
     }
 }
+
+@Composable
+fun DeleteAccountDialog(
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    onNavigateToAuthScreen: () -> Unit,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+    deleteAccountState: DeleteAccountResult? // 🔧 will wire up later
+) {
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var showIncorrectPasswordError by remember { mutableStateOf(false) }
+
+    // watch for incorrect password state
+    LaunchedEffect(deleteAccountState) {
+        showIncorrectPasswordError = deleteAccountState == DeleteAccountResult.IncorrectPassword
+    }
+
+
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(
+            text = "Delete Account",
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+
+        )},
+        text = {
+            Column {
+                Text(
+                    text = "Deleting your account will permanently remove all your data. This action cannot be undone.",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                )
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Enter Password") },
+                    singleLine = true,
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(icon, contentDescription = null)
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (showIncorrectPasswordError) {
+                    Text(
+                        text = "Incorrect password. Please try again.",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(password) },
+                enabled = password.isNotBlank()
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
 
 
 

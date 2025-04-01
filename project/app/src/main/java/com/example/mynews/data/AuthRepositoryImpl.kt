@@ -165,9 +165,6 @@ class AuthRepositoryImpl (
         }
     }
 
-
-    // test later - might need Coroutine Scope
-    // TODO: add in removing username from firestore usernames collection
     override suspend fun deleteAccount(userPassword: String): DeleteAccountResult {
         try {
             val currentUser = auth.currentUser
@@ -176,9 +173,17 @@ class AuthRepositoryImpl (
                 currentUser.reauthenticate(credential).await()
 
                 val userId = currentUser.uid
-                // delete them from the users collection
-                userRepository.deleteUserById(userId)
-                currentUser.delete().await()
+
+
+                // clear user's firestore data first
+                val clearDataSuccess = userRepository.clearUserDataById(userId)
+                if (!clearDataSuccess) {
+                    Log.e("AuthRepository", "Failed to delete Firestore data for user: $userId")
+                    return DeleteAccountResult.Error
+                }
+
+                // only delete the user after the firestore data is deleted
+                currentUser.delete().await() // uncomment later
                 return DeleteAccountResult.Success
             } else {
                 Log.e("AuthRepository", "No user logged in.")
