@@ -104,8 +104,32 @@ class AuthRepositoryImpl (
 
                             // also ensures that reserveUsername waits for addUser to complete,
                             // and then only triggers
-                            userRepository.addUser(newUser).also {
+                            /*userRepository.addUser(newUser).also {
                                 userRepository.reserveUsername(normalizedUsername, firebaseUser.uid)
+                                userRepository.initializeUserSettings(firebaseUser.uid)
+                            }*/
+
+                            val added = userRepository.addUser(newUser)
+                            if (added) {
+
+                                try {
+                                    userRepository.reserveUsername(normalizedUsername, firebaseUser.uid)
+                                } catch (e: Exception) {
+                                    Log.e("AuthRepository", "Failed to reserve username", e)
+                                    return@withContext false
+
+                                }
+
+                                try {
+                                    userRepository.initializeUserSettings(firebaseUser.uid)
+                                } catch (e: Exception) {
+                                    Log.e("AuthRepository", "Failed to initialize user settings", e)
+                                    return@withContext false
+                                }
+
+                            } else {
+                                Log.e("AuthRepository", "Failed to add user to Firestore, skipping username + settings setup")
+                                return@withContext false
                             }
 
                             Log.d(
@@ -182,7 +206,7 @@ class AuthRepositoryImpl (
                     return DeleteAccountResult.Error
                 }
 
-                // only delete the user after the firestore data is deleted
+                // only delete the user after the firestore data is successfully deleted
                 currentUser.delete().await() // uncomment later
                 return DeleteAccountResult.Success
             } else {
@@ -202,7 +226,6 @@ class AuthRepositoryImpl (
         }
     }
 
-    // test later - might need Coroutine Scope
     override suspend fun getLoginState(): Boolean {
         try {
             val currentUser = auth.currentUser

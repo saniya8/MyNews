@@ -36,13 +36,13 @@ import com.example.mynews.presentation.viewmodel.social.SocialViewModel
 
 fun MainScreen(rootNavController: NavHostController,
                homeViewModel: HomeViewModel = hiltViewModel(),
-               newsViewModel: NewsViewModel = hiltViewModel(), // newsViewModel instantiated here to have one instance while app running
+               newsViewModel: NewsViewModel = hiltViewModel(),
                savedArticlesViewModel: SavedArticlesViewModel = hiltViewModel(),
-               friendsViewModel: FriendsViewModel = hiltViewModel(),
                condensedNewsArticleViewModel: CondensedNewsArticleViewModel = hiltViewModel(),
-               settingsViewModel: SettingsViewModel = hiltViewModel(),
                socialViewModel: SocialViewModel = hiltViewModel(),
+               friendsViewModel: FriendsViewModel = hiltViewModel(),
                goalsViewModel: GoalsViewModel = hiltViewModel(),
+               settingsViewModel: SettingsViewModel = hiltViewModel(),
 
                ) {
 
@@ -112,11 +112,11 @@ fun MainScreen(rootNavController: NavHostController,
                          homeViewModel = homeViewModel,
                          newsViewModel = newsViewModel,
                          savedArticlesViewModel = savedArticlesViewModel,
-                         friendsViewModel = friendsViewModel,
                          condensedNewsArticleViewModel = condensedNewsArticleViewModel,
-                         settingsViewModel = settingsViewModel,
                          socialViewModel = socialViewModel,
+                         friendsViewModel = friendsViewModel,
                          goalsViewModel = goalsViewModel,
+                         settingsViewModel = settingsViewModel,
                          selectedCategory = selectedCategory,
                          searchQuery = searchQuery)
 

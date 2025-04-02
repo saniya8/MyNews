@@ -61,11 +61,11 @@ fun HomeNavGraph(rootNavController: NavHostController,
                  homeViewModel: HomeViewModel,
                  newsViewModel: NewsViewModel,
                  savedArticlesViewModel: SavedArticlesViewModel,
-                 friendsViewModel: FriendsViewModel,
                  condensedNewsArticleViewModel: CondensedNewsArticleViewModel,
-                 settingsViewModel: SettingsViewModel,
                  socialViewModel: SocialViewModel,
+                 friendsViewModel: FriendsViewModel,
                  goalsViewModel: GoalsViewModel,
+                 settingsViewModel: SettingsViewModel,
                  selectedCategory: MutableState<String?>,
                  searchQuery: MutableState<String>) {
 
@@ -88,11 +88,10 @@ fun HomeNavGraph(rootNavController: NavHostController,
                         goalsViewModel = goalsViewModel)
         }
 
-            // TODO Update
         composable(AppScreenRoutes.SocialScreen.route) {
             SocialScreen(navController = navController,
-                socialViewModel = socialViewModel,
-                )
+                         socialViewModel = socialViewModel,
+                        )
         }
 
         composable(route = AppScreenRoutes.NewsArticleScreen.route,
@@ -130,6 +129,7 @@ fun HomeNavGraph(rootNavController: NavHostController,
         composable(AppScreenRoutes.SettingsScreen.route) {
             SettingsScreen(
                 navController = navController,
+                settingsViewModel = settingsViewModel,
                 onNavigateToAuthScreen = {
                     Log.d("LogoutDebug", "Navigating to Auth Screen")
                     rootNavController.navigate(Graph.AUTHENTICATION){

@@ -16,65 +16,6 @@ class SocialRepositoryImpl (
     // track each friend's current reaction snapshot
     private val reactionsMap = mutableMapOf<String, List<Reaction>>()
 
-    // getFriendIds: returns a list of strings where each item in the list is the id of
-    // a friend
-    override suspend fun getFriendIds(currentUserID: String, onResult: (List<String>) -> Unit) {
-        firestore.collection("friends")
-            .document(currentUserID)
-            .collection("users_friends")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e("Get Friends", "Error fetching friends: ${error.message}", error)
-                    onResult(emptyList())
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val friendIDs = snapshot.documents.map { it.id }
-                    Log.d("Get Friends", "Successfully retrieved friends: $friendIDs")
-                    onResult(friendIDs) // Updates UI via ViewModel
-                } else {
-                    Log.d("Get Friends", "Firestore snapshot is null")
-                    onResult(emptyList())
-                }
-            }
-    }
-
-    override suspend fun getFriendIdsAndUsernames(currentUserID: String, onResult: (Map<String, String>) -> Unit) { // String String
-        firestore.collection("friends")
-            .document(currentUserID)
-            .collection("users_friends")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                if (snapshot != null) {
-                    // unsafe type casting
-                    //val friendMap = snapshot.documents.associate {
-                    //    ((it.id to it.getString("username")) ?: "") as Pair<*, *>
-                    //}
-
-                    // safe type casting
-                    val friendMap = snapshot.documents.associate { doc ->
-                        val friendID = doc.id
-                        val username = doc.getString("username") ?: "Unknown"
-                        friendID to username
-                    }
-
-
-                    Log.d("GetFriendIdsAndUsernames", "Successfully retrieved friend map: $friendMap")
-                    onResult(friendMap)
-                } else {
-                    Log.d("GetFriendIdsAndUsernames", "Firestore snapshot is null")
-                    onResult(emptyMap())
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("GetFriendIdsAndUsernames", "Error fetching friend IDs and usernames: ${e.message}", e)
-                onResult(emptyMap())
-            }
-    }
-
-
-
-
     override suspend fun getFriends(
         currentUserID: String,
         onResult: (Map<String, String>) -> Unit // friend id to username map

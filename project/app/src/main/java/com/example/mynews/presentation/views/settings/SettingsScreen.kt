@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,7 +41,7 @@ import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel,
     onNavigateToAuthScreen: () -> Unit,
 ) {
     val logoutState by settingsViewModel.logoutState.collectAsState()
@@ -56,6 +57,7 @@ fun SettingsScreen(
     LaunchedEffect(Unit) {
         settingsViewModel.fetchUsername()
         settingsViewModel.fetchEmail()
+        settingsViewModel.fetchWordLimit()
     }
 
     // navigate back to auth after logout
@@ -178,7 +180,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "Set the word limit for your condensed article summaries",
+                        text = "Set the word limit for your condensed article summaries: 50 to 200 words",
                         fontWeight = FontWeight.Normal,
                         color = CaptainBlue,
                         fontSize = 16.sp,
@@ -341,14 +343,25 @@ fun WordLimitInputField(
     val focusManager = LocalFocusManager.current
     val wordLimit by settingsViewModel.wordLimit.collectAsState()
     var originalWordLimit by rememberSaveable { mutableStateOf<Int?>(null) }
-    var tempInputWordLimit by rememberSaveable { mutableStateOf("100") }
+    var tempInputWordLimit by rememberSaveable { mutableStateOf("") }
     var wasFocused by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        tempInputWordLimit = wordLimit.toString()
+    val hasLoaded by settingsViewModel.hasLoadedWordLimit.collectAsState()
+    var hasInitializedInput by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(hasLoaded) {
+        if (hasLoaded) {
+            tempInputWordLimit = wordLimit.toString() // load the value from firestore into the tempInputWordLimit
+            hasInitializedInput = true
+            settingsViewModel.resetHasLoadedWordLimit() // change hasLoaded to false so it doesnt keep loading from firestore, lets user type freely
+        }
     }
 
-    val isError = tempInputWordLimit.toIntOrNull()?.let { it !in 50..200 } ?: true
+    val isError = if (!hasInitializedInput) {
+        false
+    } else {
+        tempInputWordLimit.toIntOrNull()?.let { it !in 50..200 } ?: true
+    }
 
     Column {
         OutlinedTextField(
@@ -366,7 +379,6 @@ fun WordLimitInputField(
                 }
                 // Non-numeric input is silently ignored
             },
-            label = { Text("Set Limit (50 - 200)") },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done

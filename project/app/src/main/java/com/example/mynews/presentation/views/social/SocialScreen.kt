@@ -63,7 +63,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun SocialScreen(
     navController: NavHostController,
-    socialViewModel: SocialViewModel = hiltViewModel(),
+    socialViewModel: SocialViewModel,
 ) {
     //val friendsIds by socialViewModel.friendsIds.observeAsState(emptyList())
 

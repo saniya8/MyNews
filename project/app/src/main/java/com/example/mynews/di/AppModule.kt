@@ -26,8 +26,10 @@ import com.example.mynews.domain.repositories.NewsRepository
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
 import android.content.Context
+import com.example.mynews.data.SettingsRepositoryImpl
 import com.example.mynews.data.SocialRepositoryImpl
 import com.example.mynews.domain.repositories.GoalsRepository
+import com.example.mynews.domain.repositories.SettingsRepository
 import com.example.mynews.domain.repositories.SocialRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
@@ -92,10 +94,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFriendsRepository(
-        firestore: FirebaseFirestore
-    ): FriendsRepository {
-        return FriendsRepositoryImpl(firestore)
+    fun provideCondensedNewsArticleRepository(): CondensedNewsArticleRepository {
+        return CondensedNewsArticleRepositoryImpl()
     }
 
     @Provides
@@ -108,8 +108,26 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCondensedNewsArticleRepository(): CondensedNewsArticleRepository {
-        return CondensedNewsArticleRepositoryImpl()
+    fun provideFriendsRepository(
+        firestore: FirebaseFirestore
+    ): FriendsRepository {
+        return FriendsRepositoryImpl(firestore)
+    }
+
+    @Singleton
+    @Provides
+    fun provideGoalsRepository(
+        firestore: FirebaseFirestore
+    ): GoalsRepository {
+        return GoalsRepositoryImpl(firestore)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSettingsRepository(
+        firestore: FirebaseFirestore
+    ): SettingsRepository {
+        return SettingsRepositoryImpl(firestore)
     }
 
     @Singleton
@@ -123,12 +141,5 @@ object AppModule {
     fun provideFirebaseFirestore(): FirebaseFirestore {
         return FirebaseFirestore.getInstance()
     }
-
-    @Singleton
-    @Provides
-    fun provideGoalsRepository(firestore: FirebaseFirestore): GoalsRepository {
-        return GoalsRepositoryImpl (firestore)
-    }
-
 
 }
