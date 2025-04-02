@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.mynews.domain.model.Mission
 
 class GoalsRepositoryImpl(
     private val firestore: FirebaseFirestore
@@ -34,6 +35,16 @@ class GoalsRepositoryImpl(
             .set(mapOf("timestamp" to timestamp))
             .await()
         updateStreak(userId)
+
+        // Update missions of type "read_article"
+        val missions = getMissions(userId)
+        missions.filter { it.type == "read_article" && !it.isCompleted }.forEach { mission ->
+            val newCount = mission.currentCount + 1
+            updateMissionProgress(userId, mission.id, newCount)
+            if (newCount >= mission.targetCount) {
+                markMissionComplete(userId, mission.id)
+            }
+        }
     }
 
     override suspend fun getStreak(userId: String): Int {
@@ -116,4 +127,70 @@ class GoalsRepositoryImpl(
             }
         awaitClose {listener.remove()}
     }
+
+
+    // mission related functions
+    override suspend fun getMissions(userId: String): List<Mission> {
+        val snapshot = firestore.collection("goals")
+            .document(userId)
+            .collection("missions")
+            .get()
+            .await()
+        return snapshot.documents.mapNotNull { doc ->
+            val id = doc.id
+            val name = doc.getString("name") ?: return@mapNotNull null
+            val description = doc.getString("description") ?: return@mapNotNull null
+            val targetCount = doc.getLong("targetCount")?.toInt() ?: return@mapNotNull null
+            val currentCount = doc.getLong("currentCount")?.toInt() ?: 0
+            val isCompleted = doc.getBoolean("isCompleted") ?: false
+            val type = doc.getString("type") ?: return@mapNotNull null
+            Mission(id, name, description, targetCount, currentCount, isCompleted, type)
+        }
+    }
+
+    override fun getMissionsFlow(userId: String): Flow<List<Mission>> = callbackFlow {
+        val listener = firestore.collection("goals")
+            .document(userId)
+            .collection("missions")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                val missions = snapshot?.documents?.mapNotNull { doc ->
+                    val id = doc.id
+                    val name = doc.getString("name") ?: return@mapNotNull null
+                    val description = doc.getString("description") ?: return@mapNotNull null
+                    val targetCount = doc.getLong("targetCount")?.toInt() ?: return@mapNotNull null
+                    val currentCount = doc.getLong("currentCount")?.toInt() ?: 0
+                    val isCompleted = doc.getBoolean("isCompleted") ?: false
+                    val type = doc.getString("type") ?: return@mapNotNull null
+                    Mission(id, name, description, targetCount, currentCount, isCompleted, type)
+                } ?: emptyList()
+                trySend(missions)
+            }
+        awaitClose { listener.remove() }
+    }
+
+    override suspend fun updateMissionProgress(userId: String, missionId: String, newCount: Int) {
+        firestore.collection("goals")
+            .document(userId)
+            .collection("missions")
+            .document(missionId)
+            .update("currentCount", newCount)
+            .await()
+    }
+
+    override suspend fun markMissionComplete(userId: String, missionId: String) {
+        firestore.collection("goals")
+            .document(userId)
+            .collection("missions")
+            .document(missionId)
+            .update("isCompleted", true)
+            .await()
+    }
+
+
+
+
 }

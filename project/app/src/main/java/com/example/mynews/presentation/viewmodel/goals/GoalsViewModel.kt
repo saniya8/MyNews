@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.data.api.news.Article
+import com.example.mynews.domain.model.Mission
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,8 +31,13 @@ class GoalsViewModel @Inject constructor(
 
     val hasLoggedToday = mutableStateOf(false)
 
+
+    private val _missions = MutableLiveData<List<Mission>>(emptyList())
+    val missions: LiveData<List<Mission>> = _missions
+
     init {
         fetchStreak()
+        fetchMissions()
     }
 
     fun logArticleRead(article: Article) {
@@ -60,6 +66,19 @@ class GoalsViewModel @Inject constructor(
                 _lastReadDate.value = lastReadDate
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                 hasLoggedToday.value = lastReadDate == today
+            }
+        }
+    }
+
+    private fun fetchMissions() {
+        viewModelScope.launch {
+            val userID = userRepository.getCurrentUserId()
+            if (userID.isNullOrEmpty()) {
+                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                return@launch
+            }
+            goalsRepository.getMissionsFlow(userID).collectLatest { missions ->
+                _missions.value = missions
             }
         }
     }
