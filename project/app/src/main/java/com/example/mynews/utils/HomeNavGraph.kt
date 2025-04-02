@@ -114,7 +114,6 @@ fun HomeNavGraph(rootNavController: NavHostController,
             val articleTitle = backStackEntry.arguments?.getString("articleTitle") ?: ""
             CondensedNewsArticleScreen(navController = navController,
                                        condensedNewsArticleViewModel = condensedNewsArticleViewModel,
-                                       settingsViewModel = settingsViewModel,
                                        articleUrl = articleUrl,
                                        articleTitle = articleTitle)
         }

@@ -38,14 +38,14 @@ class SettingsViewModel @Inject constructor(
     val email: StateFlow<String?> = _email
 
 
-    private val _wordLimit = MutableStateFlow(100)
-    val wordLimit: StateFlow<Int> = _wordLimit
+    private val _numWordsToSummarize = MutableStateFlow(100) // stores the first x words of article that summarizer should summarize from
+    val numWordsToSummarize: StateFlow<Int> = _numWordsToSummarize
 
-    private val _hasLoadedWordLimit = MutableStateFlow(false)
-    val hasLoadedWordLimit: StateFlow<Boolean> = _hasLoadedWordLimit
+    private val _hasLoadedNumWordsToSummarize = MutableStateFlow(false)
+    val hasLoadedNumWordsToSummarize: StateFlow<Boolean> = _hasLoadedNumWordsToSummarize
 
 
-    fun fetchWordLimit() {
+    fun fetchNumWordsToSummarize() {
         viewModelScope.launch {
             val userId = userRepository.getCurrentUserId()
             if (userId.isNullOrEmpty()) {
@@ -53,21 +53,21 @@ class SettingsViewModel @Inject constructor(
                 return@launch
             }
 
-            val limit = settingsRepository.getWordLimit(userId) //
-            _wordLimit.value = limit ?: 100 // fallback to 100 (default) if not found
-            _hasLoadedWordLimit.value = true
-            Log.d("SettingsDebug", "Word limit loaded: ${_wordLimit.value}")
+            val numWords = settingsRepository.getNumWordsToSummarize(userId) //
+            _numWordsToSummarize.value = numWords ?: 100 // fallback to 100 (default) if not found
+            _hasLoadedNumWordsToSummarize.value = true
+            Log.d("SettingsDebug", "Num words to summarize loaded: ${_numWordsToSummarize.value}")
         }
     }
 
-    fun resetHasLoadedWordLimit() {
-        _hasLoadedWordLimit.value = false
+    fun resetHasLoadedNumWordsToSummarize() {
+        _hasLoadedNumWordsToSummarize.value = false
     }
 
-    fun updateWordLimit(newLimit: Int) {
-        if (newLimit in 50..200) {
-            Log.d("SettingsDebug", "Updated wordlimit to $newLimit")
-            _wordLimit.value = newLimit
+    fun updateNumWordsToSummarize(newNumWords: Int) {
+        if (newNumWords in 50..200) {
+            Log.d("CondensedSettings", "Updated numWordsToSummarize to $newNumWords")
+            _numWordsToSummarize.value = newNumWords
 
             viewModelScope.launch {
 
@@ -79,11 +79,11 @@ class SettingsViewModel @Inject constructor(
                     return@launch // return
                 }
 
-                settingsRepository.updateWordLimit(userID, newLimit)
+                settingsRepository.updateNumWordsToSummarize(userID, newNumWords)
             }
 
         } else {
-            Log.d("SettingsDebug", "Out of range $newLimit. Kept word limit at ${_wordLimit.value}")
+            Log.d("SettingsDebug", "Out of range $newNumWords. Kept num words to summarize at ${_numWordsToSummarize.value}")
         }
     }
 

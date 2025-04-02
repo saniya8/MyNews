@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,7 +24,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.ui.theme.CaptainBlue
@@ -57,7 +55,7 @@ fun SettingsScreen(
     LaunchedEffect(Unit) {
         settingsViewModel.fetchUsername()
         settingsViewModel.fetchEmail()
-        settingsViewModel.fetchWordLimit()
+        settingsViewModel.fetchNumWordsToSummarize()
     }
 
     // navigate back to auth after logout
@@ -180,7 +178,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "Set the word limit for your condensed article summaries: 50 to 200 words",
+                        text = "Choose how many words the condensed articles should summarize from: 50 to 200 words",
                         fontWeight = FontWeight.Normal,
                         color = CaptainBlue,
                         fontSize = 16.sp,
@@ -192,7 +190,7 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    WordLimitInputField(settingsViewModel)
+                    NumWordsToSummarizeField(settingsViewModel)
 
                 }
 
@@ -293,8 +291,6 @@ fun SettingsScreen(
             // Show delete confirmation dialog
             if (showDeleteDialog) {
                 DeleteAccountDialog(
-                    settingsViewModel = settingsViewModel,
-                    onNavigateToAuthScreen = onNavigateToAuthScreen,
                     onConfirm = { password ->
                         showDeleteDialog = false
                         settingsViewModel.deleteAccount(password)
@@ -336,44 +332,44 @@ fun SettingsScreen(
 
 
 @Composable
-fun WordLimitInputField(
+fun NumWordsToSummarizeField(
     settingsViewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
-    val wordLimit by settingsViewModel.wordLimit.collectAsState()
-    var originalWordLimit by rememberSaveable { mutableStateOf<Int?>(null) }
-    var tempInputWordLimit by rememberSaveable { mutableStateOf("") }
+    val numWordsToSummarize by settingsViewModel.numWordsToSummarize.collectAsState()
+    var originalNumWordsToSummarize by rememberSaveable { mutableStateOf<Int?>(null) }
+    var tempInputNumWordsToSummarize by rememberSaveable { mutableStateOf("") }
     var wasFocused by remember { mutableStateOf(false) }
 
-    val hasLoaded by settingsViewModel.hasLoadedWordLimit.collectAsState()
+    val hasLoaded by settingsViewModel.hasLoadedNumWordsToSummarize.collectAsState()
     var hasInitializedInput by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(hasLoaded) {
         if (hasLoaded) {
-            tempInputWordLimit = wordLimit.toString() // load the value from firestore into the tempInputWordLimit
+            tempInputNumWordsToSummarize = numWordsToSummarize.toString() // load the value from firestore
             hasInitializedInput = true
-            settingsViewModel.resetHasLoadedWordLimit() // change hasLoaded to false so it doesnt keep loading from firestore, lets user type freely
+            settingsViewModel.resetHasLoadedNumWordsToSummarize() // change hasLoaded to false so it doesnt keep loading from firestore, lets user type freely
         }
     }
 
     val isError = if (!hasInitializedInput) {
         false
     } else {
-        tempInputWordLimit.toIntOrNull()?.let { it !in 50..200 } ?: true
+        tempInputNumWordsToSummarize.toIntOrNull()?.let { it !in 50..200 } ?: true
     }
 
     Column {
         OutlinedTextField(
-            value = tempInputWordLimit,
-            onValueChange = { newValue ->
+            value = tempInputNumWordsToSummarize,
+            onValueChange = { newNumWords ->
                 // only accept digits
-                if (newValue.all { it.isDigit() }) {
-                    tempInputWordLimit = newValue
+                if (newNumWords.all { it.isDigit() }) {
+                    tempInputNumWordsToSummarize = newNumWords
 
-                    val newValueInt = newValue.toIntOrNull()
-                    if (newValueInt != null) {
-                        settingsViewModel.updateWordLimit(newValueInt)
+                    val newNumWordsInt = newNumWords.toIntOrNull()
+                    if (newNumWordsInt != null) {
+                        settingsViewModel.updateNumWordsToSummarize(newNumWordsInt)
                     }
 
                 }
@@ -405,9 +401,9 @@ fun WordLimitInputField(
                     if (isError) {
                         Text(
                             text = when {
-                                tempInputWordLimit.isEmpty() -> "Value is required"
-                                tempInputWordLimit.toIntOrNull() != null && tempInputWordLimit.toInt() < 50 -> "Minimum value is 50"
-                                tempInputWordLimit.toIntOrNull() != null && tempInputWordLimit.toInt() > 200 -> "Maximum value is 200"
+                                tempInputNumWordsToSummarize.isEmpty() -> "Value is required"
+                                tempInputNumWordsToSummarize.toIntOrNull() != null && tempInputNumWordsToSummarize.toInt() < 50 -> "Minimum value is 50"
+                                tempInputNumWordsToSummarize.toIntOrNull() != null && tempInputNumWordsToSummarize.toInt() > 200 -> "Maximum value is 200"
                                 else -> "Invalid input"
                             },
                             color = MaterialTheme.colorScheme.error
@@ -416,7 +412,7 @@ fun WordLimitInputField(
                         Spacer(modifier = Modifier)
                     }
 
-                    if (originalWordLimit != null && tempInputWordLimit != originalWordLimit.toString()) {
+                    if (originalNumWordsToSummarize != null && tempInputNumWordsToSummarize != originalNumWordsToSummarize.toString()) {
 
                         Box(
                             modifier = Modifier
@@ -433,9 +429,9 @@ fun WordLimitInputField(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = LocalIndication.current
                                     ) {
-                                        tempInputWordLimit = originalWordLimit.toString()
-                                        val wordLimitToUse: Int = originalWordLimit ?: wordLimit
-                                        settingsViewModel.updateWordLimit(wordLimitToUse)
+                                        tempInputNumWordsToSummarize = originalNumWordsToSummarize.toString()
+                                        val numWordsToUse: Int = originalNumWordsToSummarize ?: numWordsToSummarize
+                                        settingsViewModel.updateNumWordsToSummarize(numWordsToUse)
                                         focusManager.clearFocus()
                                     }
                             )
@@ -455,26 +451,26 @@ fun WordLimitInputField(
                 .onFocusChanged { focusState ->
                     val nowFocused = focusState.isFocused
 
-                    if (nowFocused && originalWordLimit == null) {
+                    if (nowFocused && originalNumWordsToSummarize == null) {
                         // just came into focus
-                        originalWordLimit = wordLimit
+                        originalNumWordsToSummarize = numWordsToSummarize
                     }
 
                     if (wasFocused && !nowFocused) {
 
-                        val newValueInt = tempInputWordLimit.toIntOrNull()
+                        val newNumWordsInt = tempInputNumWordsToSummarize.toIntOrNull()
 
-                        val isValid = newValueInt != null && newValueInt in 50..200
+                        val isValid = newNumWordsInt != null && newNumWordsInt in 50..200
 
                         if (!isValid) {
                             // Revert to original value
-                            val wordLimitToUse: Int = originalWordLimit ?: wordLimit
-                            tempInputWordLimit = wordLimitToUse.toString()
-                            settingsViewModel.updateWordLimit(wordLimitToUse)
+                            val numWordsToUse: Int = originalNumWordsToSummarize ?: numWordsToSummarize
+                            tempInputNumWordsToSummarize = numWordsToUse.toString()
+                            settingsViewModel.updateNumWordsToSummarize(numWordsToUse)
                         } // else
                         // since valid, it's already stored in the viewmodel
 
-                        originalWordLimit = null
+                        originalNumWordsToSummarize = null
 
 
                     }
@@ -487,11 +483,9 @@ fun WordLimitInputField(
 
 @Composable
 fun DeleteAccountDialog(
-    settingsViewModel: SettingsViewModel = hiltViewModel(),
-    onNavigateToAuthScreen: () -> Unit,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
-    deleteAccountState: DeleteAccountResult? // 🔧 will wire up later
+    deleteAccountState: DeleteAccountResult?
 ) {
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }

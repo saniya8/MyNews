@@ -62,7 +62,7 @@ class UserRepositoryImpl (
     override suspend fun initializeUserSettings(userId: String) {
         try {
             val settingsDoc = firestore.collection("settings").document(userId)
-            val data = mapOf("wordLimit" to 100)
+            val data = mapOf("numWordsToSummarize" to 100)
             settingsDoc.set(data).await()
         } catch (e: Exception) {
             Log.e("SettingsDebug", "Failed to initialize settings for user $userId: ${e.message}", e)

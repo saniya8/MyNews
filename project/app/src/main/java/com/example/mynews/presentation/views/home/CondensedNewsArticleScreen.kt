@@ -22,15 +22,12 @@ import com.example.mynews.utils.AppScreenRoutes
 fun CondensedNewsArticleScreen(
     navController: NavHostController,
     condensedNewsArticleViewModel: CondensedNewsArticleViewModel,
-    settingsViewModel: SettingsViewModel,
     articleUrl: String,
     articleTitle: String
 ) {
     val articleText by condensedNewsArticleViewModel.articleText.collectAsState()
     val summarizedText by condensedNewsArticleViewModel.summarizedText.collectAsState()
     val currentArticleUrl by condensedNewsArticleViewModel.currentArticleUrl.collectAsState()
-//    val wordLimit = settingsViewModel.wordLimit
-    val wordLimit by settingsViewModel.wordLimit.collectAsState()
 
     var showErrorDialog by remember { mutableStateOf(false) }
 
@@ -53,7 +50,6 @@ fun CondensedNewsArticleScreen(
             condensedNewsArticleViewModel.fetchSummarizedText(
                 url = articleUrl,
                 text = articleText,
-                wordLimit = 200
             )
         }
     }
