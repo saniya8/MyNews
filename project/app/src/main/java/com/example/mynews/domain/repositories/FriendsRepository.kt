@@ -9,4 +9,6 @@ interface FriendsRepository {
     //suspend fun getFriendIds(currentUserID: String, onResult: (List<String>) -> Unit)
     suspend fun getFriendUsernames(currentUserID: String, onResult: (List<String>) -> Unit)
     //suspend fun getFriendIdsAndUsernames(currentUserID: String, onResult: (Map<Any?, Any?>) -> Unit)
+
+    suspend fun getFriendCount(currentUserID: String): Int
 }

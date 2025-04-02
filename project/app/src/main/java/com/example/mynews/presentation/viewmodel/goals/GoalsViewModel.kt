@@ -53,6 +53,24 @@ class GoalsViewModel @Inject constructor(
         }
     }
 
+    fun logReaction(article: Article) {
+        viewModelScope.launch {
+            val userID = userRepository.getCurrentUserId()
+            if (userID.isNullOrEmpty()) {
+                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                return@launch
+            }
+            val missions = goalsRepository.getMissions(userID)
+            missions.filter { it.type == "react_to_article" && !it.isCompleted }.forEach { mission ->
+                val newCount = mission.currentCount + 1
+                goalsRepository.updateMissionProgress(userID, mission.id, newCount)
+                if (newCount >= mission.targetCount) {
+                    goalsRepository.markMissionComplete(userID, mission.id)
+                }
+            }
+        }
+    }
+
     private fun fetchStreak() {
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()

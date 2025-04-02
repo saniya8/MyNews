@@ -176,6 +176,15 @@ class FriendsRepositoryImpl (
             }
     }
 
+    override suspend fun getFriendCount(currentUserID: String): Int {
+        val friendsSnapshot = firestore.collection("friends")
+            .document(currentUserID)
+            .collection("users_friends")
+            .get()
+            .await()
+        return friendsSnapshot.size()
+    }
+
 
 }
 

@@ -117,9 +117,10 @@ object AppModule {
     @Singleton
     @Provides
     fun provideGoalsRepository(
-        firestore: FirebaseFirestore
+        firestore: FirebaseFirestore,
+        friendsRepository: FriendsRepository
     ): GoalsRepository {
-        return GoalsRepositoryImpl(firestore)
+        return GoalsRepositoryImpl(firestore, friendsRepository)
     }
 
     @Singleton

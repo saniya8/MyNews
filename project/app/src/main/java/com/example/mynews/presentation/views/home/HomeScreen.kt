@@ -460,11 +460,14 @@ fun HomeScreen(
                                         ReactionBar(
                                             article = activeReactionArticle!!,
                                             homeViewModel = homeViewModel,
+                                            goalsViewModel = goalsViewModel,
                                             selectedReaction = selectedReaction,
                                             onReactionSelected = { reaction ->
 
                                                 selectedReaction.value = reaction
                                                 // CL: Properly log the reaction and close after delay
+                                                homeViewModel.updateReaction(activeReactionArticle!!, reaction)
+                                                goalsViewModel.logReaction(activeReactionArticle!!) // Log reaction for missions
                                                 Log.d(
                                                     "GestureDebug",
                                                     "CL: Selected reaction: $reaction for ${activeReactionArticle?.title}"
@@ -493,7 +496,6 @@ fun HomeScreen(
                                                         activeReactionArticleYCoord.roundToInt() - 610 // offset up slightly was -60 as offset
                                                     )
                                                 }
-
                                                 .onGloballyPositioned { layoutCoordinates ->
                                                     reactionBarBounds =
                                                         layoutCoordinates.boundsInRoot() // store reaction bar position
@@ -670,6 +672,7 @@ fun DrawerContent(
 fun ReactionBar(
     article: Article,
     homeViewModel: HomeViewModel,
+    goalsViewModel: GoalsViewModel,
     selectedReaction: MutableState<String?>,
     onReactionSelected: (String?) -> Unit,
     modifier: Modifier = Modifier

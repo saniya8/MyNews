@@ -50,18 +50,9 @@ fun GoalsScreen(
     val hasLoggedToday by goalsViewModel.hasLoggedToday
     val missions by goalsViewModel.missions.observeAsState(emptyList())
 
-    // these are still hard coded but to be replaced with Firestore data later
-    val sampleAchievements = listOf(
-        Achievement("1 Week Streak"),
-        Achievement("5 Friends Added"),
-        Achievement("First Post"),
-        Achievement("10 Comments"),
-        Achievement("30 Days Active"),
-        Achievement("100 Likes"),
-        Achievement("Read 5 Articles"),
-        Achievement("Sports Enthusiast")
-    )
-
+    // Calculate the number of completed missions
+    val completedMissionsCount = missions.count { it.isCompleted }
+    val totalMissionsCount = missions.size
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -71,9 +62,7 @@ fun GoalsScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-
             // standardized
-
             ScreenHeader(
                 useTopPadding = false, //scaffold already adds system padding
                 title = "Achievements",
@@ -112,7 +101,6 @@ fun GoalsScreen(
                     }
                 }
             }
-
             // Missions Section
 
             Text(
@@ -137,6 +125,16 @@ fun GoalsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Display the completed missions counter
+                    Text(
+                        text = "Completed Missions: $completedMissionsCount/$totalMissionsCount",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
                     if (missions.isEmpty()) {
                         Text(
                             text = "No missions available.",
@@ -146,9 +144,11 @@ fun GoalsScreen(
                         )
                     } else {
 
-                        LazyColumn (modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
+                        LazyColumn (
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             items(missions) { mission ->
                                 MissionItem(mission)
@@ -157,9 +157,6 @@ fun GoalsScreen(
                     }
                 }
             }
-
-            // Achievements Section
-
         }
     }
 }
