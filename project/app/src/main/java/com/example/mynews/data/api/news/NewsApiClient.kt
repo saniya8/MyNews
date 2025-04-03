@@ -34,6 +34,23 @@ class NewsApiClient {
         }.body()
     }
 
+    suspend fun getEverythingBySearch(
+        apiKey: String,
+        query: String,
+        language: String = "en"
+    ): NewsResponse {
+        return client.get("${baseUrl}everything") {
+            headers {
+                append("X-Api-Key", apiKey)
+                append("User-Agent", userAgent)
+            }
+            url {
+                parameters.append("language", language)
+                parameters.append("q", query)
+            }
+        }.body()
+    }
+
     suspend fun getTopHeadlinesByCategory(
         apiKey: String,
         category: String,
@@ -51,22 +68,58 @@ class NewsApiClient {
         }.body()
     }
 
-    suspend fun getEverythingBySearch(
+    suspend fun getSourcesByCountry(
         apiKey: String,
-        query: String,
+        country: String,
         language: String = "en"
-    ): NewsResponse {
-        return client.get("${baseUrl}everything") {
+    ): SourcesResponse {
+        return client.get("${baseUrl}top-headlines/sources") {
             headers {
                 append("X-Api-Key", apiKey)
                 append("User-Agent", userAgent)
             }
             url {
                 parameters.append("language", language)
-                parameters.append("q", query)
+                parameters.append("country", country)
+
             }
         }.body()
     }
+
+    suspend fun getTopHeadlinesBySources(
+        apiKey: String,
+        sources: String, // comma-separated string of source IDs per API documentation
+        language: String = "en"
+    ): NewsResponse {
+        return client.get("${baseUrl}top-headlines") {
+            headers {
+                append("X-Api-Key", apiKey)
+                append("User-Agent", userAgent)
+            }
+            url {
+                parameters.append("language", language)
+                parameters.append("sources", sources)
+            }
+        }.body()
+    }
+
+    // TEST: to fetch all sources
+    suspend fun getAllSources(
+        apiKey: String,
+        language: String = "en"
+    ): SourcesResponse {
+        return client.get("${baseUrl}top-headlines/sources") {
+            headers {
+                append("X-Api-Key", apiKey)
+                append("User-Agent", userAgent)
+            }
+            url {
+                parameters.append("language", language)
+            }
+        }.body()
+    }
+
+
 
 
 }

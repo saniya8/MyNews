@@ -5,6 +5,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,13 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.window.Popup
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.height
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.horizontalScroll
@@ -51,11 +59,14 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.livedata.observeAsState
@@ -68,8 +79,11 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.data.api.news.Article
@@ -96,14 +110,13 @@ fun HomeScreen(
     newsViewModel: NewsViewModel, // Keep here so NewsViewModel persists between navigation
     savedArticlesViewModel: SavedArticlesViewModel,
     goalsViewModel: GoalsViewModel,
-    selectedCategory: MutableState<String?>,
     searchQuery: MutableState<String>,
+    selectedCategory: MutableState<String?>,
+    selectedCountry: MutableState<String?>,
 ) {
 
     val articles by newsViewModel.articles.observeAsState(emptyList())
     val articleReactions by homeViewModel.articleReactions.observeAsState(emptyMap())
-
-
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Controls drawer open/close
     val scope = rememberCoroutineScope() // Required for controlling the drawer
@@ -132,11 +145,43 @@ fun HomeScreen(
         closeJob = null
     }
 
+    // LaunchedEffect(Unit) runs exactly once when the screen is first composed. However, since composable
+    // is removed from composition (when navigating out of Home Screen) and then re-added (when navigating back)
+    // since composable was removed from composition, it needs to be recreated when navigating back in ie
+    // needs to be composed again, which will trigger LaunchedEffect(Unit)
+    // LaunchedEffect(searchQuery.value), LaunchedEffect(selectedCategory.value),
+    // and LaunchedEffect(selectedCountry.value) will ONLY run when the value itself changes that is, when
+    // searchQuery.value, selectedCategory.value, or selectedCountry.value changes -> but since these are
+    // stored in MainScreen which persists between navigation and never ever changes it, these LaunchedEffects won't run when
+    // this screen is reentered
+    // For example...
+    // selectedCategory.value changed to health
+    // LaunchedEffect(selectedCategory.value) called since it changed to health, which calls
+    // newsViewModel.fetchTopHeadlinesByCategory
+    // newsViewModel.fetchTopHeadlinesByCategory causes _articles to update to only contain health articles
+    // since HomeScreen observes articles, HomeScreen, which passes articles to NewsScreen, rerenders
+    // Now suppose...
+    // I leave home screen (my selectedCategory.value is still health and my _articles are health articles)
+    // I come back to home screen
+    // When I come back, LaunchedEffect(Unit) always runs since it always runs upon recomposition
+    // LaunchedEffect(selectedCategory.value) WILL NOT run because selectedCategory.value is still health, it
+    // has not changed
+    // So how does it show filtered articles by health? It does because _articles contains the health articles
+    // which is why it displays those
+    // So when screen is reentered, in LaunchedEffect(Unit), we should do all the fetches again. Why?
+    // Because even though, when screen is reentered, it is correctly showing the filtered articles (since
+    // _articles contains the filtered articles when leaving and therefore when reentering), if we call
+    // the fetch in LaunchedEffect(Unit), it will re-call newsViewModel.fetchTopHeadlinesByCategory which
+    // can get the up to date filtered news articles from the NewsApi, and it will update _articles, still with
+    // health category (since selectedCategory.value still remained as Health), but with up to date articles
+
+
     LaunchedEffect(Unit) {
 
         Log.i("FlickerBug", "In LaunchedEffect(Unit)")
         Log.i("FlickerBug", "searchQuery: ${searchQuery.value}")
         Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
+        Log.i("FlickerBug", "selectedCountry: ${selectedCountry.value}")
 
         // searchQuery.value and selectedCategory.value
         // isNotEmpty && != null -> not possible, currently mutually exclusive
@@ -144,34 +189,32 @@ fun HomeScreen(
         // isNotEmpty && null -> possible, fetch everything by search - in LaunchedEffect(Unit)
         // isEmpty && != null -> possible, fetch top headlines by category - in LaunchedEffect(S
 
-        if (searchQuery.value.isNotEmpty() && selectedCategory.value == null) {
+
+
+        /*if (searchQuery.value.isNotEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
             // when recreating home screen, if there is a search query, it should load search
             // results (without requiring user to click search bar)
             Log.i("FlickerBug", "Fetching everything by search")
             newsViewModel.fetchEverythingBySearch(searchQuery.value)
-        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null) {
+        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
             newsViewModel.fetchTopHeadlines()
             Log.i("FlickerBug", "Fetching top headlines")
-        }
+        }*/
 
-        Log.i("FlickerBug", "----------------------")
-    }
-
-    // when selectedCategory.value change, it should fetch the top headlines by the category
-    LaunchedEffect(selectedCategory.value) {
-
-        Log.i("FlickerBug", "In LaunchedEffect(selectedCategory)")
-        Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
-
-        val category = selectedCategory.value // store a local stable copy
-
-        if (category == null && searchQuery.value.isEmpty()) {
-            // used to fetch top headlines if user deselects their selected cateogry
-            // note: on initial creation of home screen, this will result in duplicate api
-            // call, one in LaunchedEffect(Unit) and one here
-            newsViewModel.fetchTopHeadlines(forceFetch = true)
-        } else if (category != null && searchQuery.value.isEmpty()) {
-            newsViewModel.fetchTopHeadlinesByCategory(category)
+        if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
+            newsViewModel.fetchTopHeadlines()
+            Log.i("FlickerBug", "Fetching top headlines")
+        } else if (searchQuery.value.isNotEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
+            // when recreating home screen, if there is a search query, it should load search
+            // results (without requiring user to click search bar)
+            Log.i("FlickerBug", "Fetching everything by search")
+            newsViewModel.fetchEverythingBySearch(searchQuery.value)
+        } else if (searchQuery.value.isEmpty() && selectedCategory.value != null && selectedCountry.value == null) {
+            Log.i("FlickerBug", "Fetching top headlines by category: ${selectedCategory.value}")
+            newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value!!)
+        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value != null) {
+            Log.i("FlickerBug", "Fetching top headlines by country: ${selectedCountry.value}")
+            newsViewModel.fetchTopHeadlinesByCountry(selectedCountry.value!!)
         }
         Log.i("FlickerBug", "----------------------")
     }
@@ -184,7 +227,7 @@ fun HomeScreen(
 
         Log.i("FlickerBug", "In LaunchedEffect(searchQuery.value)")
         Log.i("FlickerBug", "searchQuery: ${searchQuery.value}")
-        if (searchQuery.value.isEmpty() && selectedCategory.value == null) {
+        if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
             // used to fetch top headlines if user clears their search
             // note: on initial creation of home screen, this will result in duplicate api
             // call, one in LaunchedEffect(Unit) and one here and one in LaunchedEffect(selectedCategory)
@@ -197,14 +240,56 @@ fun HomeScreen(
         Log.i("FlickerBug", "----------------------")
     }
 
+    // when selectedCategory.value change, it should fetch the top headlines by the category
+    LaunchedEffect(selectedCategory.value) {
+
+        Log.i("FlickerBug", "In LaunchedEffect(selectedCategory)")
+        Log.i("FlickerBug", "selectedCategory: ${selectedCategory.value}")
+
+        val category = selectedCategory.value // store a local stable copy
+
+        if (category == null && searchQuery.value.isEmpty() && selectedCountry.value == null) {
+            // used to fetch top headlines if user deselects their selected cateogry
+            // note: on initial creation of home screen, this will result in duplicate api
+            // call, one in LaunchedEffect(Unit) and one here
+            newsViewModel.fetchTopHeadlines(forceFetch = true)
+        } else if (category != null && searchQuery.value.isEmpty() && selectedCountry.value == null) {
+            newsViewModel.fetchTopHeadlinesByCategory(category)
+        }
+        Log.i("FlickerBug", "----------------------")
+    }
+
+
+    // when selectedCountry.value change, it should fetch the top headlines by the country
+    LaunchedEffect(selectedCountry.value) {
+
+        Log.i("FlickerBug", "In LaunchedEffect(selectedCountry)")
+        Log.i("FlickerBug", "selectedCountry: ${selectedCountry.value}")
+
+        val country = selectedCountry.value // store a local stable copy
+
+        if (country == null && searchQuery.value.isEmpty() && selectedCategory.value == null) {
+            // used to fetch top headlines if user deselects their selected cateogry
+            // note: on initial creation of home screen, this will result in duplicate api
+            // call, one in LaunchedEffect(Unit) and one here
+            newsViewModel.fetchTopHeadlines(forceFetch = true)
+        } else if (country != null && searchQuery.value.isEmpty() && selectedCategory.value == null) {
+            newsViewModel.fetchTopHeadlinesByCountry(country)
+        }
+        Log.i("FlickerBug", "----------------------")
+    }
+
+
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(
                 drawerState = drawerState,
                 scope = scope,
-                selectedCategory = selectedCategory, //.value, // Pass selected category
                 searchQuery = searchQuery,
+                selectedCategory = selectedCategory,
+                selectedCountry = selectedCountry,
             )
         }
     ) {
@@ -236,7 +321,10 @@ fun HomeScreen(
                                 val bounds = reactionBarBounds
 
                                 if (bounds != null && bounds.contains(touchPosition)) {
-                                    Log.d("GestureDebug", "Touch inside the reaction bar - allow selection of reactions")
+                                    Log.d(
+                                        "GestureDebug",
+                                        "Touch inside the reaction bar - allow selection of reactions"
+                                    )
                                 } else {
 
                                     Log.d(
@@ -369,8 +457,10 @@ fun HomeScreen(
                             newsViewModel = newsViewModel,
                             drawerState = drawerState,
                             scope = scope,
+                            searchQuery = searchQuery,
                             selectedCategory = selectedCategory,
-                            searchQuery = searchQuery
+                            selectedCountry = selectedCountry,
+
                         )
 
 
@@ -438,7 +528,10 @@ fun HomeScreen(
                                             interactionSource = remember { MutableInteractionSource() },
                                             indication = null // No ripple effect
                                         ) {
-                                            Log.d("GestureDebug", "CL: Overlay clicked - closing reaction bar")
+                                            Log.d(
+                                                "GestureDebug",
+                                                "CL: Overlay clicked - closing reaction bar"
+                                            )
                                             closeReactionBar()
                                         }
 
@@ -519,12 +612,14 @@ fun HomeScreen(
 fun SearchAndFilter(newsViewModel: NewsViewModel,
                     drawerState: DrawerState,
                     scope: CoroutineScope,
+                    searchQuery: MutableState<String>,
                     selectedCategory: MutableState<String?>,
-                    searchQuery: MutableState<String>
+                    selectedCountry: MutableState<String?>,
 ) {
 
     Row (
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             //.height(50.dp) // Height for testing
             //.background(Color(0xFFFFC0CB)) // Light Pink Color for testing
             .horizontalScroll(rememberScrollState()),
@@ -566,6 +661,9 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
                                 // LaunchedEffect(selectedCategory.value) which would
                                 // unnecessarily trigger another API call
                             }
+                            if (selectedCountry.value != null) {
+                                selectedCountry.value = null; // clear any country selections
+                            }
                             newsViewModel.fetchEverythingBySearch(searchQuery.value)
                         }
                     }
@@ -589,13 +687,20 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
 fun DrawerContent(
     drawerState: DrawerState,
     scope: CoroutineScope,
+    searchQuery: MutableState<String>,
     selectedCategory: MutableState<String?>,
-    searchQuery: MutableState<String>
+    selectedCountry: MutableState<String?>,
 ) {
     // excluding General since General is just the same as the regular news that you
     // pull from API
     // categories provided in the documentation
-    val categories = listOf("Business", "Entertainment", "Health", "Science", "Sports", "Technology")
+
+    // mutable state for managing the dropdown menu (country selection)
+    var expanded by remember { mutableStateOf(false) } // Dropdown expanded state
+    var textFieldPosition by remember { mutableStateOf(Offset(0f, 0f)) } // To store the global position of the TextField
+    var textFieldHeight by remember { mutableStateOf(0f) } // To store the height of the TextField
+    // Get the current density in the composable scope
+    val density = LocalDensity.current
 
     LazyColumn(
         modifier = Modifier
@@ -625,6 +730,8 @@ fun DrawerContent(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        // Filtering by category
+
         item {
             Text(
                 text = "Category",
@@ -646,8 +753,12 @@ fun DrawerContent(
             Button(
                 onClick = {
 
-                    if(searchQuery.value.isNotEmpty()) { // if there is a search query
-                        searchQuery.value = ""; // clear the search query
+                    if (searchQuery.value.isNotEmpty()) { // if there is a search query
+                        searchQuery.value = "" // clear the search query
+                    }
+
+                    if (selectedCountry.value != null) { // if there is a selected country
+                        selectedCountry.value = null // clear the country
                     }
 
                     val newCategory = if (isSelected) null else category // Toggle selection
@@ -661,6 +772,173 @@ fun DrawerContent(
                 border = BorderStroke(2.dp, borderColor)
             ) {
                 Text(text = category, color = Color.Black)
+            }
+        }
+
+        // Filtering by Country
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+
+            // Row to hold "Country" text and "Clear" button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    //.background(Color.Gray)
+                    .height(56.dp),
+
+                horizontalArrangement = Arrangement.SpaceBetween, // Space between "Country" and "Clear"
+                verticalAlignment = Alignment.Bottom // Align bottoms of "Country" and "Clear"
+            ) {
+
+                Text(
+                    text = "Country",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    //modifier = Modifier.background(Color.Cyan)
+                )
+
+                val shouldShowClear = selectedCountry.value != null
+
+                if (shouldShowClear) {
+
+                    Text(
+                        text = "Clear",
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            //.background(Color.Yellow) // Background color for "Clear"
+                            .clickable(
+                                onClick = {
+
+                                    if (searchQuery.value.isNotEmpty()) { // if there is a search query
+                                        searchQuery.value = "" // clear the search query
+                                    }
+
+                                    if (selectedCategory.value != null) {
+                                        selectedCategory.value = null
+                                    }
+
+                                    selectedCountry.value = null // Set to null to clear the filter
+                                    expanded = false // Close the dropdown
+                                },
+                                indication = LocalIndication.current, // Apply ripple effect
+                                interactionSource = remember { MutableInteractionSource() } // Interaction source for ripple
+                            )
+                            .align(Alignment.Bottom) // Ensure it's aligned at the bottom
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+        }
+
+        // Dropdown for country selection
+
+        item {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded } // Toggle dropdown on entire field click
+                    .onGloballyPositioned { coordinates ->
+                        textFieldPosition =
+                            coordinates.positionInWindow() // Get the global position
+                        textFieldHeight = coordinates.size.height.toFloat() // Get the height
+                    }
+            ) {
+                OutlinedTextField(
+                    value = selectedCountry.value?.let { countries[it] } ?: "Select a country",
+                    onValueChange = {}, // Read-only
+                    readOnly = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 4.dp),
+                    trailingIcon = {
+                        Icon(
+                            imageVector =
+                            if (expanded){
+                                Icons.Default.ArrowDropUp
+                            } else {
+                                Icons.Default.ArrowDropDown
+                            },
+                            contentDescription = "Arrow",
+                            tint = CaptainBlue,
+                            modifier = Modifier
+                                .size(30.dp)
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        // container colour
+                        // since read-only the disabled colours will activate, but
+                        // don't want field to appear as diabled
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        disabledTextColor = Color.Black,
+                        focusedIndicatorColor = Color.White,
+                        unfocusedIndicatorColor = Color.White,
+                        disabledIndicatorColor = Color.White,
+                        cursorColor = Color.Transparent // No cursor since it's read-only
+                    ),
+                    enabled = false, // Prevents keyboard from popping up
+                )
+
+            }
+
+            // Custom Popup for the dropdown
+            if (expanded) {
+                Popup(
+                    onDismissRequest = { expanded = false },
+                    properties = PopupProperties(
+                        focusable = true,
+                        usePlatformDefaultWidth = false // remove unnecessary width
+                    ),
+                    offset = IntOffset(
+                        x = textFieldPosition.x.toInt(),
+                        y = (textFieldPosition.y + textFieldHeight).toInt()
+                    )
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            //.width(250.dp)
+                            .fillParentMaxWidth()
+                            .border(1.dp, Color(0xFF607C8A)), // Optional: Add a border for visual clarity
+                        color = SkyBlue,
+                        shadowElevation = 4.dp,
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .heightIn(max = 300.dp) // Limit height to make it scrollable
+                        ) {
+                            items(countries.entries.toList()) { (countryCode, countryName) ->
+                                Text(
+                                    text = countryName,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            if (searchQuery.value.isNotEmpty()) { // if there is a search query
+                                                searchQuery.value = "" // clear the search query
+                                            }
+                                            if (selectedCategory.value != null) {
+                                                selectedCategory.value = null
+                                            }
+
+                                            selectedCountry.value = countryCode
+                                            expanded = false
+                                        }
+                                        .padding(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -755,7 +1033,10 @@ fun ReactionBar(
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
                             .clickable {
-                                Log.d("GestureDebug", "isSelected for ${selectedReaction.value} is: $isSelected")
+                                Log.d(
+                                    "GestureDebug",
+                                    "isSelected for ${selectedReaction.value} is: $isSelected"
+                                )
                                 val newReaction = if (isSelected) null else reaction
                                 onReactionSelected(newReaction)
                                 homeViewModel.updateReaction(article, newReaction)
@@ -772,17 +1053,6 @@ fun ReactionBar(
         }
     }
 }
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun PreviewReactionBar() {
-    ReactionBar(
-        onReactionSelected = { reaction -> Log.d("ReactionBar", "Selected: $reaction") }
-    )
-}
-
- */
 
 @Composable
 fun BiasLegendDialog(onDismiss: () -> Unit) {
@@ -838,6 +1108,86 @@ fun BiasLegendItem(label: String, color: Color) {
         Text(text = label, fontSize = 16.sp)
     }
 }
+
+val categories = listOf(
+    "Business",
+    "Entertainment",
+    "Health",
+    "Science",
+    "Sports",
+    "Technology"
+)
+
+val countries = mapOf(
+    "us" to "United States",
+    "ca" to "Canada",
+    "gb" to "United Kingdom",
+    "in" to "India",
+    "au" to "Australia",
+
+)
+
+
+/*
+// full countries list that api supports - sorted alphabetically by values
+val countries = mapOf(
+    "ar" to "Argentina",
+    "au" to "Australia",
+    "at" to "Austria",
+    "be" to "Belgium",
+    "br" to "Brazil",
+    "bg" to "Bulgaria",
+    "ca" to "Canada",
+    "cn" to "China",
+    "co" to "Colombia",
+    "cu" to "Cuba",
+    "cz" to "Czech Republic",
+    "eg" to "Egypt",
+    "fr" to "France",
+    "de" to "Germany",
+    "gr" to "Greece",
+    "hk" to "Hong Kong",
+    "hu" to "Hungary",
+    "in" to "India",
+    "id" to "Indonesia",
+    "ie" to "Ireland",
+    "il" to "Israel",
+    "it" to "Italy",
+    "jp" to "Japan",
+    "lv" to "Latvia",
+    "lt" to "Lithuania",
+    "my" to "Malaysia",
+    "mx" to "Mexico",
+    "ma" to "Morocco",
+    "nl" to "Netherlands",
+    "nz" to "New Zealand",
+    "ng" to "Nigeria",
+    "no" to "Norway",
+    "ph" to "Philippines",
+    "pl" to "Poland",
+    "pt" to "Portugal",
+    "ro" to "Romania",
+    "ru" to "Russia",
+    "sa" to "Saudi Arabia",
+    "rs" to "Serbia",
+    "sg" to "Singapore",
+    "sk" to "Slovakia",
+    "si" to "Slovenia",
+    "za" to "South Africa",
+    "kr" to "South Korea",
+    "se" to "Sweden",
+    "ch" to "Switzerland",
+    "tw" to "Taiwan",
+    "th" to "Thailand",
+    "tr" to "Turkey",
+    "ua" to "Ukraine",
+    "ae" to "United Arab Emirates",
+    "gb" to "United Kingdom",
+    "us" to "United States",
+    "ve" to "Venezuela",
+)
+*/
+
 
 
 

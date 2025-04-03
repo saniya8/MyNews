@@ -71,8 +71,22 @@ class NewsViewModel @Inject constructor(
         }
     }
 
+    // for searching
+    fun fetchEverythingBySearch(searchQuery: String) {
 
-    // for filtering
+        viewModelScope.launch {
+            try {
+                val newsResponse = newsRepository.getEverythingBySearch(searchQuery)
+                _articles.postValue(newsResponse.articles)
+            } catch (e: Exception) {
+                Log.e("NewsAPI Error", "Failed to fetch search results: ${e.message}", e)
+            }
+        }
+
+    }
+
+
+    // for filtering by category
     fun fetchTopHeadlinesByCategory(category: String) {
 
         // if category is null, then requires fetching top headlines (since category
@@ -92,19 +106,25 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    // for searching
-    fun fetchEverythingBySearch(searchQuery: String) {
+
+    fun fetchTopHeadlinesByCountry(country: String) {
+
+        // if country is null, then requires fetching top headlines (since category
+        // being null means category was deselected or never selected)
+        // that is handled in LaunchedEffect(selectedCountry.value) in HomeScreen.kt
+        // so if this function is called, category cannot be null
 
         viewModelScope.launch {
+
             try {
-                val newsResponse = newsRepository.getEverythingBySearch(searchQuery)
+                val newsResponse = newsRepository.getTopHeadlinesByCountry(country)
                 _articles.postValue(newsResponse.articles)
             } catch (e: Exception) {
-                Log.e("NewsAPI Error", "Failed to fetch search results: ${e.message}", e)
+                Log.e("NewsAPI Error", "Failed to fetch headlines by country: ${e.message}", e)
             }
         }
-
     }
+
 
     fun fetchBiasForSource(sourceName: String, onResult: (String) -> Unit) {
 
@@ -119,6 +139,8 @@ class NewsViewModel @Inject constructor(
             onResult(bias) // pass the result back
         }
     }
+
+
 
 
 }

@@ -103,7 +103,7 @@ fun SettingsScreen(
                     title = "Settings",
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Column(
                     modifier = Modifier

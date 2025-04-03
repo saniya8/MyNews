@@ -9,6 +9,9 @@ import com.example.mynews.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 import com.google.firebase.auth.FirebaseAuth
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import com.example.mynews.data.NewsRepositoryImpl
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -29,5 +32,14 @@ class MainActivity : ComponentActivity() {
                     RootNavigationGraph(navController)
             }
         }
+
+        /*
+        // TESTING: which countries return sources for filtering by country
+        // used to determine which countries to put in dropdown
+        lifecycleScope.launch {
+            val newsRepository = NewsRepositoryImpl(applicationContext)
+            newsRepository.testCountriesForSources()
+        }*/
+
     }
 }

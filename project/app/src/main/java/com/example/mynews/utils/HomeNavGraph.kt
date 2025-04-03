@@ -67,7 +67,8 @@ fun HomeNavGraph(rootNavController: NavHostController,
                  goalsViewModel: GoalsViewModel,
                  settingsViewModel: SettingsViewModel,
                  selectedCategory: MutableState<String?>,
-                 searchQuery: MutableState<String>) {
+                 searchQuery: MutableState<String>,
+                 selectedCountry: MutableState<String?>,) {
 
     NavHost(
         navController = navController,
@@ -80,8 +81,9 @@ fun HomeNavGraph(rootNavController: NavHostController,
                        newsViewModel = newsViewModel,
                        savedArticlesViewModel = savedArticlesViewModel,
                        goalsViewModel = goalsViewModel,
+                       searchQuery = searchQuery,
                        selectedCategory = selectedCategory,
-                       searchQuery = searchQuery)
+                       selectedCountry = selectedCountry,)
         }
         composable(AppScreenRoutes.GoalsScreen.route) {
             GoalsScreen(navController = navController,
