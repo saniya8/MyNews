@@ -37,6 +37,33 @@ data class Mission(
                 currentCount = 0,
                 isCompleted = false,
                 type = "add_friend"
+            ),
+            Mission(
+                id = "mission_4",
+                name = "Add 20 Friends",
+                description = "Add 20 friends to your network",
+                targetCount = 20,
+                currentCount = 0,
+                isCompleted = false,
+                type = "add_friend"
+            ),
+            Mission(
+                id = "mission_5",
+                name = "React to 50 Articles",
+                description = "React to 50 articles with an emoji",
+                targetCount = 50,
+                currentCount = 0,
+                isCompleted = false,
+                type = "add_friend"
+            ),
+            Mission(
+                id = "mission_6",
+                name = "Read 30 Articles",
+                description = "Read 30 different articles",
+                targetCount = 30,
+                currentCount = 0,
+                isCompleted = false,
+                type = "add_friend"
             )
         )
     }

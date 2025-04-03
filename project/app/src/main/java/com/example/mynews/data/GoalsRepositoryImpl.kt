@@ -221,21 +221,24 @@ class GoalsRepositoryImpl(
             .get()
             .await()
 
-        // If the user has no missions, initialize with default missions
-        if (missionsSnapshot.isEmpty) {
-            Mission.defaultMissions.forEach { mission ->
+        // Get the IDs of existing missions
+        val existingMissionIds = missionsSnapshot.documents.map { it.id }
+
+        // Add any default missions that don't already exist
+        Mission.defaultMissions.forEach { defaultMission ->
+            if (defaultMission.id !in existingMissionIds) {
                 firestore.collection("goals")
                     .document(userId)
                     .collection("missions")
-                    .document(mission.id)
+                    .document(defaultMission.id)
                     .set(
                         mapOf(
-                            "name" to mission.name,
-                            "description" to mission.description,
-                            "targetCount" to mission.targetCount,
-                            "currentCount" to mission.currentCount,
-                            "isCompleted" to mission.isCompleted,
-                            "type" to mission.type
+                            "name" to defaultMission.name,
+                            "description" to defaultMission.description,
+                            "targetCount" to defaultMission.targetCount,
+                            "currentCount" to defaultMission.currentCount,
+                            "isCompleted" to defaultMission.isCompleted,
+                            "type" to defaultMission.type
                         )
                     )
                     .await()
