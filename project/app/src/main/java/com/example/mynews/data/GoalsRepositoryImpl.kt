@@ -3,6 +3,7 @@ package com.example.mynews.data
 import android.net.Uri
 import com.example.mynews.data.api.news.Article
 import com.example.mynews.domain.repositories.GoalsRepository
+import com.example.mynews.domain.repositories.FriendsRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +14,8 @@ import java.util.*
 import com.example.mynews.domain.model.Mission
 
 class GoalsRepositoryImpl(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val friendsRepository: FriendsRepository // Dependency on FriendsRepository
 ) : GoalsRepository {
 
     private data class Streak(
@@ -131,6 +133,7 @@ class GoalsRepositoryImpl(
 
     // mission related functions
     override suspend fun getMissions(userId: String): List<Mission> {
+        initializeMissions(userId)
         val snapshot = firestore.collection("goals")
             .document(userId)
             .collection("missions")
@@ -149,6 +152,9 @@ class GoalsRepositoryImpl(
     }
 
     override fun getMissionsFlow(userId: String): Flow<List<Mission>> = callbackFlow {
+        initializeMissions(userId)
+        updateAddFriendsMission(userId)
+
         val listener = firestore.collection("goals")
             .document(userId)
             .collection("missions")
@@ -188,6 +194,56 @@ class GoalsRepositoryImpl(
             .document(missionId)
             .update("isCompleted", true)
             .await()
+    }
+
+    override suspend fun getFriendCount(userId: String): Int {
+        return friendsRepository.getFriendCount(userId)
+    }
+
+    private suspend fun updateAddFriendsMission(userId: String) {
+        val friendCount = getFriendCount(userId)
+        val missions = getMissions(userId)
+        missions.filter { it.type == "add_friend" && !it.isCompleted }.forEach { mission ->
+            val newCount = friendCount.coerceAtMost(mission.targetCount) // Don't exceed targetCount
+            updateMissionProgress(userId, mission.id, newCount)
+            if (newCount >= mission.targetCount) {
+                markMissionComplete(userId, mission.id)
+            }
+        }
+    }
+
+
+
+    override suspend fun initializeMissions(userId: String) {
+        val missionsSnapshot = firestore.collection("goals")
+            .document(userId)
+            .collection("missions")
+            .get()
+            .await()
+
+        // Get the IDs of existing missions
+        val existingMissionIds = missionsSnapshot.documents.map { it.id }
+
+        // Add any default missions that don't already exist
+        Mission.defaultMissions.forEach { defaultMission ->
+            if (defaultMission.id !in existingMissionIds) {
+                firestore.collection("goals")
+                    .document(userId)
+                    .collection("missions")
+                    .document(defaultMission.id)
+                    .set(
+                        mapOf(
+                            "name" to defaultMission.name,
+                            "description" to defaultMission.description,
+                            "targetCount" to defaultMission.targetCount,
+                            "currentCount" to defaultMission.currentCount,
+                            "isCompleted" to defaultMission.isCompleted,
+                            "type" to defaultMission.type
+                        )
+                    )
+                    .await()
+            }
+        }
     }
 
 

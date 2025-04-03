@@ -14,4 +14,7 @@ interface GoalsRepository {
     fun getMissionsFlow(userId: String): Flow<List<Mission>>
     suspend fun updateMissionProgress(userId: String, missionId: String, newCount: Int)
     suspend fun markMissionComplete(userId: String, missionId: String)
+    suspend fun getFriendCount(userId: String): Int
+
+    suspend fun initializeMissions(userId: String)
 }

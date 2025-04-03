@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.domain.repositories.FriendsRepository
+import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
 import com.example.mynews.presentation.state.AddFriendState
 import com.example.mynews.presentation.state.RegisterState
@@ -23,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class FriendsViewModel @Inject constructor(
     private val userRepository: UserRepository, // won't need this anymore
-    private val friendsRepository: FriendsRepository
+    private val friendsRepository: FriendsRepository,
+    private val goalsRepository: GoalsRepository
 ) : ViewModel() {
 
 
@@ -133,6 +135,8 @@ class FriendsViewModel @Inject constructor(
                         _recentlyAddedFriend.value = normalizedFriendUsername
                         fetchFriends()         // refresh friends list
 
+                        // Update the "Add 5 Friends" mission
+                        updateAddFriendsMission(userID)
                         viewModelScope.launch {
                             delay(1500) // 2 second highlight
                             _recentlyAddedFriend.value = null // reset after animation
@@ -184,9 +188,23 @@ class FriendsViewModel @Inject constructor(
                 val isRemoved = friendsRepository.removeFriend(userID, friendUsername) // normalizes friendUsername in friendsRepository.removeFriend
                 if (isRemoved) {
                     fetchFriends()
+
+                    updateAddFriendsMission(userID)
                 }
             } catch (e: Exception) {
                 Log.e("FriendsViewModel", "Error removing friend", e)
+            }
+        }
+    }
+
+    private suspend fun updateAddFriendsMission(userId: String) {
+        val friendCount = friendsRepository.getFriendCount(userId)
+        val missions = goalsRepository.getMissions(userId)
+        missions.filter { it.type == "add_friend" && !it.isCompleted }.forEach { mission ->
+            val newCount = friendCount.coerceAtMost(mission.targetCount)
+            goalsRepository.updateMissionProgress(userId, mission.id, newCount)
+            if (newCount >= mission.targetCount) {
+                goalsRepository.markMissionComplete(userId, mission.id)
             }
         }
     }

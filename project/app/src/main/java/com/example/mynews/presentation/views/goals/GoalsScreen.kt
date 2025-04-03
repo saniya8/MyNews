@@ -1,5 +1,7 @@
 package com.example.mynews.presentation.views.goals
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -29,7 +31,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,6 +42,10 @@ import androidx.navigation.NavHostController
 import com.example.mynews.domain.model.Mission
 import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import com.example.mynews.presentation.views.social.FriendItem
 
 
@@ -50,18 +58,12 @@ fun GoalsScreen(
     val hasLoggedToday by goalsViewModel.hasLoggedToday
     val missions by goalsViewModel.missions.observeAsState(emptyList())
 
-    // these are still hard coded but to be replaced with Firestore data later
-    val sampleAchievements = listOf(
-        Achievement("1 Week Streak"),
-        Achievement("5 Friends Added"),
-        Achievement("First Post"),
-        Achievement("10 Comments"),
-        Achievement("30 Days Active"),
-        Achievement("100 Likes"),
-        Achievement("Read 5 Articles"),
-        Achievement("Sports Enthusiast")
-    )
+    // Calculate the number of completed missions
+    val completedMissionsCount = missions.count { it.isCompleted }
+    val totalMissionsCount = missions.size
 
+    // Sort missions: uncompleted missions at the top, completed missions at the bottom
+    val sortedMissions = missions.sortedBy { it.isCompleted }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -71,9 +73,7 @@ fun GoalsScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-
             // standardized
-
             ScreenHeader(
                 useTopPadding = false, //scaffold already adds system padding
                 title = "Achievements",
@@ -82,39 +82,20 @@ fun GoalsScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
 
-            // Center the Streak Banner
+            //Streak card section
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Streak Banner
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(0.75f),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2E3D83))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "$streakCount Day Streak",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            color = Color.White
-                        )
-                    }
-                }
+                StreakCard(
+                    streakCount = streakCount,
+                    hasLoggedToday = hasLoggedToday
+                )
             }
 
-            // Missions Section
-
+            // Missions section
             Text(
                 text = "Missions",
                 fontSize = 20.sp,
@@ -137,6 +118,16 @@ fun GoalsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Display the completed missions counter
+                    Text(
+                        text = "Completed Missions: $completedMissionsCount/$totalMissionsCount",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
                     if (missions.isEmpty()) {
                         Text(
                             text = "No missions available.",
@@ -146,44 +137,92 @@ fun GoalsScreen(
                         )
                     } else {
 
-                        LazyColumn (modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
+                        LazyColumn (
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(missions) { mission ->
+                            items(sortedMissions) { mission ->
                                 MissionItem(mission)
                             }
                         }
                     }
                 }
             }
-
-            // Achievements Section
-
         }
     }
 }
 
 @Composable
-fun AchievementItem(achievement: Achievement) {
-    Column(
-        modifier = Modifier
-            .width(100.dp)
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+fun StreakCard(
+    streakCount: Int,
+    hasLoggedToday: Boolean,
+    modifier: Modifier = Modifier
+) {
+    // Animation for scale effect
+    val scale = remember { Animatable(0.8f) }
+    LaunchedEffect(Unit) {
+        scale.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 500)
+        )
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth(0.85f)
+            .scale(scale.value),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Icon(
-            imageVector = Icons.Default.Star, // Replace with actual medal icon
-            contentDescription = achievement.name,
-            modifier = Modifier.size(48.dp),
-            tint = Color(0xFFFFD700) // Gold color
-        )
-        Text(
-            text = achievement.name,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
-        )
+        Box(
+            modifier = Modifier
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = if (hasLoggedToday) {
+                            listOf(Color(0xFFFF6F61), Color(0xFFFFA07A)) // Warm gradient for active streak
+                        } else {
+                            listOf(Color(0xFF2E3D83), Color(0xFF5A6FBB)) // Cool gradient for inactive streak
+                        }
+                    )
+                )
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.LocalFireDepartment,
+                    contentDescription = "Streak Icon",
+                    modifier = Modifier.size(32.dp),
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "$streakCount Day Streak",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center,
+                        color = Color.White
+                    )
+                    Text(
+                        text = if (hasLoggedToday) "Keep it up!" else "Log today to continue!",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -251,5 +290,3 @@ fun MissionItem(mission: Mission) {
     }
 }
 
-// Data class for Achievements
-data class Achievement(val name: String)
