@@ -47,6 +47,7 @@ class NewsApiClient {
             url {
                 parameters.append("language", language)
                 parameters.append("q", query)
+                parameters.append("sortBy", "relevancy") // added this
             }
         }.body()
     }
@@ -99,6 +100,24 @@ class NewsApiClient {
             url {
                 parameters.append("language", language)
                 parameters.append("sources", sources)
+            }
+        }.body()
+    }
+
+    suspend fun getEverythingByDateRange(
+        apiKey: String,
+        from: String, // ISO 8601 format
+        language: String = "en"
+    ): NewsResponse {
+        return client.get("${baseUrl}everything") {
+            headers {
+                append("X-Api-Key", apiKey)
+                append("User-Agent", userAgent)
+            }
+            url {
+                parameters.append("language", language)
+                parameters.append("q", "the OR a OR in OR to OR and OR of") // query parameter is required, so pass most common words to nearly guarantee all articles
+                parameters.append("from", from)
             }
         }.body()
     }

@@ -8,6 +8,7 @@ import android.util.Log
 import com.example.mynews.data.api.news.NewsApiClient
 import com.example.mynews.data.newsbias.NewsBiasProvider
 import kotlinx.coroutines.flow.StateFlow
+import java.time.LocalDate
 
 // Implementation of the NewsRepository interface in .com.example.mynews/domain/repositories
 
@@ -75,6 +76,35 @@ class NewsRepositoryImpl @Inject constructor(
         return newsApiClient.getTopHeadlinesBySources(
             apiKey = Constant.NEWS_API_KEY,
             sources = sourceIds,
+            language = language
+        )
+    }
+
+    override suspend fun getEverythingByDateRange(dateRange: String): NewsResponse {
+
+        Log.d("CountryDebug", "In NewsRepositoryImpl's getEverythingByDateRange")
+        // step 1: calculate the "from" date based on the selected range
+        val today = LocalDate.now()
+        val latestAvailableDate = today.minusDays(1) // due to free api plan, account for 24-hour delay
+
+        Log.d("CountryDebug", "Today is $today")
+        Log.d("CountryDebug", "Yesterday is $latestAvailableDate")
+
+        val daysToSubtract = when (dateRange) {
+            "Last 7 Days" -> 7
+            "Last 14 Days" -> 14
+            "Last 30 Days" -> 30
+            else -> 30 // Default to 30 days
+        }
+
+        val fromDate = latestAvailableDate.minusDays(daysToSubtract.toLong())
+        val from = fromDate.toString() // ISO 8601 format (e.g., "2025-03-26")
+
+        Log.d("CountryDebug", "From is $from")
+
+        return newsApiClient.getEverythingByDateRange(
+            apiKey = Constant.NEWS_API_KEY,
+            from = from,
             language = language
         )
     }

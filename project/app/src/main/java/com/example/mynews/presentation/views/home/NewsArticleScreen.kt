@@ -27,6 +27,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Alignment
+import com.example.mynews.presentation.components.LoadingIndicator
 import com.example.mynews.utils.AppScreenRoutes
 
 @Composable
@@ -133,12 +134,15 @@ fun NewsArticleScreen(
 
         // Show circular progress indicator while the article is loading
         if (isLoading) {
-            CircularProgressIndicator(
+            /*CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.Center) // Center the loading circle
                     .size(32.dp),
                 color = Color.Blue, // Customize color if needed
                 strokeWidth = 4.dp
+            )*/
+            LoadingIndicator(
+                color = Color.Blue
             )
         }
 

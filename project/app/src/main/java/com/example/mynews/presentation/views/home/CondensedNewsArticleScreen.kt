@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mynews.presentation.components.LoadingIndicator
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
 import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 import com.example.mynews.utils.AppScreenRoutes
@@ -159,12 +160,19 @@ fun CondensedNewsArticleScreen(
 
                     // only display summarizedText if the current url matches the article url
                     if (currentArticleUrl != articleUrl || summarizedText.isEmpty()) {
-                        CircularProgressIndicator(
+
+                        /*CircularProgressIndicator(
                             modifier = Modifier
                                 .size(32.dp),
                             color = Color.Blue, // Customize color if needed
                             strokeWidth = 4.dp
+                        )*/
+
+                        LoadingIndicator(
+                            color = Color.Blue
                         )
+
+
                     } else {
                         // Display summarizedText when ready
                         Text(

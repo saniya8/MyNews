@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +24,8 @@ import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.repositories.UserRepository
 import android.util.Log
+import androidx.compose.ui.graphics.Color
+import com.example.mynews.presentation.components.LoadingIndicator
 import com.example.mynews.presentation.views.general.MainScreen
 
 // RootNavGraph is the main navigation that manages overall navigation of the app
@@ -76,8 +78,14 @@ fun RootNavigationGraph(navController: NavHostController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(25.dp)
+                /*CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(32.dp),
+                    color = Color.Blue, // Customize color if needed
+                    strokeWidth = 4.dp
+                )*/
+                LoadingIndicator(
+                    color = Color.Blue
                 )
             }
         }

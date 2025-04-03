@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.data.api.news.Article
+import com.example.mynews.data.api.news.NewsResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,6 +39,8 @@ class NewsViewModel @Inject constructor(
     // - Swiping between tabs like Home, Social, Goals, and Settings
     // - Close app but do not swipe to clear it from memory
 
+    private val _isFiltering = MutableStateFlow(false)
+    val isFiltering: StateFlow<Boolean> = _isFiltering
 
     init {
         // load the bias mappings
@@ -51,6 +54,17 @@ class NewsViewModel @Inject constructor(
         //Log.d("NewsBiasDebug", "NewsViewMode's _newsBiasMappings is: ${newsBiasMappings.value}")
     }
 
+    // Helper function to handle the NewsResponse and post results
+    private fun handleNewsResponse(
+        newsResponse: NewsResponse,
+    ) {
+        if (newsResponse.status == "ok" && newsResponse.articles.isNotEmpty()) {
+            _articles.postValue(newsResponse.articles)
+        } else {
+            _articles.postValue(emptyList())
+        }
+    }
+
 
     // for initial news display
     fun fetchTopHeadlines(forceFetch: Boolean = false) {
@@ -62,10 +76,14 @@ class NewsViewModel @Inject constructor(
             // getTopHeadlines is a suspend function, therefore will take time
             // to load, therefore wrap it in a coroutine using viewModelScope.launch
             try {
-                val response = newsRepository.getTopHeadlines() // ktor gives parsed data directly
-                _articles.postValue(response.articles)
+                _isFiltering.value = false
+                val newsResponse = newsRepository.getTopHeadlines() // ktor gives parsed data directly
+                handleNewsResponse(newsResponse) // this will post to _articles
+                //_articles.postValue(newsResponse.articles)
 
             } catch (e: Exception) {
+                _articles.postValue(emptyList())
+                _isFiltering.value = false
                 Log.e("NewsAPI Error", "Failed to fetch top headlines: ${e.message}", e)
             }
         }
@@ -76,9 +94,13 @@ class NewsViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
+                _isFiltering.value = true
                 val newsResponse = newsRepository.getEverythingBySearch(searchQuery)
-                _articles.postValue(newsResponse.articles)
+                //_articles.postValue(newsResponse.articles)
+                handleNewsResponse(newsResponse) // this will post to _articles
             } catch (e: Exception) {
+                _articles.postValue(emptyList())
+                _isFiltering.value = false
                 Log.e("NewsAPI Error", "Failed to fetch search results: ${e.message}", e)
             }
         }
@@ -98,9 +120,13 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
+                _isFiltering.value = true
                 val newsResponse = newsRepository.getTopHeadlinesByCategory(category)
-                _articles.postValue(newsResponse.articles)
+                //_articles.postValue(newsResponse.articles)
+                handleNewsResponse(newsResponse) // this will post to _articles
             } catch (e: Exception) {
+                _articles.postValue(emptyList())
+                _isFiltering.value = false
                 Log.e("NewsAPI Error", "Failed to fetch headlines by category: ${e.message}", e)
             }
         }
@@ -117,12 +143,36 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
+                _isFiltering.value = true
                 val newsResponse = newsRepository.getTopHeadlinesByCountry(country)
-                _articles.postValue(newsResponse.articles)
+                //_articles.postValue(newsResponse.articles)
+                handleNewsResponse(newsResponse) // this will post to _articles
             } catch (e: Exception) {
+                _articles.postValue(emptyList())
+                _isFiltering.value = false
                 Log.e("NewsAPI Error", "Failed to fetch headlines by country: ${e.message}", e)
             }
         }
+    }
+
+    fun fetchEverythingByDateRange(dateRange: String) {
+
+        viewModelScope.launch {
+
+            try {
+                _isFiltering.value = true
+                val newsResponse = newsRepository.getEverythingByDateRange(dateRange)
+                //_articles.postValue(newsResponse.articles)
+                handleNewsResponse(newsResponse) // this will post to _articles
+            } catch (e: Exception) {
+                _articles.postValue(emptyList())
+                _isFiltering.value = false
+                Log.e("NewsAPI Error", "Failed to fetch headlines by date range: ${e.message}", e)
+
+            }
+        }
+
+
     }
 
 
@@ -139,8 +189,5 @@ class NewsViewModel @Inject constructor(
             onResult(bias) // pass the result back
         }
     }
-
-
-
 
 }

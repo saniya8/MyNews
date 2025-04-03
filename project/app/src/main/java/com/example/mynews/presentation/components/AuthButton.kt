@@ -41,9 +41,13 @@ fun AuthButton(
         enabled = enabled
     ) {
         if(isLoading) { // loading, waiting for result
-            CircularProgressIndicator(
+            /*CircularProgressIndicator(
                 color = contentColour,
                 modifier = Modifier.size(20.dp),
+            )*/
+            LoadingIndicator(
+                color = contentColour,
+                size = 20.dp
             )
         } else { // not loading
             Text(

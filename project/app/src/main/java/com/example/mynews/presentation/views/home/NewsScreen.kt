@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +54,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
@@ -83,6 +85,8 @@ fun NewsScreen(
     listState: LazyListState,
 ) {
 
+    val isFiltering by newsViewModel.isFiltering.collectAsState()
+
     // Observe the articles
     // now doing this individually in HomeScreen and SavedArticlesScreen
     //val articles by newsViewModel.articles.observeAsState(emptyList())
@@ -91,31 +95,63 @@ fun NewsScreen(
     )
 
     {
+        if (articles.isEmpty() && isFiltering) {
 
-        // LazyColumn is used to display a vertically scrolling list of items
-        LazyColumn( state = listState,
-            modifier = Modifier
-                .fillMaxSize()
 
-        ) {
-            items(articles, key = { it.url }) {article ->
-                //Text(text = article.title) // for testing
-                //Text(text = article.urlToImage) // for testing
-                //Text(text = "----------------") // for testing
-                ArticleItem(navController = navController,
-                            newsViewModel = newsViewModel,
-                            savedArticlesViewModel = savedArticlesViewModel,
-                            goalsViewModel = goalsViewModel,
-                            article = article,
-                            origin = origin,
-                            openDrawer = openDrawer,
-                            onLongPressRelease = onLongPressRelease, // pass callback to ArticleItem
-                            listState = listState,
-                            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+
+                Text(
+                    text = "Your filter did not return \n any news articles",
+                    fontSize = 18.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+
+
 
             }
 
+
+        } else {
+
+            // LazyColumn is used to display a vertically scrolling list of items
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+
+            ) {
+                items(articles, key = { it.url }) { article ->
+                    //Text(text = article.title) // for testing
+                    //Text(text = article.urlToImage) // for testing
+                    //Text(text = "----------------") // for testing
+                    ArticleItem(
+                        navController = navController,
+                        newsViewModel = newsViewModel,
+                        savedArticlesViewModel = savedArticlesViewModel,
+                        goalsViewModel = goalsViewModel,
+                        article = article,
+                        origin = origin,
+                        openDrawer = openDrawer,
+                        onLongPressRelease = onLongPressRelease, // pass callback to ArticleItem
+                        listState = listState,
+                    )
+
+                }
+
+            }
         }
+
+
+
 
     }
 

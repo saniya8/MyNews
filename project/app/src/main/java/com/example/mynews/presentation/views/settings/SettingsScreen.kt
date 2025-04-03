@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import com.example.mynews.presentation.components.LoadingIndicator
 import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
 
@@ -318,12 +319,15 @@ fun SettingsScreen(
                 ) {}, // consumes clicks
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(
+            /*CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.Center) // Center the loading circle
                     .size(32.dp),
                 color = Color.White,
                 strokeWidth = 4.dp
+            )*/
+            LoadingIndicator(
+                color = Color.White
             )
         }
     }

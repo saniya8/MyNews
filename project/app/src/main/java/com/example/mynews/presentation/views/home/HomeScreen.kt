@@ -113,6 +113,7 @@ fun HomeScreen(
     searchQuery: MutableState<String>,
     selectedCategory: MutableState<String?>,
     selectedCountry: MutableState<String?>,
+    selectedDateRange: MutableState<String?>,
 ) {
 
     val articles by newsViewModel.articles.observeAsState(emptyList())
@@ -201,21 +202,27 @@ fun HomeScreen(
             Log.i("FlickerBug", "Fetching top headlines")
         }*/
 
-        if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
+        if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null && selectedDateRange.value == null) {
             newsViewModel.fetchTopHeadlines()
             Log.i("FlickerBug", "Fetching top headlines")
-        } else if (searchQuery.value.isNotEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
+        } else if (searchQuery.value.isNotEmpty() && selectedCategory.value == null && selectedCountry.value == null && selectedDateRange.value == null) {
             // when recreating home screen, if there is a search query, it should load search
             // results (without requiring user to click search bar)
             Log.i("FlickerBug", "Fetching everything by search")
             newsViewModel.fetchEverythingBySearch(searchQuery.value)
-        } else if (searchQuery.value.isEmpty() && selectedCategory.value != null && selectedCountry.value == null) {
+        } else if (searchQuery.value.isEmpty() && selectedCategory.value != null && selectedCountry.value == null && selectedDateRange.value == null) {
             Log.i("FlickerBug", "Fetching top headlines by category: ${selectedCategory.value}")
             newsViewModel.fetchTopHeadlinesByCategory(selectedCategory.value!!)
-        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value != null) {
+        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value != null && selectedDateRange.value == null) {
             Log.i("FlickerBug", "Fetching top headlines by country: ${selectedCountry.value}")
             newsViewModel.fetchTopHeadlinesByCountry(selectedCountry.value!!)
+        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null && selectedDateRange.value != null) {
+            Log.i("FlickerBug", "Fetching top headlines by date range: ${selectedDateRange.value}")
+            newsViewModel.fetchEverythingByDateRange(selectedDateRange.value!!)
         }
+
+
+
         Log.i("FlickerBug", "----------------------")
     }
 
@@ -227,7 +234,7 @@ fun HomeScreen(
 
         Log.i("FlickerBug", "In LaunchedEffect(searchQuery.value)")
         Log.i("FlickerBug", "searchQuery: ${searchQuery.value}")
-        if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
+        if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null && selectedDateRange.value == null) {
             // used to fetch top headlines if user clears their search
             // note: on initial creation of home screen, this will result in duplicate api
             // call, one in LaunchedEffect(Unit) and one here and one in LaunchedEffect(selectedCategory)
@@ -248,12 +255,12 @@ fun HomeScreen(
 
         val category = selectedCategory.value // store a local stable copy
 
-        if (category == null && searchQuery.value.isEmpty() && selectedCountry.value == null) {
+        if (category == null && searchQuery.value.isEmpty() && selectedCountry.value == null && selectedDateRange.value == null) {
             // used to fetch top headlines if user deselects their selected cateogry
             // note: on initial creation of home screen, this will result in duplicate api
             // call, one in LaunchedEffect(Unit) and one here
             newsViewModel.fetchTopHeadlines(forceFetch = true)
-        } else if (category != null && searchQuery.value.isEmpty() && selectedCountry.value == null) {
+        } else if (category != null && searchQuery.value.isEmpty() && selectedCountry.value == null && selectedDateRange.value == null) {
             newsViewModel.fetchTopHeadlinesByCategory(category)
         }
         Log.i("FlickerBug", "----------------------")
@@ -268,16 +275,34 @@ fun HomeScreen(
 
         val country = selectedCountry.value // store a local stable copy
 
-        if (country == null && searchQuery.value.isEmpty() && selectedCategory.value == null) {
+        if (country == null && searchQuery.value.isEmpty() && selectedCategory.value == null && selectedDateRange.value == null) {
             // used to fetch top headlines if user deselects their selected cateogry
             // note: on initial creation of home screen, this will result in duplicate api
             // call, one in LaunchedEffect(Unit) and one here
             newsViewModel.fetchTopHeadlines(forceFetch = true)
-        } else if (country != null && searchQuery.value.isEmpty() && selectedCategory.value == null) {
+        } else if (country != null && searchQuery.value.isEmpty() && selectedCategory.value == null && selectedDateRange.value == null) {
             newsViewModel.fetchTopHeadlinesByCountry(country)
         }
         Log.i("FlickerBug", "----------------------")
     }
+
+    // when selectedDateRange.value change, it should fetch the top headlines by the date range
+    LaunchedEffect(selectedDateRange.value) {
+
+        Log.i("FlickerBug", "In LaunchedEffect(selectedDateRange)")
+        Log.i("FlickerBug", "selectedDateRange: ${selectedDateRange.value}")
+
+        val dateRange = selectedDateRange.value // store a local stable copy
+
+        if (dateRange == null && searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
+            newsViewModel.fetchTopHeadlines(forceFetch = true)
+        } else if (dateRange != null && searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
+            newsViewModel.fetchEverythingByDateRange(dateRange)
+        }
+        Log.i("FlickerBug", "----------------------")
+    }
+
+
 
 
 
@@ -290,6 +315,7 @@ fun HomeScreen(
                 searchQuery = searchQuery,
                 selectedCategory = selectedCategory,
                 selectedCountry = selectedCountry,
+                selectedDateRange = selectedDateRange,
             )
         }
     ) {
@@ -460,7 +486,7 @@ fun HomeScreen(
                             searchQuery = searchQuery,
                             selectedCategory = selectedCategory,
                             selectedCountry = selectedCountry,
-
+                            selectedDateRange = selectedDateRange,
                         )
 
 
@@ -617,6 +643,7 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
                     searchQuery: MutableState<String>,
                     selectedCategory: MutableState<String?>,
                     selectedCountry: MutableState<String?>,
+                    selectedDateRange: MutableState<String?>,
 ) {
 
     Row (
@@ -666,6 +693,12 @@ fun SearchAndFilter(newsViewModel: NewsViewModel,
                             if (selectedCountry.value != null) {
                                 selectedCountry.value = null; // clear any country selections
                             }
+
+                            if (selectedDateRange.value != null) {
+                                selectedDateRange.value = null; // clear any date range selections
+                            }
+
+
                             newsViewModel.fetchEverythingBySearch(searchQuery.value)
                         }
                     }
@@ -692,6 +725,7 @@ fun DrawerContent(
     searchQuery: MutableState<String>,
     selectedCategory: MutableState<String?>,
     selectedCountry: MutableState<String?>,
+    selectedDateRange: MutableState<String?>,
 ) {
     // excluding General since General is just the same as the regular news that you
     // pull from API
@@ -711,36 +745,89 @@ fun DrawerContent(
             .background(Color(0xFFF5F5F5))
             .padding(16.dp)
     ) {
+
+
         item {
-            // close (X) Button
+
+            Spacer(modifier = Modifier.height(7.dp))
+
+            // Row to hold "Filter My News" and "X" icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = "Filter My News",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
                 IconButton(onClick = { scope.launch { drawerState.close() } }) {
                     Icon(Icons.Default.Close, contentDescription = "Close Drawer")
                 }
             }
+
+            Spacer(modifier = Modifier.height(15.dp))
         }
 
-        item {
-            Text(
-                text = "Filter My News",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+
 
         // Filtering by category
 
         item {
-            Text(
-                text = "Category",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+
+            // Row to hold "Category" text and "Clear" button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                    //.height(56.dp),
+                horizontalArrangement = Arrangement.SpaceBetween, // Space between "Category" and "Clear"
+                verticalAlignment = Alignment.Bottom // Align bottoms of "Category" and "Clear"
+            ) {
+
+                Text(
+                    text = "Category",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                val shouldShowClear = selectedCategory.value != null
+
+                if (shouldShowClear) {
+
+                    Text(
+                        text = "Clear",
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .clickable(
+                                onClick = {
+
+                                    if (searchQuery.value.isNotEmpty()) { // if there is a search query
+                                        searchQuery.value = "" // clear the search query
+                                    }
+
+                                    if (selectedCountry.value != null) {
+                                        selectedCountry.value = null
+                                    }
+
+                                    if (selectedDateRange.value != null) {
+                                        selectedDateRange.value = null
+                                    }
+
+                                    selectedCategory.value = null // Set to null to clear the filter
+                                    expanded = false // Close the dropdown
+                                },
+                                indication = LocalIndication.current, // Apply ripple effect
+                                interactionSource = remember { MutableInteractionSource() } // Interaction source for ripple
+                            )
+                            .align(Alignment.Bottom) // Ensure it's aligned at the bottom
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
+
         }
 
         // Create buttons for each category
@@ -763,13 +850,16 @@ fun DrawerContent(
                         selectedCountry.value = null // clear the country
                     }
 
+                    if (selectedDateRange.value != null) { // if there is a selected date range
+                        selectedDateRange.value = null // clear the date range
+                    }
+
                     val newCategory = if (isSelected) null else category // Toggle selection
-                    //onCategorySelected(newCategory)
                     selectedCategory.value = newCategory // Notify HomeScreen of change
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                    .padding(vertical = 2.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
                 border = BorderStroke(2.dp, borderColor)
             ) {
@@ -780,7 +870,7 @@ fun DrawerContent(
         // Filtering by Country
 
         item {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         item {
@@ -788,10 +878,7 @@ fun DrawerContent(
             // Row to hold "Country" text and "Clear" button
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    //.background(Color.Gray)
-                    .height(56.dp),
-
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween, // Space between "Country" and "Clear"
                 verticalAlignment = Alignment.Bottom // Align bottoms of "Country" and "Clear"
             ) {
@@ -800,7 +887,6 @@ fun DrawerContent(
                     text = "Country",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    //modifier = Modifier.background(Color.Cyan)
                 )
 
                 val shouldShowClear = selectedCountry.value != null
@@ -821,6 +907,10 @@ fun DrawerContent(
 
                                     if (selectedCategory.value != null) {
                                         selectedCategory.value = null
+                                    }
+
+                                    if (selectedDateRange.value != null) { // if there is a selected date range
+                                        selectedDateRange.value = null // clear the date range
                                     }
 
                                     selectedCountry.value = null // Set to null to clear the filter
@@ -908,7 +998,6 @@ fun DrawerContent(
                 ) {
                     Surface(
                         modifier = Modifier
-                            //.width(250.dp)
                             .fillParentMaxWidth()
                             .border(1.dp, Color(0xFF607C8A)), // Optional: Add a border for visual clarity
                         color = SkyBlue,
@@ -932,6 +1021,10 @@ fun DrawerContent(
                                                 selectedCategory.value = null
                                             }
 
+                                            if (selectedDateRange.value != null) { // if there is a selected date range
+                                                selectedDateRange.value = null // clear the date range
+                                            }
+
                                             selectedCountry.value = countryCode
                                             expanded = false
                                         }
@@ -941,6 +1034,102 @@ fun DrawerContent(
                         }
                     }
                 }
+            }
+        }
+
+        // Filtering by Date Range
+
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+
+        item {
+
+            // Row to hold "Date Range" text and "Clear" button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween, // Space between "Category" and "Clear"
+                verticalAlignment = Alignment.Bottom // Align bottoms of "Category" and "Clear"
+            ) {
+
+                Text(
+                    text = "Date Range",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                val shouldShowClear = selectedDateRange.value != null
+
+                if (shouldShowClear) {
+
+                    Text(
+                        text = "Clear",
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .clickable(
+                                onClick = {
+
+                                    if (searchQuery.value.isNotEmpty()) { // if there is a search query
+                                        searchQuery.value = "" // clear the search query
+                                    }
+
+                                    if (selectedCategory.value != null) {
+                                        selectedCategory.value = null
+                                    }
+
+                                    if (selectedCountry.value != null) {
+                                        selectedCountry.value = null
+                                    }
+
+                                    selectedDateRange.value = null // Set to null to clear the filter
+                                    expanded = false // Close the dropdown
+                                },
+                                indication = LocalIndication.current, // Apply ripple effect
+                                interactionSource = remember { MutableInteractionSource() } // Interaction source for ripple
+                            )
+                            .align(Alignment.Bottom) // Ensure it's aligned at the bottom
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+        }
+
+        // Create buttons for each date range
+        // Note: this logic only permits single selection of category
+        items(dateRanges) { dateRange ->
+            val isSelected = selectedDateRange.value == dateRange
+            val backgroundColor = if (isSelected) Color(0xFF90CAF9) else Color(0xFFBBDEFB) // Subtle contrast
+            val borderColor = if (isSelected) Color(0xFF64B5F6) else Color.Transparent // Light blue border when selected
+
+            Button(
+                onClick = {
+
+                    if (searchQuery.value.isNotEmpty()) { // if there is a search query
+                        searchQuery.value = "" // clear the search query
+                    }
+
+                    if (selectedCategory.value != null) {
+                        selectedCategory.value = null
+                    }
+
+                    if (selectedCountry.value != null) { // if there is a selected country
+                        selectedCountry.value = null // clear the country
+                    }
+
+                    val newDateRange = if (isSelected) null else dateRange // Toggle selection
+                    selectedDateRange.value = newDateRange // Notify HomeScreen of change
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+                border = BorderStroke(2.dp, borderColor)
+            ) {
+                Text(text = dateRange, color = Color.Black)
             }
         }
     }
@@ -1127,6 +1316,13 @@ val countries = mapOf(
     "gb" to "United Kingdom",
     "in" to "India",
     "au" to "Australia",
+
+)
+
+val dateRanges = listOf(
+    "Last 7 Days",
+    "Last 14 Days",
+    "Last 30 Days",
 
 )
 
