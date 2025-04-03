@@ -76,7 +76,7 @@ fun GoalsScreen(
             // standardized
             ScreenHeader(
                 useTopPadding = false, //scaffold already adds system padding
-                title = "Achievements",
+                title = "Goals",
             )
 
             Spacer(modifier = Modifier.height(10.dp))
