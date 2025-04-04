@@ -28,6 +28,8 @@ import com.example.mynews.domain.repositories.UserRepository
 import android.content.Context
 import com.example.mynews.data.SettingsRepositoryImpl
 import com.example.mynews.data.SocialRepositoryImpl
+import com.example.mynews.data.logger.AndroidLogger
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.SettingsRepository
 import com.example.mynews.domain.repositories.SocialRepository
@@ -142,5 +144,9 @@ object AppModule {
     fun provideFirebaseFirestore(): FirebaseFirestore {
         return FirebaseFirestore.getInstance()
     }
+
+    @Provides
+    @Singleton
+    fun provideLogger(): Logger = AndroidLogger()
 
 }

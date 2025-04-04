@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.model.RegisterInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val validateRegisterInputUseCase: ValidateRegisterInputUseCase,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val logger: Logger,
 ): ViewModel() {
     var showErrorDialog by mutableStateOf(false)
 

@@ -3,6 +3,7 @@ package com.example.mynews.presentation.viewmodel.settings
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.domain.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -11,6 +12,7 @@ import javax.inject.Inject
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.repositories.SettingsRepository
 import com.example.mynews.domain.repositories.UserRepository
+import com.example.mynews.presentation.state.DeleteAccountResult
 
 
 @HiltViewModel
@@ -18,6 +20,7 @@ class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val settingsRepository: SettingsRepository,
+    private val logger: Logger,
 ): ViewModel() {
 
 
@@ -49,14 +52,14 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = userRepository.getCurrentUserId()
             if (userId.isNullOrEmpty()) {
-                Log.e("SettingsViewModel", "No user logged in. User ID is null or empty")
+                logger.e("SettingsViewModel", "No user logged in. User ID is null or empty")
                 return@launch
             }
 
             val numWords = settingsRepository.getNumWordsToSummarize(userId) //
             _numWordsToSummarize.value = numWords ?: 100 // fallback to 100 (default) if not found
             _hasLoadedNumWordsToSummarize.value = true
-            Log.d("SettingsDebug", "Num words to summarize loaded: ${_numWordsToSummarize.value}")
+            logger.d("SettingsDebug", "Num words to summarize loaded: ${_numWordsToSummarize.value}")
         }
     }
 
@@ -66,7 +69,7 @@ class SettingsViewModel @Inject constructor(
 
     fun updateNumWordsToSummarize(newNumWords: Int) {
         if (newNumWords in 50..200) {
-            Log.d("CondensedSettings", "Updated numWordsToSummarize to $newNumWords")
+            logger.d("CondensedSettings", "Updated numWordsToSummarize to $newNumWords")
             _numWordsToSummarize.value = newNumWords
 
             viewModelScope.launch {
@@ -75,7 +78,7 @@ class SettingsViewModel @Inject constructor(
                 val userID = userRepository.getCurrentUserId()
 
                 if (userID.isNullOrEmpty()) {
-                    Log.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
+                    logger.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
                     return@launch // return
                 }
 
@@ -83,7 +86,7 @@ class SettingsViewModel @Inject constructor(
             }
 
         } else {
-            Log.d("SettingsDebug", "Out of range $newNumWords. Kept num words to summarize at ${_numWordsToSummarize.value}")
+            logger.d("SettingsDebug", "Out of range $newNumWords. Kept num words to summarize at ${_numWordsToSummarize.value}")
         }
     }
 
@@ -94,7 +97,7 @@ class SettingsViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("SettingsViewModel", "No user logged in. User ID is null or empty")
+                logger.e("SettingsViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
@@ -111,7 +114,7 @@ class SettingsViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("SettingsViewModel", "No user logged in. User ID is null or empty")
+                logger.e("SettingsViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
@@ -124,7 +127,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val result = authRepository.logout()
             _logoutState.value = result
-            Log.d("LogoutDebug", "Logout success: $result")
+            logger.d("LogoutDebug", "Logout success: $result")
         }
     }
 
@@ -140,7 +143,7 @@ class SettingsViewModel @Inject constructor(
             val result = authRepository.deleteAccount(password)
             _deleteAccountState.value = result
             _isDeletingAccount.value = false
-            Log.d("LogoutDebug", "Delete account success: $result")
+            logger.d("LogoutDebug", "Delete account success: $result")
 
         }
     }
@@ -150,8 +153,3 @@ class SettingsViewModel @Inject constructor(
     }
 }
 
-sealed class DeleteAccountResult {
-    object Success : DeleteAccountResult()
-    object IncorrectPassword : DeleteAccountResult()
-    object Error : DeleteAccountResult()
-}

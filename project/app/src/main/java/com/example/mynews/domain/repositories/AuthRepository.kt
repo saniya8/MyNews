@@ -1,7 +1,7 @@
 package com.example.mynews.domain.repositories
 
 import androidx.compose.runtime.MutableState
-import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
+import com.example.mynews.presentation.state.DeleteAccountResult
 
 interface AuthRepository {
     suspend fun login(email: String, password:String):Boolean

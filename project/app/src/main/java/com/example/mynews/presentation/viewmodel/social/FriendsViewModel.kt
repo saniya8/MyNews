@@ -1,6 +1,7 @@
 package com.example.mynews.presentation.viewmodel.social
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,6 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.repositories.FriendsRepository
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
@@ -25,7 +27,8 @@ import javax.inject.Inject
 class FriendsViewModel @Inject constructor(
     private val userRepository: UserRepository, // won't need this anymore
     private val friendsRepository: FriendsRepository,
-    private val goalsRepository: GoalsRepository
+    private val goalsRepository: GoalsRepository,
+    private val logger: Logger,
 ) : ViewModel() {
 
 
@@ -78,7 +81,7 @@ class FriendsViewModel @Inject constructor(
     // SK: rewrite this function to be identical to savedArticlesViewModel's getSavedArticles
     // EXCEPT here, call,
     // friendsRepository.getFriendIds(userID) { friendsList ->
-    //                Log.d("Get friend", "Successfully fetched friends")
+    //                logger.d("Get friend", "Successfully fetched friends")
     //                _friends.postValue(friendsList) // ViewModel updates UI state
     //            }
     // This returns the user's friend's usernames
@@ -87,14 +90,14 @@ class FriendsViewModel @Inject constructor(
             try {
                 val userID = userRepository.getCurrentUserId()
                 if (userID.isNullOrEmpty()) {
-                    Log.e("FriendsViewModel", "Error: User ID is null, cannot fetch friends")
+                    logger.e("FriendsViewModel", "Error: User ID is null, cannot fetch friends")
                     return@launch
                 }
                 friendsRepository.getFriendUsernames(userID) { friendsList ->
                     _friends.value = friendsList
                 }
             } catch (e: Exception) {
-                Log.e("FriendsViewModel", "Error fetching friends", e)
+                logger.e("FriendsViewModel", "Error fetching friends", e)
             }
         }
     }
@@ -114,7 +117,7 @@ class FriendsViewModel @Inject constructor(
 
                 val userID = userRepository.getCurrentUserId()
                 if (userID.isNullOrEmpty()) {
-                    Log.e("FriendsViewModel", "Error: User ID is null, cannot fetch friends")
+                    logger.e("FriendsViewModel", "Error: User ID is null, cannot fetch friends")
                     return@launch
                 }
                 // normalized friendUsername in friendsRepository.addFriend
@@ -165,7 +168,7 @@ class FriendsViewModel @Inject constructor(
                 }
 
             } catch (e: Exception) {
-                Log.e("FriendsViewModel", "Error adding friend", e)
+                logger.e("FriendsViewModel", "Error adding friend", e)
             }
         }
     }
@@ -181,23 +184,23 @@ class FriendsViewModel @Inject constructor(
             try {
                 val userID = userRepository.getCurrentUserId()
                 if (userID.isNullOrEmpty()) {
-                    Log.e("FriendsViewModel", "Error: User ID is null, cannot remove friend")
+                    logger.e("FriendsViewModel", "Error: User ID is null, cannot remove friend")
                     return@launch
                 }
                 // Call the repository to remove the friend
                 val isRemoved = friendsRepository.removeFriend(userID, friendUsername) // normalizes friendUsername in friendsRepository.removeFriend
                 if (isRemoved) {
                     fetchFriends()
-
                     updateAddFriendsMission(userID)
                 }
             } catch (e: Exception) {
-                Log.e("FriendsViewModel", "Error removing friend", e)
+                logger.e("FriendsViewModel", "Error removing friend", e)
             }
         }
     }
 
-    private suspend fun updateAddFriendsMission(userId: String) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal suspend fun updateAddFriendsMission(userId: String) {
         val friendCount = friendsRepository.getFriendCount(userId)
         val missions = goalsRepository.getMissions(userId)
         missions.filter { it.type == "add_friend" && !it.isCompleted }.forEach { mission ->
@@ -208,6 +211,8 @@ class FriendsViewModel @Inject constructor(
             }
         }
     }
+
+
 
 
 }

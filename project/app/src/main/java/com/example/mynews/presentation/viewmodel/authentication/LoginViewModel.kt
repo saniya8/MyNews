@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.model.LoginInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
@@ -17,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val validateLoginInputUseCase: ValidateLoginInputUseCase,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val logger: Logger,
 ): ViewModel() {
 
     var loginState by mutableStateOf(LoginState())

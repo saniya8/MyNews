@@ -1,12 +1,14 @@
 package com.example.mynews.presentation.viewmodel.home
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.data.api.news.Article
 import com.example.mynews.data.api.news.NewsResponse
+import com.example.mynews.domain.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,7 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val newsRepository: NewsRepository
+    private val newsRepository: NewsRepository,
+    private val logger: Logger,
 ) : ViewModel() {
 
     private val _articles = MutableLiveData<List<Article>>()
@@ -26,7 +29,8 @@ class NewsViewModel @Inject constructor(
     val articles: LiveData<List<Article>> = _articles
 
 
-    private val _newsBiasMappings = MutableStateFlow<Map<String, String>>(emptyMap())
+    @VisibleForTesting
+    internal val _newsBiasMappings = MutableStateFlow<Map<String, String>>(emptyMap())
     val newsBiasMappings: StateFlow<Map<String, String>> = _newsBiasMappings
 
     private var hasFetchedNews = false // tracks if API call was made
@@ -51,11 +55,12 @@ class NewsViewModel @Inject constructor(
                 _newsBiasMappings.value = biasData // update when data changes
             }
         }
-        //Log.d("NewsBiasDebug", "NewsViewMode's _newsBiasMappings is: ${newsBiasMappings.value}")
+        //logger.d("NewsBiasDebug", "NewsViewMode's _newsBiasMappings is: ${newsBiasMappings.value}")
     }
 
     // Helper function to handle the NewsResponse and post results
-    private fun handleNewsResponse(
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun handleNewsResponse(
         newsResponse: NewsResponse,
     ) {
         if (newsResponse.status == "ok" && newsResponse.articles.isNotEmpty()) {
@@ -84,7 +89,7 @@ class NewsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _articles.postValue(emptyList())
                 _isFiltering.value = false
-                Log.e("NewsAPI Error", "Failed to fetch top headlines: ${e.message}", e)
+                logger.e("NewsAPI Error", "Failed to fetch top headlines: ${e.message}", e)
             }
         }
     }
@@ -101,7 +106,7 @@ class NewsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _articles.postValue(emptyList())
                 _isFiltering.value = false
-                Log.e("NewsAPI Error", "Failed to fetch search results: ${e.message}", e)
+                logger.e("NewsAPI Error", "Failed to fetch search results: ${e.message}", e)
             }
         }
 
@@ -127,7 +132,7 @@ class NewsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _articles.postValue(emptyList())
                 _isFiltering.value = false
-                Log.e("NewsAPI Error", "Failed to fetch headlines by category: ${e.message}", e)
+                logger.e("NewsAPI Error", "Failed to fetch headlines by category: ${e.message}", e)
             }
         }
     }
@@ -150,7 +155,7 @@ class NewsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _articles.postValue(emptyList())
                 _isFiltering.value = false
-                Log.e("NewsAPI Error", "Failed to fetch headlines by country: ${e.message}", e)
+                logger.e("NewsAPI Error", "Failed to fetch headlines by country: ${e.message}", e)
             }
         }
     }
@@ -167,7 +172,7 @@ class NewsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _articles.postValue(emptyList())
                 _isFiltering.value = false
-                Log.e("NewsAPI Error", "Failed to fetch headlines by date range: ${e.message}", e)
+                logger.e("NewsAPI Error", "Failed to fetch headlines by date range: ${e.message}", e)
 
             }
         }

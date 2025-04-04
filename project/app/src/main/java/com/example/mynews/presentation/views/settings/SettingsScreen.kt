@@ -34,7 +34,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import com.example.mynews.presentation.components.LoadingIndicator
 import com.example.mynews.presentation.components.ScreenHeader
-import com.example.mynews.presentation.viewmodel.settings.DeleteAccountResult
+import com.example.mynews.presentation.state.DeleteAccountResult
 
 
 @Composable

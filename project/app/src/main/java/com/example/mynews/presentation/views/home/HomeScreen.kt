@@ -586,7 +586,7 @@ fun HomeScreen(
                                                 selectedReaction.value = reaction
                                                 // CL: Properly log the reaction and close after delay
                                                 homeViewModel.updateReaction(activeReactionArticle!!, reaction)
-                                                goalsViewModel.logReaction(activeReactionArticle!!) // Log reaction for missions
+                                                goalsViewModel.logReaction() // Log reaction for missions
                                                 Log.d(
                                                     "GestureDebug",
                                                     "CL: Selected reaction: $reaction for ${activeReactionArticle?.title}"

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.model.Reaction
 import com.example.mynews.domain.repositories.SocialRepository
 import com.example.mynews.domain.repositories.UserRepository
@@ -25,6 +26,7 @@ import javax.inject.Inject
 class SocialViewModel @Inject constructor(
     private val userRepository: UserRepository, // won't need this anymore
     private val socialRepository: SocialRepository,
+    private val logger: Logger,
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -81,7 +83,7 @@ class SocialViewModel @Inject constructor(
             try {
                 val userID = userRepository.getCurrentUserId()
                 if (userID.isNullOrEmpty()) {
-                    Log.e("SocialViewModel", "Error: User ID is null, cannot fetch friends")
+                    logger.e("SocialViewModel", "Error: User ID is null, cannot fetch friends")
                     _isLoading.value = false
                     return@launch
                 }
@@ -99,7 +101,7 @@ class SocialViewModel @Inject constructor(
 
                 }
             } catch (e: Exception) {
-                Log.e("SocialViewModel", "Error fetching friends: ${e.message}", e)
+                logger.e("SocialViewModel", "Error fetching friends: ${e.message}", e)
                 _isLoading.value = false
             }
         }
@@ -110,15 +112,7 @@ class SocialViewModel @Inject constructor(
             _isLoading.value = true
             _errorMessage.value = null
 
-            //if (friendIds.isEmpty()) { // immediately clear reactions if no friends exist
-            //    _reactions.value = emptyList()
-            //    _isLoading.value = false
-            //    return@launch
-            //}
-
             try {
-                //val friendsReactions = socialRepository.getFriendsReactions(friendIds)
-                //_reactions.value = friendsReactions
                 socialRepository.getFriendsReactions(friendIds) { reactions ->
                     _reactions.value = reactions // updates UI in real-time
                     _isLoading.value = false

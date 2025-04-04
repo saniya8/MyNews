@@ -6,11 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.data.api.news.Article
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
-//import com.kwabenaberko.newsapilib.NewsApiClient
-//import com.kwabenaberko.newsapilib.models.request.TopHeadlinesRequest
-//import com.kwabenaberko.newsapilib.models.response.ArticleResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,6 +17,7 @@ import javax.inject.Inject
 class SavedArticlesViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val savedArticlesRepository: SavedArticlesRepository,
+    private val logger: Logger,
 ): ViewModel() {
 
 
@@ -34,15 +33,15 @@ class SavedArticlesViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
+                logger.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
             val success = savedArticlesRepository.saveArticle(userID, article)
             if (success) {
-                Log.d("SavedArticlesViewModel", "Article successfully saved: ${article.title}")
+                logger.d("SavedArticlesViewModel", "Article successfully saved: ${article.title}")
             } else {
-                Log.e("SavedArticlesViewModel", "Problem saving article: ${article.title}")
+                logger.e("SavedArticlesViewModel", "Problem saving article: ${article.title}")
             }
 
         }
@@ -58,7 +57,7 @@ class SavedArticlesViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
+                logger.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
@@ -66,10 +65,10 @@ class SavedArticlesViewModel @Inject constructor(
 
             val success = savedArticlesRepository.deleteSavedArticle(userID, article)
             if (success) {
-                Log.d("SavedArticlesViewModel", "Article successfully deleted: ${article.title}")
+                logger.d("SavedArticlesViewModel", "Article successfully deleted: ${article.title}")
                 _savedArticles.postValue(_savedArticles.value?.filter { it.url != article.url })
             } else {
-                Log.e("SavedArticlesViewModel", "Problem deleting article: ${article.title}")
+                logger.e("SavedArticlesViewModel", "Problem deleting article: ${article.title}")
             }
 
         }
@@ -85,14 +84,14 @@ class SavedArticlesViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
+                logger.e("SavedArticlesViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
             // at this point, successfully retrieved current user
 
             savedArticlesRepository.getSavedArticles(userID) { userSavedArticles ->
-                Log.d("SavedArticlesViewModel", "Successfully fetched ${userSavedArticles.size} articles")
+                logger.d("SavedArticlesViewModel", "Successfully fetched ${userSavedArticles.size} articles")
                 _savedArticles.postValue(userSavedArticles) // ViewModel updates UI state
             }
 

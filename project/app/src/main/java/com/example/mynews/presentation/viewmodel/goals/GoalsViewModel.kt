@@ -1,12 +1,14 @@
 package com.example.mynews.presentation.viewmodel.goals
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.data.api.news.Article
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.model.Mission
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
@@ -20,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GoalsViewModel @Inject constructor(
     private val goalsRepository: GoalsRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val logger: Logger,
 ) : ViewModel() {
 
     private val _streakCount = MutableLiveData<Int>()
@@ -45,7 +48,7 @@ class GoalsViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
@@ -53,11 +56,11 @@ class GoalsViewModel @Inject constructor(
         }
     }
 
-    fun logReaction(article: Article) {
+    fun logReaction() {
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
-                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
                 return@launch
             }
             val missions = goalsRepository.getMissions(userID)
@@ -76,7 +79,7 @@ class GoalsViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
-                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
             goalsRepository.getStreakFlow(userID).collectLatest { (count, lastReadDate) ->
@@ -92,7 +95,7 @@ class GoalsViewModel @Inject constructor(
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
-                Log.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
                 return@launch
             }
             goalsRepository.getMissionsFlow(userID).collectLatest { missions ->

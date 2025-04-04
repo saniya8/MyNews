@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mynews.data.api.news.Article
+import com.example.mynews.domain.logger.Logger
 import com.example.mynews.domain.model.Reaction
 import com.example.mynews.domain.repositories.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val homeRepository: HomeRepository,
+    private val logger: Logger,
 ) : ViewModel() {
 
     private val _articleReactions = MutableLiveData<Map<String, String?>>()
@@ -40,12 +42,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
-                Log.e("HomeViewModel", "No user logged in. User ID is null or empty")
+                logger.e("HomeViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
             homeRepository.trackReactions(userID) { userArticleReactions ->
-                Log.d("ReactionDebug", "Received reactions update: $userArticleReactions")
+                logger.d("ReactionDebug", "Received reactions update: $userArticleReactions")
                 _articleReactions.postValue(userArticleReactions)
             }
         }
@@ -56,7 +58,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
-                Log.e("HomeViewModel", "No user logged in. User ID is null or empty")
+                logger.e("HomeViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
@@ -69,7 +71,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
-                Log.e("HomeViewModel", "No user logged in. User ID is null or empty")
+                logger.e("HomeViewModel", "No user logged in. User ID is null or empty")
                 return@launch
             }
             homeRepository.setReaction(userID, article, reaction)

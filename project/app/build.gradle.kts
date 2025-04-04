@@ -97,11 +97,6 @@ dependencies {
     // Jetpack Compose Compiler
     implementation(libs.androidx.compiler)
 
-    // Testing
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6")
-
     // Retrofit API
     val retrofitVersion = "2.11.0"
     implementation ("com.squareup.retrofit2:retrofit:$retrofitVersion")
@@ -132,6 +127,15 @@ dependencies {
     // Condensed Article Dependencies For Parsing
     implementation("org.jsoup:jsoup:1.18.3")
     implementation("org.json:json:20210307")
+
+    // Unit Testing
+    testImplementation("junit:junit:4.13.2") // JUnit 4
+    testImplementation("org.mockito:mockito-core:5.11.0") // Mockito fpr mocking
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1") // Mockito for mocking
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3") // coroutines
+    testImplementation("app.cash.turbine:turbine:1.0.0") // flow testing
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
 }
 
 // Allow references to generated code
