@@ -43,7 +43,7 @@ fun CondensedNewsArticleScreen(
             "No summary generated from Huggingface",
             "Invalid summary containing 'CNN'",
         )
-        if (articleText in articleErrorMessages || articleText.startsWith("Error:")) {
+        if (articleText in articleErrorMessages || articleText.startsWith("Error:") || articleTitle.contains("Bloomberg.com", ignoreCase = true)) {
             condensedNewsArticleViewModel.clearArticleText()
             condensedNewsArticleViewModel.clearSummarizedText()
             showErrorDialog = true
