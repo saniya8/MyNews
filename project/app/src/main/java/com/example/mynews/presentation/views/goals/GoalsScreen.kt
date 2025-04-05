@@ -106,10 +106,10 @@ fun GoalsScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    //.padding(horizontal = 16.dp)
                     .background(Color(0xFFF0F4FF))
                     .clip(RoundedCornerShape(12.dp))
-                    .padding(vertical = 16.dp)
+                    .padding(top = 16.dp)
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),

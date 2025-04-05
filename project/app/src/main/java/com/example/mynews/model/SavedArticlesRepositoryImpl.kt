@@ -5,8 +5,11 @@ import android.util.Log
 import com.example.mynews.service.news.Article
 import com.example.mynews.service.news.Source
 import com.example.mynews.domain.repositories.SavedArticlesRepository
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
+import com.example.mynews.utils.articleToMap
 import javax.inject.Inject
 
 // Implementation of the SavedArticlesRepository interface in .com.example.mynews/domain/repositories
@@ -67,7 +70,15 @@ class SavedArticlesRepositoryImpl @Inject constructor(
             // at this point, the article the user is saving hasn't been saved before
             // articleLocation already specifies the documentID as the article URL, so article
             // is stored there
-            articleLocation.set(article).await() // save entire article
+            //articleLocation.set(article).await() // save entire article
+
+            val savedArticleData = mapOf(
+                "article" to articleToMap(article),
+                "timestamp" to FieldValue.serverTimestamp()
+            )
+            articleLocation.set(savedArticleData).await()
+
+
             Log.d("SavedArticlesRepositoryImpl", "Article saved successfully: ${article.title}")
             return true
 
@@ -77,6 +88,8 @@ class SavedArticlesRepositoryImpl @Inject constructor(
         }
 
     }
+
+
 
     override suspend fun deleteSavedArticle(userID: String, article: Article): Boolean {
 
@@ -135,6 +148,7 @@ class SavedArticlesRepositoryImpl @Inject constructor(
         firestore.collection("saved_articles")
             .document(userID)
             .collection("articles")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             // add event listener
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -154,19 +168,20 @@ class SavedArticlesRepositoryImpl @Inject constructor(
                         // cannot just do document.toObject(Article::class.java)
                         // need the below - manual data mapping to extract each field from
                         // firestore, where the field name is in the parentheses
+                        val articleMap = document.get("article") as? Map<*, *> ?: return@mapNotNull null
                         val sourceMap = document.get("source") as? Map<*, *>
                         Article(
-                            author = document.getString("author") ?: "",
-                            content = document.getString("content") ?: "",
-                            description = document.getString("description") ?: "",
-                            publishedAt = document.getString("publishedAt") ?: "",
+                            author = articleMap["author"] as? String ?: "",
+                            content = articleMap["content"] as? String ?: "",
+                            description = articleMap["description"] as? String ?: "",
+                            publishedAt = articleMap["publishedAt"] as? String ?: "",
                             source = Source(
                                 id = sourceMap?.get("id") as? String ?: "",
                                 name = sourceMap?.get("name") as? String ?: ""
                             ),
-                            title = document.getString("title") ?: "",
-                            url = document.getString("url") ?: "",
-                            urlToImage = document.getString("urlToImage") ?: ""
+                            title = articleMap["title"] as? String ?: "",
+                            url = articleMap["url"] as? String ?: "",
+                            urlToImage = articleMap["urlToImage"] as? String ?: ""
                         )
                     }
                     /*

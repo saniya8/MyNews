@@ -6,6 +6,7 @@ import com.example.mynews.service.news.Article
 import com.example.mynews.domain.repositories.HomeRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import com.example.mynews.utils.articleToMap
 import javax.inject.Inject
 
 class HomeRepositoryImpl @Inject constructor(
@@ -78,22 +79,6 @@ class HomeRepositoryImpl @Inject constructor(
             )
             return false
         }
-    }
-
-    private fun articleToMap(article: Article): Map<String, Any?> {
-        return mapOf(
-            "author" to article.author,
-            "content" to article.content,
-            "description" to article.description,
-            "publishedAt" to article.publishedAt,
-            "source" to mapOf(
-                "id" to article.source.id,
-                "name" to article.source.name
-            ),
-            "title" to article.title,
-            "url" to article.url,
-            "urlToImage" to article.urlToImage
-        )
     }
 
     override suspend fun trackReactions(
