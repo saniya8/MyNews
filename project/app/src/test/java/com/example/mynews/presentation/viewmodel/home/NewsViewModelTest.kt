@@ -1,10 +1,10 @@
 package com.example.mynews.presentation.viewmodel.home
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.data.api.news.Article
-import com.example.mynews.data.api.news.NewsResponse
-import com.example.mynews.data.api.news.Source
-import com.example.mynews.data.logger.NoOpLogger
+import com.example.mynews.service.news.Article
+import com.example.mynews.service.news.NewsResponse
+import com.example.mynews.service.news.Source
+import com.example.mynews.utils.logger.NoOpLogger
 import com.example.mynews.domain.repositories.NewsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -1,15 +1,14 @@
 package com.example.mynews.presentation.viewmodel.goals
 
-import android.util.Log
-import androidx.annotation.VisibleForTesting
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.news.Article
-import com.example.mynews.domain.logger.Logger
-import com.example.mynews.domain.model.Mission
+import com.example.mynews.service.news.Article
+import com.example.mynews.utils.logger.Logger
+import com.example.mynews.domain.entities.Mission
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +37,7 @@ class GoalsViewModel @Inject constructor(
     private val _missions = MutableLiveData<List<Mission>>(emptyList())
     val missions: LiveData<List<Mission>> = _missions
 
+
     init {
         fetchStreak()
         fetchMissions()
@@ -56,21 +56,46 @@ class GoalsViewModel @Inject constructor(
         }
     }
 
-    fun logReaction() {
+    // below is only called when article being reacted to is being reacted to for first time (so fresh reaction, not updated reaction)
+    // this is due to LaunchedEffect in HomeScreen which only calls this if isFirstReactionForArticle is true
+    fun logReaction(article: Article) {
+
+        // check if article has already been reacted to
+        val encodedUrl = Uri.encode(article.url)
+        //if (reactedArticles.contains(encodedUrl)) {
+        //    logger.d("GoalsViewModel", "Already logged reaction for ${article.title}")
+        //    return
+       // }
+        //reactedArticles.add(encodedUrl)
+
         viewModelScope.launch {
+
+
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
                 logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
                 return@launch
             }
-            val missions = goalsRepository.getMissions(userID)
+
+            goalsRepository.logReaction(userID)
+
+            // moved the below to  goalsRepository.logReaction
+            // check if the reaction was for previously-reacted article or for new article
+
+            //val isFirstTimeReaction = goalsRepository.isFirstTimeReaction(userID, article)
+            //if (!isFirstTimeReaction) {
+            //    logger.d("GoalsViewModel", "Reaction already exists for this article, not counting it")
+            //    return@launch
+            //}
+            // only contribute reactions for new articles to missions
+            /*val missions = goalsRepository.getMissions(userID)
             missions.filter { it.type == "react_to_article" && !it.isCompleted }.forEach { mission ->
                 val newCount = mission.currentCount + 1
                 goalsRepository.updateMissionProgress(userID, mission.id, newCount)
                 if (newCount >= mission.targetCount) {
                     goalsRepository.markMissionComplete(userID, mission.id)
                 }
-            }
+            }*/
         }
     }
 

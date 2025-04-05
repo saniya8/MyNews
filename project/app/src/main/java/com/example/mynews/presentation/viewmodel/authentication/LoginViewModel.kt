@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.domain.logger.Logger
-import com.example.mynews.domain.model.LoginInputValidationType
+import com.example.mynews.utils.logger.Logger
+import com.example.mynews.domain.entities.LoginInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
 import com.example.mynews.presentation.state.LoginState

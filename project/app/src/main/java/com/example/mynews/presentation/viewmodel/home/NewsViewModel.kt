@@ -1,14 +1,13 @@
 package com.example.mynews.presentation.viewmodel.home
 
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.news.Article
-import com.example.mynews.data.api.news.NewsResponse
-import com.example.mynews.domain.logger.Logger
+import com.example.mynews.service.news.Article
+import com.example.mynews.service.news.NewsResponse
+import com.example.mynews.utils.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

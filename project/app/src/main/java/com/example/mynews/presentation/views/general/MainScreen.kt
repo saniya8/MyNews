@@ -20,7 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mynews.utils.AuthScreen
 import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.components.BottomNavBar
-import com.example.mynews.domain.model.BottomNavBarItem
+import com.example.mynews.domain.entities.BottomNavBarItem
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel

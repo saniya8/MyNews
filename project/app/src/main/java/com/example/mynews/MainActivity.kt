@@ -4,14 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.compose.*
-import com.example.mynews.ui.theme.*
 import com.example.mynews.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 import com.google.firebase.auth.FirebaseAuth
 import android.util.Log
-import androidx.lifecycle.lifecycleScope
-import com.example.mynews.data.NewsRepositoryImpl
-import kotlinx.coroutines.launch
+import com.example.mynews.presentation.theme.MyNewsTheme
 
 
 @AndroidEntryPoint

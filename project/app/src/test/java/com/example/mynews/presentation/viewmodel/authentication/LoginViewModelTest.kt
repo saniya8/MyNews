@@ -1,8 +1,8 @@
 package com.example.mynews.presentation.viewmodel.authentication
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.data.logger.NoOpLogger
-import com.example.mynews.domain.model.LoginInputValidationType
+import com.example.mynews.utils.logger.NoOpLogger
+import com.example.mynews.domain.entities.LoginInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
 import kotlinx.coroutines.Dispatchers

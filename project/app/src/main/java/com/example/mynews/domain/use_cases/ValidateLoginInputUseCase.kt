@@ -1,7 +1,6 @@
 package com.example.mynews.domain.use_cases
 
-import com.example.mynews.domain.model.LoginInputValidationType
-import com.example.mynews.domain.model.RegisterInputValidationType
+import com.example.mynews.domain.entities.LoginInputValidationType
 
 class ValidateLoginInputUseCase() {
     operator fun invoke(email: String, password:String):LoginInputValidationType{

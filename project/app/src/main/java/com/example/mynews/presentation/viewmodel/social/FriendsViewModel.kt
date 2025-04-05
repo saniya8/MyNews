@@ -1,6 +1,5 @@
 package com.example.mynews.presentation.viewmodel.social
 
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,12 +8,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.domain.logger.Logger
+import com.example.mynews.utils.logger.Logger
 import com.example.mynews.domain.repositories.FriendsRepository
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
-import com.example.mynews.presentation.state.AddFriendState
-import com.example.mynews.presentation.state.RegisterState
+import com.example.mynews.presentation.state.AddFriendResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -133,7 +131,7 @@ class FriendsViewModel @Inject constructor(
 
                 when (isAdded) {
 
-                    is AddFriendState.Success -> {
+                    is AddFriendResult.Success -> {
                         _searchQuery.value = "" // clear search bar
                         _recentlyAddedFriend.value = normalizedFriendUsername
                         fetchFriends()         // refresh friends list
@@ -146,22 +144,22 @@ class FriendsViewModel @Inject constructor(
                         }
                     }
 
-                    is AddFriendState.SelfAddAttempt -> {
+                    is AddFriendResult.SelfAddAttempt -> {
                         errorDialogMessage = _selfAddAttemptErrorMessage
                         showErrorDialog = true
                     }
 
-                    is AddFriendState.AlreadyAddedFriend -> {
+                    is AddFriendResult.AlreadyAddedFriend -> {
                         errorDialogMessage = "$friendUsername $_alreadyAddedFriendErrorMessage"
                         showErrorDialog = true
                     }
 
-                    is AddFriendState.UserNotFound -> {
+                    is AddFriendResult.UserNotFound -> {
                         errorDialogMessage = _userNotFoundErrorMessage
                         showErrorDialog = true
                     }
 
-                    is AddFriendState.Error -> {
+                    is AddFriendResult.Error -> {
                         errorDialogMessage = _defaultErrorMessage
                         showErrorDialog = true
                     }

@@ -1,7 +1,6 @@
 package com.example.mynews.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -10,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.mynews.ui.theme.*
+import com.example.mynews.presentation.theme.SkyBlue
 
 // Purpose: Authentication Button on the LoginScreen and RegisterScreen
 

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
-import com.example.mynews.ui.theme.CaptainBlue
+import com.example.mynews.presentation.theme.CaptainBlue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -293,7 +293,6 @@ fun SettingsScreen(
             if (showDeleteDialog) {
                 DeleteAccountDialog(
                     onConfirm = { password ->
-                        showDeleteDialog = false
                         settingsViewModel.deleteAccount(password)
                     },
                     onDismiss = {

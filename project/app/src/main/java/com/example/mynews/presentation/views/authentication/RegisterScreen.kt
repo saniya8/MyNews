@@ -28,7 +28,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mynews.presentation.components.*
-import com.example.mynews.ui.theme.*
+import com.example.mynews.presentation.theme.BlueGrey
+import com.example.mynews.presentation.theme.BrightBlue
+import com.example.mynews.presentation.theme.CaptainBlue
+import com.example.mynews.presentation.theme.SkyBlue
 
 // Source: https://www.youtube.com/watch?v=aCjOmyd_62U&t=0s&ab_channel=KApps
 

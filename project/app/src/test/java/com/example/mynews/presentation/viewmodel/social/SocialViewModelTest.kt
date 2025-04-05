@@ -1,10 +1,10 @@
 package com.example.mynews.presentation.viewmodel.social
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.data.api.news.Article
-import com.example.mynews.data.api.news.Source
-import com.example.mynews.data.logger.NoOpLogger
-import com.example.mynews.domain.model.Reaction
+import com.example.mynews.service.news.Article
+import com.example.mynews.service.news.Source
+import com.example.mynews.utils.logger.NoOpLogger
+import com.example.mynews.domain.entities.Reaction
 import com.example.mynews.domain.repositories.SocialRepository
 import com.example.mynews.domain.repositories.UserRepository
 import kotlinx.coroutines.Dispatchers

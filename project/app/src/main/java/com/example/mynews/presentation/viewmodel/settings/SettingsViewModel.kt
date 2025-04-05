@@ -1,9 +1,8 @@
 package com.example.mynews.presentation.viewmodel.settings
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.domain.logger.Logger
+import com.example.mynews.utils.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

@@ -1,12 +1,10 @@
 package com.example.mynews.presentation.viewmodel.home
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.news.Article
-import com.example.mynews.domain.logger.Logger
-import com.example.mynews.domain.model.Reaction
+import com.example.mynews.service.news.Article
+import com.example.mynews.utils.logger.Logger
 import com.example.mynews.domain.repositories.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -14,7 +12,6 @@ import javax.inject.Inject
 import com.example.mynews.domain.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 
 @HiltViewModel
@@ -26,6 +23,9 @@ class HomeViewModel @Inject constructor(
 
     private val _articleReactions = MutableLiveData<Map<String, String?>>()
     val articleReactions: LiveData<Map<String, String?>> = _articleReactions
+
+    private val _isFirstReactionForArticle = MutableStateFlow<Boolean?>(null)
+    val isFirstReactionForArticle: StateFlow<Boolean?> = _isFirstReactionForArticle
 
     // In init, call trackReactions, and post the input to onReactionChanged (aka userArticleReactions)
     // to the _articleReactions
@@ -72,10 +72,16 @@ class HomeViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
                 logger.e("HomeViewModel", "No user logged in. User ID is null or empty")
+                _isFirstReactionForArticle.value = false
                 return@launch
             }
-            homeRepository.setReaction(userID, article, reaction)
+            val isReactionFirstTime = homeRepository.setReaction(userID, article, reaction)
+            _isFirstReactionForArticle.value = isReactionFirstTime
         }
+    }
+
+    fun resetIsFirstReaction() {
+        _isFirstReactionForArticle.value = null
     }
 
 

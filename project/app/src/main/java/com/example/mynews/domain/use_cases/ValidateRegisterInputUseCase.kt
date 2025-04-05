@@ -1,6 +1,6 @@
 package com.example.mynews.domain.use_cases
 
-import com.example.mynews.domain.model.RegisterInputValidationType
+import com.example.mynews.domain.entities.RegisterInputValidationType
 import com.example.mynews.utils.containsNumber
 import com.example.mynews.utils.containsSpecialChar
 import com.example.mynews.utils.containsUpperCase

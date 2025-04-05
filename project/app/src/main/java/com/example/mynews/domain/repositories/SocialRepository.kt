@@ -1,6 +1,6 @@
 package com.example.mynews.domain.repositories
 
-import com.example.mynews.domain.model.Reaction
+import com.example.mynews.domain.entities.Reaction
 
 interface SocialRepository {
     fun getFriendsReactions(friendIDs: List<String>,

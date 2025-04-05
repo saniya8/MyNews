@@ -1,12 +1,11 @@
 package com.example.mynews.presentation.viewmodel.social
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.domain.logger.Logger
-import com.example.mynews.domain.model.Reaction
+import com.example.mynews.utils.logger.Logger
+import com.example.mynews.domain.entities.Reaction
 import com.example.mynews.domain.repositories.SocialRepository
 import com.example.mynews.domain.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

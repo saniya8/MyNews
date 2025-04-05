@@ -39,14 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.mynews.domain.model.Mission
+import com.example.mynews.domain.entities.Mission
 import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
-import com.example.mynews.presentation.views.social.FriendItem
 
 
 @Composable

@@ -44,7 +44,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import com.example.mynews.presentation.components.ScreenHeader
-import com.example.mynews.ui.theme.CaptainBlue
+import com.example.mynews.presentation.theme.CaptainBlue
 import com.example.mynews.utils.AppScreenRoutes
 
 

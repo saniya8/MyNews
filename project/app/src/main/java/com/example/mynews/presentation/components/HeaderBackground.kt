@@ -9,7 +9,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.mynews.ui.theme.*
+import com.example.mynews.presentation.theme.CaptainBlue
+import com.example.mynews.presentation.theme.NavyBlue
 
 // Purpose: MyNews header on the LoginScreen
 

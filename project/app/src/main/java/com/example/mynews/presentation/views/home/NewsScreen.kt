@@ -28,7 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.example.mynews.data.api.news.Article
+import com.example.mynews.service.news.Article
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
@@ -51,7 +51,6 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -59,12 +58,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.example.mynews.R
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
-import com.example.mynews.ui.theme.BiasColors
+import com.example.mynews.presentation.theme.BiasColors
 import com.example.mynews.utils.AppScreenRoutes
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt

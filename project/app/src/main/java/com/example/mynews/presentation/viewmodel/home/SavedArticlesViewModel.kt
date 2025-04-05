@@ -1,12 +1,11 @@
 package com.example.mynews.presentation.viewmodel.home
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.data.api.news.Article
-import com.example.mynews.domain.logger.Logger
+import com.example.mynews.service.news.Article
+import com.example.mynews.utils.logger.Logger
 import com.example.mynews.domain.repositories.SavedArticlesRepository
 import com.example.mynews.domain.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

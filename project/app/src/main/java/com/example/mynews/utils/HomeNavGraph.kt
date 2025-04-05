@@ -8,8 +8,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.google.firebase.firestore.FirebaseFirestore
-import com.example.mynews.data.UserRepositoryImpl
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel

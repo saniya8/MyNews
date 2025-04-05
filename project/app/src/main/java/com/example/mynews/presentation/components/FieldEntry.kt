@@ -22,7 +22,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.mynews.ui.theme.*
+import com.example.mynews.presentation.theme.NavyBlue
 
 //Purpose: Used to create the fields in the LoginScreen and RegisterScreen
 

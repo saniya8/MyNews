@@ -2,8 +2,8 @@ package com.example.mynews.presentation.viewmodel.authentication
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.runtime.MutableState
-import com.example.mynews.data.logger.NoOpLogger
-import com.example.mynews.domain.model.RegisterInputValidationType
+import com.example.mynews.utils.logger.NoOpLogger
+import com.example.mynews.domain.entities.RegisterInputValidationType
 import com.example.mynews.domain.repositories.AuthRepository
 import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
 import kotlinx.coroutines.Dispatchers

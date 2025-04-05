@@ -1,9 +1,9 @@
 package com.example.mynews.presentation.viewmodel.settings
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.data.logger.NoOpLogger
+import com.example.mynews.utils.logger.NoOpLogger
 import com.example.mynews.domain.repositories.AuthRepository
-import com.example.mynews.domain.model.User
+import com.example.mynews.domain.entities.User
 import com.example.mynews.domain.repositories.SettingsRepository
 import com.example.mynews.domain.repositories.UserRepository
 import com.example.mynews.presentation.state.DeleteAccountResult

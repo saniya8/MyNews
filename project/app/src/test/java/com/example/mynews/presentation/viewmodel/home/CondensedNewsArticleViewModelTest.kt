@@ -1,7 +1,7 @@
 package com.example.mynews.presentation.viewmodel.home
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.data.logger.NoOpLogger
+import com.example.mynews.utils.logger.NoOpLogger
 import com.example.mynews.domain.repositories.CondensedNewsArticleRepository
 import com.example.mynews.domain.repositories.SettingsRepository
 import com.example.mynews.domain.repositories.UserRepository

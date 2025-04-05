@@ -1,8 +1,7 @@
 package com.example.mynews.domain.repositories
 
-import com.example.mynews.data.api.news.NewsResponse
+import com.example.mynews.service.news.NewsResponse
 import kotlinx.coroutines.flow.StateFlow
-import retrofit2.Response
 
 interface NewsRepository {
     suspend fun getTopHeadlines(): NewsResponse

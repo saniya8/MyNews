@@ -31,7 +31,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mynews.presentation.viewmodel.home.NewsViewModel
-import com.example.mynews.ui.theme.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import com.example.mynews.utils.AppScreenRoutes
@@ -44,13 +43,11 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.window.Popup
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.border
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.height
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.horizontalScroll
@@ -66,7 +63,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.livedata.observeAsState
@@ -81,13 +77,15 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
-import com.example.mynews.data.api.news.Article
+import com.example.mynews.service.news.Article
 import com.example.mynews.presentation.components.ScreenHeader
+import com.example.mynews.presentation.theme.BiasColors
+import com.example.mynews.presentation.theme.CaptainBlue
+import com.example.mynews.presentation.theme.SkyBlue
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel
 import kotlinx.coroutines.Job
@@ -134,6 +132,10 @@ fun HomeScreen(
     var closeJob by remember { mutableStateOf<Job?>(null) } // to track closing job - for if user selects another reaction before automatically closure
 
     var showBiasLegend by remember { mutableStateOf(false) } // state to track visibility of legend dialog box
+
+    val isFirstReactionForArticle by homeViewModel.isFirstReactionForArticle.collectAsState()
+
+
 
     fun openDrawer() {
         scope.launch { drawerState.open() }
@@ -302,8 +304,13 @@ fun HomeScreen(
         Log.i("FlickerBug", "----------------------")
     }
 
-
-
+    LaunchedEffect(isFirstReactionForArticle) {
+        if (isFirstReactionForArticle == true && activeReactionArticle != null) {
+            goalsViewModel.logReaction(activeReactionArticle!!)
+            // reset state
+            homeViewModel.resetIsFirstReaction()
+        }
+    }
 
 
     ModalNavigationDrawer(
@@ -584,9 +591,9 @@ fun HomeScreen(
                                             onReactionSelected = { reaction ->
 
                                                 selectedReaction.value = reaction
-                                                // CL: Properly log the reaction and close after delay
                                                 homeViewModel.updateReaction(activeReactionArticle!!, reaction)
-                                                goalsViewModel.logReaction() // Log reaction for missions
+
+
                                                 Log.d(
                                                     "GestureDebug",
                                                     "CL: Selected reaction: $reaction for ${activeReactionArticle?.title}"

@@ -1,8 +1,8 @@
 package com.example.mynews.presentation.viewmodel.social
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.data.logger.NoOpLogger
-import com.example.mynews.domain.model.Mission
+import com.example.mynews.utils.logger.NoOpLogger
+import com.example.mynews.domain.entities.Mission
 import com.example.mynews.domain.repositories.FriendsRepository
 import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.domain.repositories.UserRepository
@@ -19,7 +19,7 @@ import org.mockito.kotlin.whenever
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.any as mockitoAny
-import com.example.mynews.presentation.state.AddFriendState
+import com.example.mynews.presentation.state.AddFriendResult
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(MockitoJUnitRunner::class)
@@ -106,7 +106,7 @@ class FriendsViewModelTest {
                 eq(friendUsername),
                 mockitoAny() // properly use matcher here
             )
-        ).thenReturn(AddFriendState.Success)
+        ).thenReturn(AddFriendResult.Success)
 
         // Stub getFriendUsernames to invoke callback
         doAnswer { invocation ->
@@ -138,7 +138,7 @@ class FriendsViewModelTest {
                 eq(friendUsername),
                 mockitoAny()
             )
-        ).thenReturn(AddFriendState.SelfAddAttempt)
+        ).thenReturn(AddFriendResult.SelfAddAttempt)
 
         // Act
         viewModel.addFriend(friendUsername)
@@ -163,7 +163,7 @@ class FriendsViewModelTest {
                 eq(friendUsername),
                 mockitoAny()
             )
-        ).thenReturn(AddFriendState.AlreadyAddedFriend)
+        ).thenReturn(AddFriendResult.AlreadyAddedFriend)
 
         // Act
         viewModel.addFriend(friendUsername)
@@ -188,7 +188,7 @@ class FriendsViewModelTest {
                 eq(friendUsername),
                 mockitoAny()
             )
-        ).thenReturn(AddFriendState.UserNotFound)
+        ).thenReturn(AddFriendResult.UserNotFound)
 
         // Act
         viewModel.addFriend(friendUsername)
@@ -213,7 +213,7 @@ class FriendsViewModelTest {
                 eq(friendUsername),
                 mockitoAny()
             )
-        ).thenReturn(AddFriendState.Error("Something bad happened"))
+        ).thenReturn(AddFriendResult.Error("Something bad happened"))
 
         // Act
         viewModel.addFriend(friendUsername)
