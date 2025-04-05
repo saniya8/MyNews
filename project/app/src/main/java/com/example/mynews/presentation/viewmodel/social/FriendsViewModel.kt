@@ -136,8 +136,8 @@ class FriendsViewModel @Inject constructor(
                         _recentlyAddedFriend.value = normalizedFriendUsername
                         fetchFriends()         // refresh friends list
 
-                        // Update the "Add 5 Friends" mission
-                        updateAddFriendsMission(userID)
+                        //updateAddFriendsMission(userID)
+                        goalsRepository.logAddOrRemoveFriend(userID)
                         viewModelScope.launch {
                             delay(1500) // 2 second highlight
                             _recentlyAddedFriend.value = null // reset after animation
@@ -189,7 +189,8 @@ class FriendsViewModel @Inject constructor(
                 val isRemoved = friendsRepository.removeFriend(userID, friendUsername) // normalizes friendUsername in friendsRepository.removeFriend
                 if (isRemoved) {
                     fetchFriends()
-                    updateAddFriendsMission(userID)
+                    //updateAddFriendsMission(userID)
+                    goalsRepository.logAddOrRemoveFriend(userID)
                 }
             } catch (e: Exception) {
                 logger.e("FriendsViewModel", "Error removing friend", e)
@@ -197,7 +198,7 @@ class FriendsViewModel @Inject constructor(
         }
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    /*@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal suspend fun updateAddFriendsMission(userId: String) {
         val friendCount = friendsRepository.getFriendCount(userId)
         val missions = goalsRepository.getMissions(userId)
@@ -208,7 +209,7 @@ class FriendsViewModel @Inject constructor(
                 goalsRepository.markMissionComplete(userId, mission.id)
             }
         }
-    }
+    }*/
 
 
 

@@ -7,6 +7,7 @@ import com.example.mynews.domain.entities.Mission
 interface GoalsRepository {
     suspend fun logArticleRead(userId: String, article: Article)
     suspend fun logReaction(userId: String)
+    suspend fun logAddOrRemoveFriend(userId: String)
     //suspend fun isFirstTimeReaction(userId: String, article: Article): Boolean
     //suspend fun getStreak(userId: String): Int
     //suspend fun updateStreak(userId: String)

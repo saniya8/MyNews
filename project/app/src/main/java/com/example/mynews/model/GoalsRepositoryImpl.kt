@@ -19,63 +19,7 @@ class GoalsRepositoryImpl(
     private val friendsRepository: FriendsRepository // Dependency on FriendsRepository
 ) : GoalsRepository {
 
-
-
-    override suspend fun logArticleRead(userId: String, article: Article) {
-
-        // firestore does not allow slashes in document IDs so need to encode URL
-        val safeArticleURL = Uri.encode(article.url)
-
-        // check if this article was already read
-        val activityCollection = firestore.collection("goals")
-            .document(userId)
-            .collection("activity")
-        val articleDoc = activityCollection.document(safeArticleURL)
-
-        val existingDoc = articleDoc.get().await()
-        val isFirstReadForArticle = !existingDoc.exists()
-
-        // update timestamp regardless for streaks purposes
-        val timestamp = System.currentTimeMillis()
-        firestore.collection("goals")
-            .document(userId)
-            .collection("activity")
-            .document(safeArticleURL)
-            .set(mapOf("timestamp" to timestamp))
-            .await()
-        updateStreak(userId)
-
-        // only count the read towards missions if it's an article that hasn't been read before
-        if (!isFirstReadForArticle) return
-
-        // at this point, this is the first time the user has read the passed article
-
-        // Update missions of type "read_article"
-        val missions = getMissions(userId)
-        missions.filter { it.type == "read_article" && !it.isCompleted }.forEach { mission ->
-            val newCount = mission.currentCount + 1
-            updateMissionProgress(userId, mission.id, newCount)
-            if (newCount >= mission.targetCount) {
-                markMissionComplete(userId, mission.id)
-            }
-        }
-    }
-
-    // called from homeViewModel's setReaction
-    // called only if the reaction is fresh, and not updating the reaction to a previously-reacted article
-    // so, reactions will contribute to missions as long as they are fresh reactions
-    override suspend fun logReaction(userId: String) {
-        // Update missions of type "react_to_article"
-        val missions = getMissions(userId)
-        missions.filter { it.type == "react_to_article" && !it.isCompleted }.forEach { mission ->
-            val newCount = mission.currentCount + 1
-            updateMissionProgress(userId, mission.id, newCount)
-            if (newCount >= mission.targetCount) {
-                markMissionComplete(userId, mission.id)
-            }
-        }
-    }
-
+    // Streaks
 
 
 
@@ -151,6 +95,76 @@ class GoalsRepositoryImpl(
     }
 
 
+    // Missions
+
+    override suspend fun logArticleRead(userId: String, article: Article) {
+
+        // firestore does not allow slashes in document IDs so need to encode URL
+        val safeArticleURL = Uri.encode(article.url)
+
+        // check if this article was already read
+        val activityCollection = firestore.collection("goals")
+            .document(userId)
+            .collection("activity")
+        val articleDoc = activityCollection.document(safeArticleURL)
+
+        val existingDoc = articleDoc.get().await()
+        val isFirstReadForArticle = !existingDoc.exists()
+
+        // update timestamp regardless for streaks purposes
+        val timestamp = System.currentTimeMillis()
+        firestore.collection("goals")
+            .document(userId)
+            .collection("activity")
+            .document(safeArticleURL)
+            .set(mapOf("timestamp" to timestamp))
+            .await()
+        updateStreak(userId)
+
+        // only count the read towards missions if it's an article that hasn't been read before
+        if (!isFirstReadForArticle) return
+
+        // at this point, this is the first time the user has read the passed article
+
+        // Update missions of type "read_article"
+        val missions = getMissions(userId)
+        missions.filter { it.type == "read_article" && !it.isCompleted }.forEach { mission ->
+            val newCount = mission.currentCount + 1
+            updateMissionProgress(userId, mission.id, newCount)
+            if (newCount >= mission.targetCount) {
+                markMissionComplete(userId, mission.id)
+            }
+        }
+    }
+
+    // called from homeViewModel's setReaction
+    // called only if the reaction is fresh, and not updating the reaction to a previously-reacted article
+    // so, reactions will contribute to missions as long as they are fresh reactions
+    override suspend fun logReaction(userId: String) {
+        // Update missions of type "react_to_article"
+        val missions = getMissions(userId)
+        missions.filter { it.type == "react_to_article" && !it.isCompleted }.forEach { mission ->
+            val newCount = mission.currentCount + 1
+            updateMissionProgress(userId, mission.id, newCount)
+            if (newCount >= mission.targetCount) {
+                markMissionComplete(userId, mission.id)
+            }
+        }
+    }
+
+    override suspend fun logAddOrRemoveFriend(userId: String) {
+        val friendCount = getFriendCount(userId)
+        val missions = getMissions(userId)
+        missions.filter { it.type == "add_friend" && !it.isCompleted }.forEach { mission ->
+            val newCount = friendCount.coerceAtMost(mission.targetCount) // Don't exceed targetCount
+            updateMissionProgress(userId, mission.id, newCount)
+            if (newCount >= mission.targetCount) {
+                markMissionComplete(userId, mission.id)
+            }
+        }
+    }
+
+
     // mission related functions
     override suspend fun getMissions(userId: String): List<Mission> {
         initializeMissions(userId)
@@ -173,7 +187,7 @@ class GoalsRepositoryImpl(
 
     override fun getMissionsFlow(userId: String): Flow<List<Mission>> = callbackFlow {
         initializeMissions(userId)
-        updateAddFriendsMission(userId)
+        //logAddOrRemoveFriend(userId)
 
         val listener = firestore.collection("goals")
             .document(userId)
@@ -218,18 +232,6 @@ class GoalsRepositoryImpl(
 
     private suspend fun getFriendCount(userId: String): Int {
         return friendsRepository.getFriendCount(userId)
-    }
-
-    private suspend fun updateAddFriendsMission(userId: String) {
-        val friendCount = getFriendCount(userId)
-        val missions = getMissions(userId)
-        missions.filter { it.type == "add_friend" && !it.isCompleted }.forEach { mission ->
-            val newCount = friendCount.coerceAtMost(mission.targetCount) // Don't exceed targetCount
-            updateMissionProgress(userId, mission.id, newCount)
-            if (newCount >= mission.targetCount) {
-                markMissionComplete(userId, mission.id)
-            }
-        }
     }
 
     private suspend fun initializeMissions(userId: String) {

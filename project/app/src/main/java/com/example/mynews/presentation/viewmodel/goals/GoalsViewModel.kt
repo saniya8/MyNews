@@ -60,7 +60,11 @@ class GoalsViewModel @Inject constructor(
     // fresh reaction, not upon updating reaction to previously-reacted article
     // homeViewModel can call logReaction from goalsRepositoryImpl, not from goalsViewModel
 
-    
+    // logAddOrRemoveFriend: put in goalsRepositoryImpl because it needs to be called by friendsViewModel upon
+    // adding or removing a friend
+    // friendsViewModel can call logAddOrRemoveFriend from goalsRepositoryImpl, not from goalsViewModel
+
+
     private fun fetchStreak() {
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()
