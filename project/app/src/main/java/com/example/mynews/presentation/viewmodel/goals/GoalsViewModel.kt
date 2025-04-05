@@ -56,49 +56,11 @@ class GoalsViewModel @Inject constructor(
         }
     }
 
-    // below is only called when article being reacted to is being reacted to for first time (so fresh reaction, not updated reaction)
-    // this is due to LaunchedEffect in HomeScreen which only calls this if isFirstReactionForArticle is true
-    fun logReaction(article: Article) {
+    // logReaction: put in goalsRepositoryImpl because it needs to be called by homeViewModel upon
+    // fresh reaction, not upon updating reaction to previously-reacted article
+    // homeViewModel can call logReaction from goalsRepositoryImpl, not from goalsViewModel
 
-        // check if article has already been reacted to
-        val encodedUrl = Uri.encode(article.url)
-        //if (reactedArticles.contains(encodedUrl)) {
-        //    logger.d("GoalsViewModel", "Already logged reaction for ${article.title}")
-        //    return
-       // }
-        //reactedArticles.add(encodedUrl)
-
-        viewModelScope.launch {
-
-
-            val userID = userRepository.getCurrentUserId()
-            if (userID.isNullOrEmpty()) {
-                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
-                return@launch
-            }
-
-            goalsRepository.logReaction(userID)
-
-            // moved the below to  goalsRepository.logReaction
-            // check if the reaction was for previously-reacted article or for new article
-
-            //val isFirstTimeReaction = goalsRepository.isFirstTimeReaction(userID, article)
-            //if (!isFirstTimeReaction) {
-            //    logger.d("GoalsViewModel", "Reaction already exists for this article, not counting it")
-            //    return@launch
-            //}
-            // only contribute reactions for new articles to missions
-            /*val missions = goalsRepository.getMissions(userID)
-            missions.filter { it.type == "react_to_article" && !it.isCompleted }.forEach { mission ->
-                val newCount = mission.currentCount + 1
-                goalsRepository.updateMissionProgress(userID, mission.id, newCount)
-                if (newCount >= mission.targetCount) {
-                    goalsRepository.markMissionComplete(userID, mission.id)
-                }
-            }*/
-        }
-    }
-
+    
     private fun fetchStreak() {
         viewModelScope.launch {
             val userID = userRepository.getCurrentUserId()

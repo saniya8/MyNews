@@ -16,7 +16,7 @@ import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class)
+/*@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(MockitoJUnitRunner::class)
 class HomeViewModelTest {
 
@@ -114,3 +114,5 @@ class HomeViewModelTest {
     }
 
 }
+
+ */

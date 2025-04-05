@@ -133,10 +133,6 @@ fun HomeScreen(
 
     var showBiasLegend by remember { mutableStateOf(false) } // state to track visibility of legend dialog box
 
-    val isFirstReactionForArticle by homeViewModel.isFirstReactionForArticle.collectAsState()
-
-
-
     fun openDrawer() {
         scope.launch { drawerState.open() }
     }
@@ -191,18 +187,6 @@ fun HomeScreen(
         // isEmpty && == null -> possible, fetch top headlines - in all three LaunchedEffects
         // isNotEmpty && null -> possible, fetch everything by search - in LaunchedEffect(Unit)
         // isEmpty && != null -> possible, fetch top headlines by category - in LaunchedEffect(S
-
-
-
-        /*if (searchQuery.value.isNotEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
-            // when recreating home screen, if there is a search query, it should load search
-            // results (without requiring user to click search bar)
-            Log.i("FlickerBug", "Fetching everything by search")
-            newsViewModel.fetchEverythingBySearch(searchQuery.value)
-        } else if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null) {
-            newsViewModel.fetchTopHeadlines()
-            Log.i("FlickerBug", "Fetching top headlines")
-        }*/
 
         if (searchQuery.value.isEmpty() && selectedCategory.value == null && selectedCountry.value == null && selectedDateRange.value == null) {
             newsViewModel.fetchTopHeadlines()
@@ -302,14 +286,6 @@ fun HomeScreen(
             newsViewModel.fetchEverythingByDateRange(dateRange)
         }
         Log.i("FlickerBug", "----------------------")
-    }
-
-    LaunchedEffect(isFirstReactionForArticle) {
-        if (isFirstReactionForArticle == true && activeReactionArticle != null) {
-            goalsViewModel.logReaction(activeReactionArticle!!)
-            // reset state
-            homeViewModel.resetIsFirstReaction()
-        }
     }
 
 
@@ -592,7 +568,6 @@ fun HomeScreen(
 
                                                 selectedReaction.value = reaction
                                                 homeViewModel.updateReaction(activeReactionArticle!!, reaction)
-
 
                                                 Log.d(
                                                     "GestureDebug",
@@ -1238,7 +1213,7 @@ fun ReactionBar(
                                 )
                                 val newReaction = if (isSelected) null else reaction
                                 onReactionSelected(newReaction)
-                                homeViewModel.updateReaction(article, newReaction)
+                                //homeViewModel.updateReaction(article, newReaction) // already done in onreactionselected
                             }
                             .background(
                                 if (isSelected) Color(0xFFD2E4FF) else Color.Transparent,

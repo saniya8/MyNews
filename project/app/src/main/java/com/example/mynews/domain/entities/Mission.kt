@@ -14,7 +14,7 @@ data class Mission(
             Mission(
                 id = "mission_1",
                 name = "Read 3 Articles",
-                description = "Read 3 news articles to stay informed",
+                description = "Read 3 different news articles to stay informed",
                 targetCount = 3,
                 currentCount = 0,
                 isCompleted = false,
@@ -23,7 +23,7 @@ data class Mission(
             Mission(
                 id = "mission_2",
                 name = "React to 2 Articles",
-                description = "React to 2 articles to share your thoughts",
+                description = "React to 2 different articles to share your thoughts",
                 targetCount = 2,
                 currentCount = 0,
                 isCompleted = false,
@@ -50,7 +50,7 @@ data class Mission(
             Mission(
                 id = "mission_5",
                 name = "React to 50 Articles",
-                description = "React to 50 articles with an emoji",
+                description = "React to 50 different articles with an emoji",
                 targetCount = 50,
                 currentCount = 0,
                 isCompleted = false,

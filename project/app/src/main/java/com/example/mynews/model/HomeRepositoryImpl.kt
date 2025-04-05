@@ -34,6 +34,9 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
+    // returns true if the reaction was the first time setting a reaction for the passed article
+    // returns false if the reaction was just an update to the reaction already set for the passed article
+    // either way, updates the reaction in firestore
     override suspend fun setReaction(userID: String, article: Article, reaction: String?): Boolean {
         try {
             val safeArticleURL = Uri.encode(article.url)

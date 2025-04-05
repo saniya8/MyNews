@@ -3,6 +3,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynews.domain.repositories.GoalsRepository
 import com.example.mynews.service.news.Article
 import com.example.mynews.utils.logger.Logger
 import com.example.mynews.domain.repositories.HomeRepository
@@ -18,14 +19,12 @@ import kotlinx.coroutines.flow.StateFlow
 class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val homeRepository: HomeRepository,
+    private val goalsRepository: GoalsRepository,
     private val logger: Logger,
 ) : ViewModel() {
 
     private val _articleReactions = MutableLiveData<Map<String, String?>>()
     val articleReactions: LiveData<Map<String, String?>> = _articleReactions
-
-    private val _isFirstReactionForArticle = MutableStateFlow<Boolean?>(null)
-    val isFirstReactionForArticle: StateFlow<Boolean?> = _isFirstReactionForArticle
 
     // In init, call trackReactions, and post the input to onReactionChanged (aka userArticleReactions)
     // to the _articleReactions
@@ -72,17 +71,16 @@ class HomeViewModel @Inject constructor(
             val userID = userRepository.getCurrentUserId()
             if (userID.isNullOrEmpty()) {
                 logger.e("HomeViewModel", "No user logged in. User ID is null or empty")
-                _isFirstReactionForArticle.value = false
                 return@launch
             }
-            val isReactionFirstTime = homeRepository.setReaction(userID, article, reaction)
-            _isFirstReactionForArticle.value = isReactionFirstTime
+            val isFirstReactionForArticle = homeRepository.setReaction(userID, article, reaction)
+            if (isFirstReactionForArticle) {
+                goalsRepository.logReaction(userID)
+            }
+
         }
     }
 
-    fun resetIsFirstReaction() {
-        _isFirstReactionForArticle.value = null
-    }
 
 
 }

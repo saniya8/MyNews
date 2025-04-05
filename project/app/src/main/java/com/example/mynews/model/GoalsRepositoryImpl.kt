@@ -61,6 +61,9 @@ class GoalsRepositoryImpl(
         }
     }
 
+    // called from homeViewModel's setReaction
+    // called only if the reaction is fresh, and not updating the reaction to a previously-reacted article
+    // so, reactions will contribute to missions as long as they are fresh reactions
     override suspend fun logReaction(userId: String) {
         // Update missions of type "react_to_article"
         val missions = getMissions(userId)
