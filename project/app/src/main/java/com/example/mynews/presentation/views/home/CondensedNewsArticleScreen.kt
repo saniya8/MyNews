@@ -30,6 +30,7 @@ fun CondensedNewsArticleScreen(
     val summarizedText by condensedNewsArticleViewModel.summarizedText.collectAsState()
     val currentArticleUrl by condensedNewsArticleViewModel.currentArticleUrl.collectAsState()
 
+    var wasNavigatedBack by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(articleUrl) {
@@ -43,7 +44,11 @@ fun CondensedNewsArticleScreen(
             "No summary generated from Huggingface",
             "Invalid summary containing 'CNN'",
         )
-        if (articleText in articleErrorMessages || articleText.startsWith("Error:") || articleTitle.contains("Bloomberg.com", ignoreCase = true)) {
+        if (!wasNavigatedBack && (
+                    articleText in articleErrorMessages ||
+                    articleText.startsWith("Error:") ||
+                    articleTitle.contains("Bloomberg.com", ignoreCase = true))
+        ){
             condensedNewsArticleViewModel.clearArticleText()
             condensedNewsArticleViewModel.clearSummarizedText()
             showErrorDialog = true
@@ -62,7 +67,11 @@ fun CondensedNewsArticleScreen(
             "No summary generated from Huggingface",
             "Invalid summary containing 'CNN'",
         )
-        if (summarizedText in errorMessages || summarizedText.startsWith("Error:")) {
+        if (!wasNavigatedBack && (
+                    summarizedText in errorMessages ||
+                    summarizedText.startsWith("Error:")
+           )
+        ){
             condensedNewsArticleViewModel.clearSummarizedText() // summarized text will show the error message, clear it
             showErrorDialog = true
         }
@@ -79,11 +88,13 @@ fun CondensedNewsArticleScreen(
         AlertDialog(
             onDismissRequest = {
                 showErrorDialog = false
+                wasNavigatedBack = true // to prevent relaunch of alert dialog
                 navController.popBackStack() // Navigate back when dismissed
             },
             confirmButton = {
                 TextButton(onClick = {
                     showErrorDialog = false
+                    wasNavigatedBack = true // to prevent relaunch of alert dialog
                     navController.popBackStack()
                 }) {
                     Text("OK")
@@ -100,7 +111,7 @@ fun CondensedNewsArticleScreen(
 
             text = {
                 Text(
-                    text = "A condensed article is \n unavailable for this article.",
+                    text = "A summary is unavailable \n for this article",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                 )

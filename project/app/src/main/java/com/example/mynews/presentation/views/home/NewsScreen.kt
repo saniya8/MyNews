@@ -62,6 +62,8 @@ import com.example.mynews.R
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.presentation.theme.BiasColors
+import com.example.mynews.presentation.theme.CaptainBlue
+import com.example.mynews.presentation.theme.CaptainBlueLight
 import com.example.mynews.utils.AppScreenRoutes
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -534,7 +536,7 @@ fun ArticleItem(
                                 )
 
                                 Text(
-                                    text = "Condensed Article",
+                                    text = "Summary",
                                     modifier = Modifier.clickable {
                                         // navigate to the CondensedNewsArticleScreen with article content
                                         Log.d(
@@ -548,7 +550,7 @@ fun ArticleItem(
                                             )
                                         )
                                     },
-                                    color = Color.Blue,
+                                    color = CaptainBlueLight,
                                     fontSize = 14.sp
                                 )
                             }
