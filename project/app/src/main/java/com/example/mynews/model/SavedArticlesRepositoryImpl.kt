@@ -5,7 +5,6 @@ import android.util.Log
 import com.example.mynews.service.news.Article
 import com.example.mynews.service.news.Source
 import com.example.mynews.domain.repositories.SavedArticlesRepository
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -74,7 +73,7 @@ class SavedArticlesRepositoryImpl @Inject constructor(
 
             val savedArticleData = mapOf(
                 "article" to articleToMap(article),
-                "timestamp" to FieldValue.serverTimestamp()
+                "timestamp" to System.currentTimeMillis()
             )
             articleLocation.set(savedArticleData).await()
 
