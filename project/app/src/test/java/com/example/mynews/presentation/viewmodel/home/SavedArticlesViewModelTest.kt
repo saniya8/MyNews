@@ -1,187 +1,143 @@
 package com.example.mynews.presentation.viewmodel.home
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.service.news.Article
-import com.example.mynews.service.news.Source
-import com.example.mynews.utils.logger.NoOpLogger
-import com.example.mynews.domain.repositories.SavedArticlesRepository
-import com.example.mynews.domain.repositories.UserRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.*
-import org.mockito.junit.MockitoJUnitRunner
-import org.mockito.kotlin.any
 
+import com.example.mynews.domain.model.home.SavedArticlesModel
+import com.example.mynews.domain.model.user.UserModel
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.TestDataFactory
+import com.example.mynews.utils.logger.Logger
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.mockito.Mockito.never
+import org.mockito.Mockito.reset
+import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
 class SavedArticlesViewModelTest {
 
-    // allows LiveData to work properly in tests
     @get:Rule
-    val instantExecutorRule = InstantTaskExecutorRule()
+    val mainDispatcherRule = MainDispatcherRule()
 
-    @Mock
-    private lateinit var savedArticlesRepository: SavedArticlesRepository // create mock of savedArticlesRepository
+    private lateinit var savedArticlesViewModel: SavedArticlesViewModel
+    private val userModel: UserModel = mock()
+    private val savedArticlesModel: SavedArticlesModel = mock()
+    private val logger: Logger = mock()
 
-    @Mock
-    private lateinit var userRepository: UserRepository // create mock of UserRepository
-
-    private lateinit var viewModel: SavedArticlesViewModel // declare viewmodel
-
-    private val testDispatcher = StandardTestDispatcher() // coroutine dispatcher (to control coroutine execution in tests)
+    private val testUserId = "unittestmock1"
+    private val testArticle = TestDataFactory.createIndexedArticle(3)
 
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher) // test dispatcher
-        viewModel = SavedArticlesViewModel( // initialize viewmodel
-            userRepository = userRepository, // pass mock of userRepository
-            savedArticlesRepository = savedArticlesRepository, // pass mock of savedArticlesRepository
-            logger = NoOpLogger()
-        ) // prevents log errors in unit tests
+        savedArticlesViewModel = SavedArticlesViewModel(userModel, savedArticlesModel, logger)
+        reset(userModel, savedArticlesModel, logger) // reset mocks before each test
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain() // reset dispatcher to original state for cleanup
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: saveArticle()
 
     @Test
-    fun `saveArticle should call repository with correct userID and article`() = runTest { // runTest provides coroutine scope
+    fun `saveArticle calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
 
-        // step 1: Arrange
+        savedArticlesViewModel.saveArticle(testArticle)
 
+        advanceUntilIdle()
 
-        val fakeUserId = "user123"
-        val fakeArticle = Article(
-            author = "John Doe",
-            content = "Save test article",
-            description = "Save test description",
-            publishedAt = "2024-04-03",
-            source = Source(id = "1", name = "Save Source"),
-            title = "Save Me",
-            url = "https://example.com/save-article",
-            urlToImage = "https://example.com/image1.jpg"
-        )
-
-        // mock user ID
-        `when`(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        // mock saveArticle result
-        `when`(savedArticlesRepository.saveArticle(fakeUserId, fakeArticle)).thenReturn(true) // fake behaviour to say succeeded
-
-        // step 2: Act
-        viewModel.saveArticle(fakeArticle) // action being tested - saving an article
-
-        // advance coroutine execution
-        testDispatcher.scheduler.advanceUntilIdle() // wait for all coroutines to finish (simulate time passing)
-
-        // step 3: Assert
-        verify(savedArticlesRepository).saveArticle(fakeUserId, fakeArticle) // confirming that viewmodel actually called repository with correct parameters
+        verify(savedArticlesModel).saveArticle(testUserId, testArticle)
+        verifyNoMoreInteractions(savedArticlesModel)
     }
 
-    // ---------------------------------------------------------
-
-    // TESTING: deleteSavedArticle()
-
     @Test
-    fun `deleteSavedArticle should call repository with correct userID and article`() = runTest {
+    fun `saveArticle logs error when user is null`() = runTest {
 
-        // step 1: Arrange
+            val article = TestDataFactory.createIndexedArticle(1)
+            whenever(userModel.getCurrentUserId()).thenReturn(null)
 
-        val fakeUserId = "user456"
-        val fakeArticle = Article(
-            author = "John Doe",
-            content = "Delete test article",
-            description = "Delete test description",
-            publishedAt = "2024-04-04",
-            source = Source(id = "2", name = "Delete Source"),
-            title = "Delete Me",
-            url = "https://example.com/delete-article",
-            urlToImage = "https://example.com/image2.jpg"
-        )
+            val viewModel = SavedArticlesViewModel(userModel, savedArticlesModel, logger)
 
-        // mock user ID
-        `when`(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
 
-        // mock deleteArticle result
-        `when`(savedArticlesRepository.deleteSavedArticle(fakeUserId, fakeArticle)).thenReturn(true)
+            viewModel.saveArticle(article)
+            advanceUntilIdle()
 
-        // step 2: Act
-        viewModel.deleteSavedArticle(fakeArticle)
 
-        // advance coroutine execution
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // step 3: Assert
-        verify(savedArticlesRepository).deleteSavedArticle(fakeUserId, fakeArticle)
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchSavedArticles()
-
-    @Test
-    fun `fetchSavedArticles should update LiveData with articles from repository`() = runTest {
-        val fakeUserId = "user789"
-        val fakeArticleList = listOf(
-            Article(
-                author = "Author A",
-                content = "Content A",
-                description = "Description A",
-                publishedAt = "2024-04-05",
-                source = Source(id = "3", name = "Source A"),
-                title = "Article A",
-                url = "https://example.com/article-a",
-                urlToImage = "https://example.com/image-a.jpg"
-            ),
-            Article(
-                author = "Author B",
-                content = "Content B",
-                description = "Description B",
-                publishedAt = "2024-04-06",
-                source = Source(id = "4", name = "Source B"),
-                title = "Article B",
-                url = "https://example.com/article-b",
-                urlToImage = "https://example.com/image-b.jpg"
-            ),
-            Article(
-                author = "Author C",
-                content = "Content C",
-                description = "Description C",
-                publishedAt = "2024-04-07",
-                source = Source(id = "5", name = "Source C"),
-                title = "Article C",
-                url = "https://example.com/article-c",
-                urlToImage = "https://example.com/image-c.jpg"
+            verify(logger).e(
+                "SavedArticlesViewModel",
+                "No user logged in. User ID is null or empty"
             )
+            verify(savedArticlesModel, never()).saveArticle(any(), any())
+        }
+
+
+
+    @Test
+    fun `deleteSavedArticle calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+
+        savedArticlesViewModel.deleteSavedArticle(testArticle)
+
+        advanceUntilIdle()
+
+        verify(savedArticlesModel).deleteSavedArticle(testUserId, testArticle)
+        verifyNoMoreInteractions(savedArticlesModel)
+    }
+
+    @Test
+    fun `deleteSavedArticle logs error when user is null`() = runTest {
+
+        val article = TestDataFactory.createIndexedArticle(2)
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
+
+        val viewModel = SavedArticlesViewModel(userModel, savedArticlesModel, logger)
+
+
+        viewModel.deleteSavedArticle(article)
+        advanceUntilIdle()
+
+
+        verify(logger).e(
+            "SavedArticlesViewModel",
+            "No user logged in. User ID is null or empty"
         )
+        verify(savedArticlesModel, never()).deleteSavedArticle(any(), any())
+    }
 
-        `when`(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
 
-        doAnswer { invocation ->
-            val userIdArg = invocation.getArgument<String>(0)
-            val callback = invocation.getArgument<(List<Article>) -> Unit>(1)
-            Assert.assertEquals(fakeUserId, userIdArg)
-            callback(fakeArticleList)
-            null
-        }.`when`(savedArticlesRepository).getSavedArticles(any(), any())
+
+    @Test
+    fun `fetchSavedArticles calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+
+        savedArticlesViewModel.fetchSavedArticles()
+
+        advanceUntilIdle()
+
+        verify(savedArticlesModel).getSavedArticles(testUserId)
+    }
+
+    @Test
+    fun `fetchSavedArticles logs error when user is null`() = runTest {
+
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
+
+        val viewModel = SavedArticlesViewModel(userModel, savedArticlesModel, logger)
+
 
         viewModel.fetchSavedArticles()
-        testDispatcher.scheduler.advanceUntilIdle()
+        advanceUntilIdle()
 
-        val result = viewModel.savedArticles.value
-        Assert.assertEquals(fakeArticleList, result)
+
+        verify(logger).e(
+            "SavedArticlesViewModel",
+            "No user logged in. User ID is null or empty"
+        )
+        verify(savedArticlesModel, never()).getSavedArticles(any())
     }
-
 
 
 }
+

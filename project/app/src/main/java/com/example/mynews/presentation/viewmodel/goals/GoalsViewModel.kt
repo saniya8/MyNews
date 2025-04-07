@@ -1,97 +1,78 @@
 package com.example.mynews.presentation.viewmodel.goals
 
-import android.net.Uri
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.State
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.service.news.Article
-import com.example.mynews.utils.logger.Logger
+import com.example.mynews.domain.entities.Article
 import com.example.mynews.domain.entities.Mission
-import com.example.mynews.domain.repositories.GoalsRepository
-import com.example.mynews.domain.repositories.UserRepository
+import com.example.mynews.domain.model.goals.GoalsModel
+import com.example.mynews.domain.model.user.UserModel
+import com.example.mynews.utils.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class GoalsViewModel @Inject constructor(
-    private val goalsRepository: GoalsRepository,
-    private val userRepository: UserRepository,
+    private val goalsModel: GoalsModel,
+    private val userModel: UserModel,
     private val logger: Logger,
 ) : ViewModel() {
 
-    private val _streakCount = MutableLiveData<Int>()
-    val streakCount: LiveData<Int> = _streakCount
-
-    private val _lastReadDate = MutableLiveData<String>()
-    val lastReadDate: LiveData<String> = _lastReadDate
-
-    val hasLoggedToday = mutableStateOf(false)
-
-
-    private val _missions = MutableLiveData<List<Mission>>(emptyList())
-    val missions: LiveData<List<Mission>> = _missions
-
+    val streakCount: LiveData<Int> = goalsModel.streakCount
+    val hasLoggedToday: State<Boolean> = goalsModel.hasLoggedToday
+    val missions: LiveData<List<Mission>> = goalsModel.missions
 
     init {
         fetchStreak()
         fetchMissions()
     }
 
-    fun logArticleRead(article: Article) {
+    private fun fetchStreak() {
         viewModelScope.launch {
-            val userID = userRepository.getCurrentUserId()
+            val userID = userModel.getCurrentUserId()
 
             if (userID.isNullOrEmpty()) {
                 logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
                 return@launch // return
             }
 
-            goalsRepository.logArticleRead(userID, article)
+            goalsModel.startStreakListener(userID)
         }
     }
 
-    // logReaction: put in goalsRepositoryImpl because it needs to be called by homeViewModel upon
+    private fun fetchMissions() {
+        viewModelScope.launch {
+            val userID = userModel.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                return@launch
+            }
+
+            goalsModel.startMissionsListener(userID)
+        }
+    }
+
+    fun logArticleRead(article: Article) {
+        viewModelScope.launch {
+            val userID = userModel.getCurrentUserId()
+
+            if (userID.isNullOrEmpty()) {
+                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
+                return@launch // return
+            }
+
+            goalsModel.logArticleRead(userID, article)
+        }
+    }
+
+    // logAddReaction, logRemoveReaction: put in goalsRepositoryImpl because it needs to be called by homeViewModel upon
     // fresh reaction, not upon updating reaction to previously-reacted article
     // homeViewModel can call logReaction from goalsRepositoryImpl, not from goalsViewModel
 
     // logAddOrRemoveFriend: put in goalsRepositoryImpl because it needs to be called by friendsViewModel upon
     // adding or removing a friend
     // friendsViewModel can call logAddOrRemoveFriend from goalsRepositoryImpl, not from goalsViewModel
-
-
-    private fun fetchStreak() {
-        viewModelScope.launch {
-            val userID = userRepository.getCurrentUserId()
-
-            if (userID.isNullOrEmpty()) {
-                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
-                return@launch // return
-            }
-            goalsRepository.getStreakFlow(userID).collectLatest { (count, lastReadDate) ->
-                _streakCount.value = count
-                _lastReadDate.value = lastReadDate
-                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                hasLoggedToday.value = lastReadDate == today
-            }
-        }
-    }
-
-    private fun fetchMissions() {
-        viewModelScope.launch {
-            val userID = userRepository.getCurrentUserId()
-            if (userID.isNullOrEmpty()) {
-                logger.e("GoalsViewModel", "No user logged in. User ID is null or empty")
-                return@launch
-            }
-            goalsRepository.getMissionsFlow(userID).collectLatest { missions ->
-                _missions.value = missions
-            }
-        }
-    }
 }

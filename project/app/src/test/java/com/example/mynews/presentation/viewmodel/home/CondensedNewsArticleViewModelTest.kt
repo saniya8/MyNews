@@ -1,161 +1,115 @@
 package com.example.mynews.presentation.viewmodel.home
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.utils.logger.NoOpLogger
-import com.example.mynews.domain.repositories.CondensedNewsArticleRepository
-import com.example.mynews.domain.repositories.SettingsRepository
-import com.example.mynews.domain.repositories.UserRepository
-import kotlinx.coroutines.Dispatchers
+import com.example.mynews.domain.model.home.CondensedNewsArticleModel
+import com.example.mynews.domain.model.user.UserModel
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.reset
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 
-
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
 class CondensedNewsArticleViewModelTest {
 
     @get:Rule
-    val instantExecutorRule = InstantTaskExecutorRule() // allows LiveData/StateFlow testing
+    val mainDispatcherRule = MainDispatcherRule()
 
-    @Mock
-    private lateinit var condensedNewsArticleRepository: CondensedNewsArticleRepository
-
-    @Mock
-    private lateinit var userRepository: UserRepository
-
-    @Mock
-    private lateinit var settingsRepository: SettingsRepository
+    private val condensedModel: CondensedNewsArticleModel = mock()
+    private val userModel: UserModel = mock()
+    private val logger: Logger = mock()
 
     private lateinit var viewModel: CondensedNewsArticleViewModel
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val testUrl = "https://example.com/article"
+    private val testText = "Some long article text"
+    private val testUserId = "testUser123"
 
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher)
-        viewModel = CondensedNewsArticleViewModel(
-            condensedNewsArticleRepository = condensedNewsArticleRepository,
-            userRepository = userRepository,
-            settingsRepository = settingsRepository,
-            logger = NoOpLogger(),
-        )
+        reset(condensedModel, userModel, logger)
+        viewModel = CondensedNewsArticleViewModel(condensedModel, userModel, logger)
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchArticleText()
 
     @Test
-    fun `fetchArticleText sets articleText on success`() = runTest {
-        // Arrange
-        val testUrl = "https://example.com/test-article"
-        val testArticleText = "This is the full article content."
-
-        // Stub the repository method
-        whenever(condensedNewsArticleRepository.getArticleText(testUrl)).thenReturn(testArticleText)
-
-        // Act
+    fun `fetchArticleText calls model with correct url`() = runTest {
         viewModel.fetchArticleText(testUrl)
-        testDispatcher.scheduler.advanceUntilIdle()
+        advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(testUrl, viewModel.currentArticleUrl.value)
-        Assert.assertEquals(testArticleText, viewModel.articleText.value)
+        verify(logger).d("Condensed Article", "URL clicked is: $testUrl")
+        verify(condensedModel).fetchArticleText(testUrl)
+
+        // also verify properties accessed by init
+        verify(condensedModel).currentArticleUrl
+        verify(condensedModel).articleText
+        verify(condensedModel).summarizedText
+        verifyNoMoreInteractions(condensedModel)
     }
 
-    // ---------------------------------------------------------
-
-    // TESTING: fetchSummarizedText()
 
     @Test
-    fun `fetchSummarizedText sets summarizedText on success`() = runTest {
-        // Arrange
-        val testUrl = "https://example.com/article"
-        val fullText = "This is a full article text that needs summarizing."
-        val userId = "user123"
-        val numWords = 50
-        val summary = "This is the summarized version."
+    fun `fetchSummarizedText calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
 
-        // Stub repository methods
-        whenever(userRepository.getCurrentUserId()).thenReturn(userId)
-        whenever(settingsRepository.getNumWordsToSummarize(userId)).thenReturn(numWords)
-        whenever(condensedNewsArticleRepository.summarizeText(fullText, numWords)).thenReturn(summary)
+        viewModel.fetchSummarizedText(testUrl, testText)
+        advanceUntilIdle()
 
-        // Act
-        viewModel.fetchArticleText(testUrl) // set the currentArticleUrl
-        testDispatcher.scheduler.advanceUntilIdle()
+        verify(userModel).getCurrentUserId()
+        verify(condensedModel).fetchSummarizedText(testUrl, testText, testUserId)
 
-        viewModel.fetchSummarizedText(testUrl, fullText)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        Assert.assertEquals(summary, viewModel.summarizedText.value)
+        // also verify properties accessed by init
+        verify(condensedModel).currentArticleUrl
+        verify(condensedModel).articleText
+        verify(condensedModel).summarizedText
+        verifyNoMoreInteractions(condensedModel)
     }
 
-    // ---------------------------------------------------------
-
-    // TESTING: clearCondensedArticleState()
 
     @Test
-    fun `clearCondensedArticleState should reset articleUrl, articleText, and summarizedText`() = runTest {
-        // Arrange: Set initial state
-        viewModel.fetchArticleText("https://example.com/article")
-        testDispatcher.scheduler.advanceUntilIdle()
+    fun `fetchSummarizedText logs error when user is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
 
-        viewModel.fetchSummarizedText("https://example.com/article", "Some full text")
-        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.fetchSummarizedText(testUrl, testText)
 
-        // Act
+        advanceUntilIdle()
+
+        verify(logger).e(
+            eq("CondensedViewModel"),
+            eq("No user logged in. User ID is null or empty")
+        )
+        verify(condensedModel, never()).fetchSummarizedText(any(), any(), any())
+    }
+
+
+    @Test
+    fun `clearCondensedArticleState calls model`() {
         viewModel.clearCondensedArticleState()
 
-        // Assert
-        Assert.assertNull(viewModel.currentArticleUrl.value)
-        Assert.assertEquals("", viewModel.articleText.value)
-        Assert.assertEquals("", viewModel.summarizedText.value)
+        verify(condensedModel).clearCondensedArticleState()
     }
 
-    // ---------------------------------------------------------
-
-    // TESTING: clearSummarizedText()
-
     @Test
-    fun `clearSummarizedText should reset summarizedText to empty`() = runTest {
-        // Arrange — simulate a filled summary
-        viewModel.fetchSummarizedText("https://example.com", "Some long article text")
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Act
-        viewModel.clearSummarizedText()
-
-        // Assert
-        Assert.assertEquals("", viewModel.summarizedText.value)
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: clearArticleText()
-
-    @Test
-    fun `clearArticleText should reset articleText to empty`() = runTest {
-        // Arrange — simulate a filled article
-        viewModel.fetchArticleText("https://example.com")
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Act — clear it
+    fun `clearArticleText calls model`() {
         viewModel.clearArticleText()
 
-        // Assert
-        Assert.assertEquals("", viewModel.articleText.value)
+        verify(condensedModel).clearArticleText()
     }
 
+    @Test
+    fun `clearSummarizedText calls model`() {
+        viewModel.clearSummarizedText()
+
+        verify(condensedModel).clearSummarizedText()
+    }
 }
+

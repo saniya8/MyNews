@@ -53,7 +53,6 @@ fun FriendsScreen(
     navController: NavHostController,
     friendsViewModel: FriendsViewModel,
 ) {
-    //val searchQuery = remember { mutableStateOf("") }
 
     val searchQuery by friendsViewModel.searchQuery.collectAsState()
     val recentlyAddedFriend by friendsViewModel.recentlyAddedFriend.collectAsState()
@@ -125,7 +124,7 @@ fun FriendsScreen(
             ) {
 
                 ScreenHeader(
-                    useTopPadding = false, // true bc this screen wrapped in top-level box, not top-level scaffold
+                    useTopPadding = false,
                     title = "Friends",
                 )
 
@@ -136,8 +135,6 @@ fun FriendsScreen(
                                  onAddNewFriend = { friendsViewModel.addFriend(searchQuery)})
 
                 Spacer(modifier = Modifier.height(10.dp))
-
-                //AddedFriendsList(friends = friends, viewModel = friendsViewModel)
 
                 Text(
                     text = "Your Friends",
@@ -214,14 +211,6 @@ fun FriendsSearchBar(
             trailingIcon = {
                 IconButton(
                     onClick = {
-                        // SK: here, it should call add friend function from FriendsViewModel
-                        // which will trigger your UI (friend items aka rectangles of friends)
-                        // to be updated, now that a new friend was added
-                        // each of these friend rectangles will have the delete button on them
-                        // which when clicked will trigger removeFriend from FriendsViewModel
-                        // and will rerender UI
-                        // UI will automatically rerender per note at the top of FriendsScreen
-                        // No additional code should be required to re-render it
                         onAddNewFriend()
                     }
                 ) {
@@ -262,7 +251,7 @@ fun FriendItem(
                 .fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             colors = CardDefaults.cardColors(
-                containerColor = animatedBackgroundColor /*0xFFF1F4FA*/) // light bluish-grey background
+                containerColor = animatedBackgroundColor) // light bluish-grey background
         ) {
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -270,8 +259,6 @@ fun FriendItem(
                 Row(
                     modifier = Modifier
                         .fillMaxSize(),
-                        //.padding(8.dp),
-                        //.background(Color.Magenta),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
@@ -288,7 +275,7 @@ fun FriendItem(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF3A5A8C)), // Your primary blue or choose a soft tone
+                                .background(Color(0xFF3A5A8C)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -308,7 +295,6 @@ fun FriendItem(
                             .fillMaxSize()
                             .weight(0.85f)
                             .padding(8.dp),
-                            //.background(Color.Magenta), // for testing
                         verticalAlignment = Alignment.CenterVertically
 
                     ) {

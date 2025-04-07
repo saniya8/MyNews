@@ -1,249 +1,241 @@
 package com.example.mynews.presentation.viewmodel.authentication
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.compose.runtime.MutableState
-import com.example.mynews.utils.logger.NoOpLogger
-import com.example.mynews.domain.entities.RegisterInputValidationType
-import com.example.mynews.domain.repositories.AuthRepository
+import com.example.mynews.domain.model.authentication.RegisterModel
+import com.example.mynews.domain.types.RegisterInputValidationType
 import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
-import kotlinx.coroutines.Dispatchers
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.check
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-// note: validating register inputs is tested in (test) com.example.mynews/domain/use_cases/ValidateRegisterInputUseCaseTest
-
-
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
 class RegisterViewModelTest {
 
     @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
+    val mainDispatcherRule = MainDispatcherRule()
 
-    private val testDispatcher = StandardTestDispatcher()
-
-    @Mock
-    private lateinit var authRepository: AuthRepository
-
-    @Mock
-    private lateinit var validateRegisterInputUseCase: ValidateRegisterInputUseCase
+    private val validateRegisterInputUseCase: ValidateRegisterInputUseCase = mock()
+    private val registerModel: RegisterModel = mock()
+    private val logger: Logger = mock()
 
     private lateinit var viewModel: RegisterViewModel
 
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher)
-        viewModel = RegisterViewModel(
-            validateRegisterInputUseCase = validateRegisterInputUseCase,
-            authRepository = authRepository,
-            logger = NoOpLogger()
-        )
+        viewModel = RegisterViewModel(validateRegisterInputUseCase, registerModel, logger)
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: onEmailInputChange()
 
     @Test
-    fun `onEmailInputChange should update email and trigger validation`() {
-        val email = "test@example.com"
-
-        whenever(validateRegisterInputUseCase(email, "", "", ""))
-            .thenReturn(RegisterInputValidationType.EmptyField)
-
-        viewModel.onEmailInputChange(email)
-
-        val state = viewModel.registerState
-        Assert.assertEquals(email, state.emailInput)
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: onUsernameInputChange()
-
-    @Test
-    fun `onUsernameInputChange should update username and trigger validation`() {
-        val username = "my_user"
-
-        whenever(validateRegisterInputUseCase("", username, "", ""))
-            .thenReturn(RegisterInputValidationType.EmptyField)
-
-        viewModel.onUsernameInputChange(username)
-
-        val state = viewModel.registerState
-        Assert.assertEquals(username, state.usernameInput)
-    }
-
-
-    // ---------------------------------------------------------
-
-    // TESTING: onPasswordInputChange()
-
-    @Test
-    fun `onPasswordInputChange should update password and trigger validation`() {
-        val password = "Password1!"
-
-        whenever(validateRegisterInputUseCase("", "", password, ""))
-            .thenReturn(RegisterInputValidationType.EmptyField)
-
-        viewModel.onPasswordInputChange(password)
-
-        val state = viewModel.registerState
-        Assert.assertEquals(password, state.passwordInput)
-    }
-
-
-    // ---------------------------------------------------------
-
-    // TESTING: onPasswordRepeatedInputChange()
-
-    @Test
-    fun `onPasswordRepeatedInputChange should update passwordRepeated and trigger validation`() {
-        val repeated = "Password1!"
-
-        whenever(validateRegisterInputUseCase("", "", "", repeated))
-            .thenReturn(RegisterInputValidationType.EmptyField)
-
-        viewModel.onPasswordRepeatedInputChange(repeated)
-
-        val state = viewModel.registerState
-        Assert.assertEquals(repeated, state.passwordRepeatedInput)
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: onRegisterClick()
-
-    @Test
-    fun `onRegisterClick with valid input and register success should update state to success`() = runTest {
-        val email = "test@example.com"
-        val username = "my_username"
-        val password = "Password123!"
-
-        // stub validation to return VALID for any combo (prevents early null return)
+    fun `onEmailInputChange updates state and triggers validation`() {
         whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
             .thenReturn(RegisterInputValidationType.Valid)
 
-        // stub successful register result
-        whenever(authRepository.register(any(), any(), any(), any(), any()))
+        viewModel.onEmailInputChange("test@email.com")
+
+        assertEquals("test@email.com", viewModel.registerState.emailInput)
+        assertTrue(viewModel.registerState.isInputValid)
+        assertNull(viewModel.registerState.errorMessageInput)
+    }
+
+    @Test
+    fun `onUsernameInputChange updates state and triggers validation`() {
+        whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
+            .thenReturn(RegisterInputValidationType.Valid)
+
+        viewModel.onUsernameInputChange("user123")
+
+        assertEquals("user123", viewModel.registerState.usernameInput)
+        assertTrue(viewModel.registerState.isInputValid)
+        assertNull(viewModel.registerState.errorMessageInput)
+    }
+
+    @Test
+    fun `onPasswordInputChange updates state and triggers validation`() {
+        whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
+            .thenReturn(RegisterInputValidationType.Valid)
+
+        viewModel.onPasswordInputChange("Password123!")
+
+        assertEquals("Password123!", viewModel.registerState.passwordInput)
+        assertTrue(viewModel.registerState.isInputValid)
+    }
+
+    @Test
+    fun `onPasswordRepeatedInputChange updates state and triggers validation`() {
+        whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
+            .thenReturn(RegisterInputValidationType.Valid)
+
+        viewModel.onPasswordRepeatedInputChange("Password123!")
+
+        assertEquals("Password123!", viewModel.registerState.passwordRepeatedInput)
+        assertTrue(viewModel.registerState.isInputValid)
+    }
+
+    @Test
+    fun `onToggleVisualTransformationPassword toggles state`() {
+        val initial = viewModel.registerState.isPasswordShown
+        viewModel.onToggleVisualTransformationPassword()
+        assertEquals(!initial, viewModel.registerState.isPasswordShown)
+    }
+
+    @Test
+    fun `onToggleVisualTransformationPasswordRepeated toggles state`() {
+        val initial = viewModel.registerState.isPasswordRepeatedShown
+        viewModel.onToggleVisualTransformationPasswordRepeated()
+        assertEquals(!initial, viewModel.registerState.isPasswordRepeatedShown)
+    }
+
+    @Test
+    fun `onRegisterClick sets success state when registration succeeds`() = runTest {
+        whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
+            .thenReturn(RegisterInputValidationType.Valid)
+
+        viewModel.onEmailInputChange("test@email.com")
+        viewModel.onUsernameInputChange("testuser")
+        viewModel.onPasswordInputChange("Password123!")
+        viewModel.onPasswordRepeatedInputChange("Password123!")
+
+        whenever(registerModel.performRegistration(any(), any(), any(), any(), any()))
             .thenReturn(true)
 
-        // now set inputs
-        viewModel.onEmailInputChange(email)
-        viewModel.onUsernameInputChange(username)
-        viewModel.onPasswordInputChange(password)
-        viewModel.onPasswordRepeatedInputChange(password)
-
-        // Act
         viewModel.onRegisterClick()
         advanceUntilIdle()
 
-        // Assert
-        val state = viewModel.registerState
-        Assert.assertTrue(state.isSuccessfullyRegistered)
-        Assert.assertFalse(state.isLoading)
-        Assert.assertNull(state.errorMessageRegister)
-        Assert.assertFalse(viewModel.showErrorDialog)
+        assertTrue(viewModel.registerState.isSuccessfullyRegistered)
+        assertFalse(viewModel.registerState.isLoading)
+        assertFalse(viewModel.showErrorDialog)
     }
 
     @Test
-    fun `onRegisterClick with username taken should show username taken error`() = runTest {
-        val email = "test@example.com"
-        val username = "taken_username"
-        val password = "Password123!"
-
+    fun `onRegisterClick shows error when username is taken`() = runTest {
         whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
             .thenReturn(RegisterInputValidationType.Valid)
 
-        whenever(authRepository.register(any(), any(), any(), any(), any()))
-            .thenAnswer {
-                val isUsernameTaken = it.getArgument<MutableState<Boolean>>(3)
-                isUsernameTaken.value = true
-                false
+        viewModel.onEmailInputChange("taken@email.com")
+        viewModel.onUsernameInputChange("takenusername")
+        viewModel.onPasswordInputChange("Password123!")
+        viewModel.onPasswordRepeatedInputChange("Password123!")
+
+        // Simulate model setting username taken
+        whenever(registerModel.performRegistration(
+            any(), any(), any(),
+            check {
+                it.value = true // username taken
+            },
+            any()
+        )).thenReturn(false)
+
+        viewModel.onRegisterClick()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("Username is already taken. Please choose another one.", viewModel.registerState.errorMessageRegister)
+        assertFalse(viewModel.registerState.isSuccessfullyRegistered)
+    }
+
+    @Test
+    fun `onRegisterClick shows error when email is already used`() = runTest {
+        whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
+            .thenReturn(RegisterInputValidationType.Valid)
+
+        viewModel.onEmailInputChange("email@used.com")
+        viewModel.onUsernameInputChange("newuser")
+        viewModel.onPasswordInputChange("Password123!")
+        viewModel.onPasswordRepeatedInputChange("Password123!")
+
+        whenever(registerModel.performRegistration(
+            any(), any(), any(),
+            any(),
+            check {
+                it.value = true // email already used
             }
-
-        viewModel.onEmailInputChange(email)
-        viewModel.onUsernameInputChange(username)
-        viewModel.onPasswordInputChange(password)
-        viewModel.onPasswordRepeatedInputChange(password)
+        )).thenReturn(false)
 
         viewModel.onRegisterClick()
         advanceUntilIdle()
 
-        val state = viewModel.registerState
-        Assert.assertFalse(state.isSuccessfullyRegistered)
-        Assert.assertFalse(state.isLoading)
-        Assert.assertEquals("Username is already taken. Please choose another one.", state.errorMessageRegister)
-        Assert.assertTrue(viewModel.showErrorDialog)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("An account already exists with this email.", viewModel.registerState.errorMessageRegister)
+        assertFalse(viewModel.registerState.isSuccessfullyRegistered)
     }
 
     @Test
-    fun `onRegisterClick with email already used should show email used error`() = runTest {
-        val email = "used@example.com"
-        val username = "unique_username"
-        val password = "Password123!"
-
+    fun `onRegisterClick shows default error when registration fails generically`() = runTest {
         whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
             .thenReturn(RegisterInputValidationType.Valid)
 
-        whenever(authRepository.register(any(), any(), any(), any(), any()))
-            .thenAnswer {
-                val isEmailUsed = it.getArgument<MutableState<Boolean>>(4)
-                isEmailUsed.value = true
-                false
-            }
+        viewModel.onEmailInputChange("test@email.com")
+        viewModel.onUsernameInputChange("testuser")
+        viewModel.onPasswordInputChange("Password123!")
+        viewModel.onPasswordRepeatedInputChange("Password123!")
 
-        viewModel.onEmailInputChange(email)
-        viewModel.onUsernameInputChange(username)
-        viewModel.onPasswordInputChange(password)
-        viewModel.onPasswordRepeatedInputChange(password)
+        whenever(registerModel.performRegistration(any(), any(), any(), any(), any()))
+            .thenReturn(false)
 
         viewModel.onRegisterClick()
         advanceUntilIdle()
 
-        val state = viewModel.registerState
-        Assert.assertFalse(state.isSuccessfullyRegistered)
-        Assert.assertFalse(state.isLoading)
-        Assert.assertEquals("An account already exists with this email.", state.errorMessageRegister)
-        Assert.assertTrue(viewModel.showErrorDialog)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("Could not register. Please verify your internet connection and try again.", viewModel.registerState.errorMessageRegister)
     }
 
     @Test
-    fun `onRegisterClick with failure and no specific reason should show default error`() = runTest {
-        val email = "test@example.com"
-        val username = "valid_username"
-        val password = "Password123!"
-
+    fun `onRegisterClick shows default error when exception is thrown`() = runTest {
         whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
             .thenReturn(RegisterInputValidationType.Valid)
 
-        whenever(authRepository.register(any(), any(), any(), any(), any()))
-            .thenReturn(false) // No flags updated
+        viewModel.onEmailInputChange("test@email.com")
+        viewModel.onUsernameInputChange("testuser")
+        viewModel.onPasswordInputChange("Password123!")
+        viewModel.onPasswordRepeatedInputChange("Password123!")
 
-        viewModel.onEmailInputChange(email)
-        viewModel.onUsernameInputChange(username)
-        viewModel.onPasswordInputChange(password)
-        viewModel.onPasswordRepeatedInputChange(password)
+        whenever(registerModel.performRegistration(any(), any(), any(), any(), any()))
+            .thenThrow(RuntimeException("Oops"))
 
         viewModel.onRegisterClick()
         advanceUntilIdle()
 
-        val state = viewModel.registerState
-        Assert.assertFalse(state.isSuccessfullyRegistered)
-        Assert.assertFalse(state.isLoading)
-        Assert.assertEquals("Could not register. Please verify your internet connection and try again.", state.errorMessageRegister)
-        Assert.assertTrue(viewModel.showErrorDialog)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("Could not register. Please verify your internet connection and try again.", viewModel.registerState.errorMessageRegister)
     }
 
+    @Test
+    fun `checkInputValidation handles invalid email`() {
+        whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
+            .thenReturn(RegisterInputValidationType.InvalidEmail)
+
+        viewModel.onEmailInputChange("invalid-email")
+        viewModel.onPasswordInputChange("pass")
+        viewModel.onUsernameInputChange("user")
+        viewModel.onPasswordRepeatedInputChange("pass")
+
+        assertFalse(viewModel.registerState.isInputValid)
+        assertEquals("Please enter a valid email", viewModel.registerState.errorMessageInput)
+    }
+
+    @Test
+    fun `checkInputValidation handles empty field`() {
+        whenever(validateRegisterInputUseCase(any(), any(), any(), any()))
+            .thenReturn(RegisterInputValidationType.EmptyField)
+
+        viewModel.onEmailInputChange("")
+        viewModel.onPasswordInputChange("")
+        viewModel.onUsernameInputChange("")
+        viewModel.onPasswordRepeatedInputChange("")
+
+        assertFalse(viewModel.registerState.isInputValid)
+        assertEquals("Please fill in empty fields", viewModel.registerState.errorMessageInput)
+    }
 }

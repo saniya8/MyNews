@@ -15,13 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.mynews.domain.entities.BottomNavBarItem
 import com.example.mynews.presentation.theme.BlueGrey
 import com.example.mynews.presentation.theme.BrightBlue
 import com.example.mynews.presentation.theme.DarkText
 import com.example.mynews.utils.AppScreenRoutes
-
-// Purpose: bottom navigation bar that is shared among multiple screens
 
 @Composable
 fun BottomNavBar (

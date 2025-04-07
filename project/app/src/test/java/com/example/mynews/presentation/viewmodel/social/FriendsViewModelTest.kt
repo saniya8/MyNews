@@ -1,358 +1,170 @@
 package com.example.mynews.presentation.viewmodel.social
 
+
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.utils.logger.NoOpLogger
-import com.example.mynews.domain.entities.Mission
-import com.example.mynews.domain.repositories.FriendsRepository
-import com.example.mynews.domain.repositories.GoalsRepository
-import com.example.mynews.domain.repositories.UserRepository
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.MutableLiveData
+import com.example.mynews.domain.model.social.FriendsModel
+import com.example.mynews.domain.model.user.UserModel
+import com.example.mynews.domain.result.AddFriendResult
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.*
-import org.mockito.junit.MockitoJUnitRunner
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.doAnswer
-import org.mockito.kotlin.any as mockitoAny
-import com.example.mynews.presentation.state.AddFriendResult
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
 class FriendsViewModelTest {
 
-    @get:Rule
-    val instantExecutorRule = InstantTaskExecutorRule()
+    @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
+    @get:Rule val mainDispatcherRule = MainDispatcherRule()
 
-    private val testDispatcher = StandardTestDispatcher()
-
-    @Mock
-    private lateinit var userRepository: UserRepository
-
-    @Mock
-    private lateinit var friendsRepository: FriendsRepository
-
-    @Mock
-    private lateinit var goalsRepository: GoalsRepository
+    private val userModel: UserModel = mock()
+    private val friendsModel: FriendsModel = mock()
+    private val logger: Logger = mock()
 
     private lateinit var viewModel: FriendsViewModel
 
+    private val testUserId = "test-user"
+    private val testFriendUsername = "friend123"
+
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher)
-        viewModel = FriendsViewModel(
-            userRepository = userRepository,
-            friendsRepository = friendsRepository,
-            goalsRepository = goalsRepository,
-            logger = NoOpLogger()
-        )
+        whenever(friendsModel.friends).thenReturn(MutableLiveData(emptyList()))
+        whenever(friendsModel.searchQuery).thenReturn(MutableStateFlow(""))
+        whenever(friendsModel.recentlyAddedFriend).thenReturn(MutableStateFlow(null))
+
+        viewModel = FriendsViewModel(userModel, friendsModel, logger)
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchFriends()
 
     @Test
-    fun `fetchFriends should update friends LiveData with fetched friend usernames`() = runTest {
-        val fakeUserId = "user123"
-        val expectedFriends = listOf("alice", "bob")
+    fun `updateSearchQuery delegates to model`() {
+        viewModel.updateSearchQuery("abc")
+        verify(friendsModel).updateSearchQuery("abc")
+    }
 
-        // Stub user ID
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
+    @Test
+    fun `fetchFriends calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
 
-        // Stub callback
-        doAnswer { invocation ->
-            val callback = invocation.getArgument<(List<String>) -> Unit>(1)
-            callback(expectedFriends)
-            null
-        }.whenever(friendsRepository).getFriendUsernames(any(), any())
-
-        // Act
         viewModel.fetchFriends()
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        Assert.assertEquals(expectedFriends, viewModel.friends.value)
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: addFriend()
-
-    @Test
-    fun `addFriend should update recentlyAddedFriend and friends list on success`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val friendUsername = "alice"
-        val normalizedFriendUsername = "alice" // trimmed + lowercased
-        val mockFriendsList = listOf("alice", "bob")
-
-        // Stub user ID
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        // Stub addFriend to return success
-        whenever(
-            friendsRepository.addFriend(
-                eq(fakeUserId),
-                eq(friendUsername),
-                mockitoAny() // properly use matcher here
-            )
-        ).thenReturn(AddFriendResult.Success)
-
-        // Stub getFriendUsernames to invoke callback
-        doAnswer { invocation ->
-            val callback = invocation.getArgument<(List<String>) -> Unit>(1)
-            callback(mockFriendsList)
-            null
-        }.whenever(friendsRepository).getFriendUsernames(eq(fakeUserId), mockitoAny())
-
-        // Act
-        viewModel.addFriend(friendUsername)
         advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(normalizedFriendUsername, viewModel.recentlyAddedFriend.value)
-        Assert.assertEquals(mockFriendsList, viewModel.friends.value)
+        verify(userModel).getCurrentUserId()
+        verify(friendsModel).fetchFriends(testUserId)
     }
 
     @Test
-    fun `addFriend should show self-add error dialog when user tries to add themselves`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val friendUsername = "user123"
+    fun `fetchFriends logs error when user ID is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        whenever(
-            friendsRepository.addFriend(
-                eq(fakeUserId),
-                eq(friendUsername),
-                mockitoAny()
-            )
-        ).thenReturn(AddFriendResult.SelfAddAttempt)
-
-        // Act
-        viewModel.addFriend(friendUsername)
+        viewModel.fetchFriends()
         advanceUntilIdle()
 
-        // Assert
-        Assert.assertTrue(viewModel.showErrorDialog)
-        Assert.assertEquals("You cannot add yourself \n as a friend.", viewModel.errorDialogMessage)
+        verify(logger).e(eq("FriendsViewModel"), eq("Error: User ID is null, cannot fetch friends"))
+        verify(friendsModel, never()).fetchFriends(any())
     }
 
     @Test
-    fun `addFriend should show already added friend error dialog when friend already exists`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val friendUsername = "alice"
+    fun `addFriend handles SelfAddAttempt result correctly`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+        whenever(friendsModel.addFriend(any(), any())).thenReturn(AddFriendResult.SelfAddAttempt)
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        whenever(
-            friendsRepository.addFriend(
-                eq(fakeUserId),
-                eq(friendUsername),
-                mockitoAny()
-            )
-        ).thenReturn(AddFriendResult.AlreadyAddedFriend)
-
-        // Act
-        viewModel.addFriend(friendUsername)
+        viewModel.addFriend(testFriendUsername)
         advanceUntilIdle()
 
-        // Assert
-        Assert.assertTrue(viewModel.showErrorDialog)
-        Assert.assertEquals("alice is already your friend.", viewModel.errorDialogMessage)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("You cannot add yourself \n as a friend.", viewModel.errorDialogMessage)
     }
 
     @Test
-    fun `addFriend should show user not found error dialog when username does not exist`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val friendUsername = "unknownUser"
+    fun `addFriend handles AlreadyAddedFriend result correctly`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+        whenever(friendsModel.addFriend(any(), any())).thenReturn(AddFriendResult.AlreadyAddedFriend)
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        whenever(
-            friendsRepository.addFriend(
-                eq(fakeUserId),
-                eq(friendUsername),
-                mockitoAny()
-            )
-        ).thenReturn(AddFriendResult.UserNotFound)
-
-        // Act
-        viewModel.addFriend(friendUsername)
+        viewModel.addFriend(testFriendUsername)
         advanceUntilIdle()
 
-        // Assert
-        Assert.assertTrue(viewModel.showErrorDialog)
-        Assert.assertEquals("This user does not exist. \n Please check the username.", viewModel.errorDialogMessage)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("$testFriendUsername is already your friend.", viewModel.errorDialogMessage)
     }
 
     @Test
-    fun `addFriend should show default error dialog on unknown error`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val friendUsername = "alice"
+    fun `addFriend handles UserNotFound result correctly`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+        whenever(friendsModel.addFriend(any(), any())).thenReturn(AddFriendResult.UserNotFound)
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        whenever(
-            friendsRepository.addFriend(
-                eq(fakeUserId),
-                eq(friendUsername),
-                mockitoAny()
-            )
-        ).thenReturn(AddFriendResult.Error("Something bad happened"))
-
-        // Act
-        viewModel.addFriend(friendUsername)
+        viewModel.addFriend(testFriendUsername)
         advanceUntilIdle()
 
-        // Assert
-        Assert.assertTrue(viewModel.showErrorDialog)
-        Assert.assertEquals("Something went wrong. \n Please try again.", viewModel.errorDialogMessage)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("This user does not exist. \n Please check the username.", viewModel.errorDialogMessage)
     }
 
-    // ---------------------------------------------------------
-
-    // TESTING: removeFriend()
-
     @Test
-    fun `removeFriend should fetch updated friends and update mission on success`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val friendUsername = "alice"
+    fun `addFriend handles generic Error result correctly`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+        whenever(friendsModel.addFriend(any(), any()))
+            .thenReturn(AddFriendResult.Error("something went wrong"))
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-        whenever(friendsRepository.removeFriend(eq(fakeUserId), eq(friendUsername))).thenReturn(true)
-
-        // Stub getFriendUsernames
-        val updatedFriendsList = listOf("bob", "charlie")
-        doAnswer {
-            val callback = it.getArgument<(List<String>) -> Unit>(1)
-            callback(updatedFriendsList)
-            null
-        }.whenever(friendsRepository).getFriendUsernames(eq(fakeUserId), any())
-
-        // Stub mission stuff
-        whenever(friendsRepository.getFriendCount(fakeUserId)).thenReturn(2)
-        whenever(goalsRepository.getMissions(fakeUserId)).thenReturn(emptyList()) // no missions to update
-
-        // Act
-        viewModel.removeFriend(friendUsername)
+        viewModel.addFriend(testFriendUsername)
         advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(updatedFriendsList, viewModel.friends.value)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("Something went wrong. \n Please try again.", viewModel.errorDialogMessage)
     }
 
+
+
     @Test
-    fun `removeFriend should not update state when repository returns false`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val friendUsername = "alice"
-
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-        whenever(friendsRepository.removeFriend(eq(fakeUserId), eq(friendUsername))).thenReturn(false)
-
-        // Act
-        viewModel.removeFriend(friendUsername)
+    fun `addFriend skips empty username`() = runTest {
+        viewModel.addFriend("")
         advanceUntilIdle()
 
-        // Assert
-        // friends list should remain null or unchanged
-        Assert.assertNull(viewModel.friends.value)
-    }
-
-
-    // ---------------------------------------------------------
-
-    // TESTING: updateAddFriendsMission()
-
-    @Test
-    fun `updateAddFriendsMission should complete mission when friend count meets target`() = runTest {
-        // Arrange
-        val userId = "user123"
-        val mission = Mission(
-            id = "m1",
-            name = "Add 5 Friends",
-            description = "Add 5 friends to complete this mission.",
-            targetCount = 5,
-            currentCount = 3,
-            isCompleted = false,
-            type = "add_friend"
-        )
-
-        whenever(friendsRepository.getFriendCount(userId)).thenReturn(5)
-        whenever(goalsRepository.getMissions(userId)).thenReturn(listOf(mission))
-
-        // Act
-        viewModel.updateAddFriendsMission(userId)
-
-        // Assert
-        verify(goalsRepository).updateMissionProgress(userId, mission.id, 5)
-        verify(goalsRepository).markMissionComplete(userId, mission.id)
+        verify(userModel, never()).getCurrentUserId()
+        verify(friendsModel, never()).addFriend(any(), any())
     }
 
     @Test
-    fun `updateAddFriendsMission should update progress only when target not yet met`() = runTest {
-        // Arrange
-        val userId = "user123"
-        val mission = Mission(
-            id = "m2",
-            name = "Add 10 Friends",
-            description = "Add 10 friends to complete this mission.",
-            targetCount = 10,
-            currentCount = 2,
-            isCompleted = false,
-            type = "add_friend"
-        )
+    fun `addFriend logs error if user ID is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
 
-        whenever(friendsRepository.getFriendCount(userId)).thenReturn(5)
-        whenever(goalsRepository.getMissions(userId)).thenReturn(listOf(mission))
+        viewModel.addFriend(testFriendUsername)
+        advanceUntilIdle()
 
-        // Act
-        viewModel.updateAddFriendsMission(userId)
-
-        // Assert
-        verify(goalsRepository).updateMissionProgress(userId, mission.id, 5)
-        verify(goalsRepository, never()).markMissionComplete(any(), any())
+        verify(logger).e(eq("FriendsViewModel"), eq("Error: User ID is null, cannot fetch friends"))
+        verify(friendsModel, never()).addFriend(any(), any())
     }
 
     @Test
-    fun `updateAddFriendsMission should skip already completed missions`() = runTest {
-        // Arrange
-        val userId = "user123"
-        val mission = Mission(
-            id = "m3",
-            name = "Add Friends",
-            description = "This mission is already done.",
-            targetCount = 5,
-            currentCount = 5,
-            isCompleted = true,
-            type = "add_friend"
-        )
+    fun `removeFriend calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
 
-        whenever(friendsRepository.getFriendCount(userId)).thenReturn(5)
-        whenever(goalsRepository.getMissions(userId)).thenReturn(listOf(mission))
+        viewModel.removeFriend(testFriendUsername)
+        advanceUntilIdle()
 
-        // Act
-        viewModel.updateAddFriendsMission(userId)
-
-        // Assert
-        verify(goalsRepository, never()).updateMissionProgress(any(), any(), any())
-        verify(goalsRepository, never()).markMissionComplete(any(), any())
+        verify(friendsModel).removeFriend(testUserId, testFriendUsername)
     }
 
+    @Test
+    fun `removeFriend logs error if user ID is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
+
+        viewModel.removeFriend(testFriendUsername)
+        advanceUntilIdle()
+
+        verify(logger).e(eq("FriendsViewModel"), eq("Error: User ID is null, cannot remove friend"))
+        verify(friendsModel, never()).removeFriend(any(), any())
+    }
 }

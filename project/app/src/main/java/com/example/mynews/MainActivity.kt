@@ -1,14 +1,14 @@
 package com.example.mynews
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.navigation.compose.*
-import com.example.mynews.utils.*
-import dagger.hilt.android.AndroidEntryPoint
-import com.google.firebase.auth.FirebaseAuth
-import android.util.Log
+import androidx.navigation.compose.rememberNavController
 import com.example.mynews.presentation.theme.MyNewsTheme
+import com.example.mynews.utils.RootNavigationGraph
+import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
@@ -29,14 +29,5 @@ class MainActivity : ComponentActivity() {
                     RootNavigationGraph(navController)
             }
         }
-
-        /*
-        // TESTING: which countries return sources for filtering by country
-        // used to determine which countries to put in dropdown
-        lifecycleScope.launch {
-            val newsRepository = NewsRepositoryImpl(applicationContext)
-            newsRepository.testCountriesForSources()
-        }*/
-
     }
 }

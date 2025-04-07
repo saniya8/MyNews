@@ -1,6 +1,6 @@
 package com.example.mynews.domain.use_cases
 
-import com.example.mynews.domain.entities.RegisterInputValidationType
+import com.example.mynews.domain.types.RegisterInputValidationType
 import com.example.mynews.utils.containsNumber
 import com.example.mynews.utils.containsSpecialChar
 import com.example.mynews.utils.containsUpperCase
@@ -13,8 +13,8 @@ class ValidateRegisterInputUseCase {
         passwordRepeated: String
     ): RegisterInputValidationType {
 
-        // emails and usernames can't have spaces, so can't be blank (empty or whitespaced)
-        // passwords can have spaces, so just check if empty
+        // emails and usernames cannot be empty or have only spaces
+        // passwords can have spaces
         if (email.isBlank() || username.isBlank() || password.isEmpty() || passwordRepeated.isEmpty()) {
             return RegisterInputValidationType.EmptyField
         }

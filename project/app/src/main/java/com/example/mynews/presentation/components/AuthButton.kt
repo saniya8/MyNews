@@ -11,8 +11,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mynews.presentation.theme.SkyBlue
 
-// Purpose: Authentication Button on the LoginScreen and RegisterScreen
-
 @Composable
 fun AuthButton(
     text: String,
@@ -40,19 +38,14 @@ fun AuthButton(
         enabled = enabled
     ) {
         if(isLoading) { // loading, waiting for result
-            /*CircularProgressIndicator(
-                color = contentColour,
-                modifier = Modifier.size(20.dp),
-            )*/
             LoadingIndicator(
                 color = contentColour,
                 size = 20.dp
             )
-        } else { // not loading
+        } else { 
             Text(
                 text = text,
                 fontWeight = FontWeight.Bold,
-                //style = MaterialTheme.typography.body1,
             )
         }
     }

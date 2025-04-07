@@ -39,10 +39,8 @@ fun ScreenHeader(
     rightContent: (@Composable () -> Unit)? = null,
 
 ) {
-    // Top spacing based on system status bar (matches Scaffold behavior)
-    //val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    val topPadding = if (useTopPadding) { // top padding for future use in non-Scaffold screens
+    val topPadding = if (useTopPadding) { // top padding for use in non-Scaffold screens
         WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     } else {
         0.dp
@@ -52,10 +50,9 @@ fun ScreenHeader(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = topPadding)
-            .height(50.dp) // box size same regardless of if there are icons or not so headers are in line w/ each other
-            //.height(IntrinsicSize.Min) // Makes height depend on content
+            .height(50.dp) // box size fixed for matching header alignment regardless of icons
     ) {
-        // Left icon (optional)
+        // left icon (optional)
         if (leftContent != null) {
             Box(
                 modifier = Modifier
@@ -66,7 +63,7 @@ fun ScreenHeader(
             }
         }
 
-        // Centered Title
+        // centered Title
         Text(
             text = title,
             fontWeight = FontWeight.Bold,
@@ -77,7 +74,7 @@ fun ScreenHeader(
             modifier = Modifier.align(Alignment.Center)
         )
 
-        // Right icon (optional)
+        // right icon (optional)
         if (rightContent != null) {
             Box(
                 modifier = Modifier
@@ -96,7 +93,7 @@ fun ScreenHeaderPreview() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF8F9FB)) // Optional light background for contrast
+            .background(Color(0xFFF8F9FB)) 
     ) {
         val lineColor = Color.Red
 

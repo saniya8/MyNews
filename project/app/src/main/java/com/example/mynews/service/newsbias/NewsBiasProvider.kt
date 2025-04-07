@@ -1,6 +1,7 @@
 package com.example.mynews.service.newsbias
 import android.content.Context
 import android.util.Log
+import com.example.mynews.domain.entities.NewsBiasResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,32 +21,13 @@ import java.io.IOException
 // Note: NewsBiasRatings.json is in src/main/assets/newsbias/NewsBiasRatings.json
 // It has to be kept in src/main/assets for it to be correctly loaded and read
 
-
 class NewsBiasProvider(context: Context) {
 
     // stores mapping of <source_name, media_bias_rating>
-
-
-    //private var biasMap: Map<String, String> = emptyMap()
     private val _biasMap = MutableStateFlow<Map<String, String>>(emptyMap())
     val biasMap: StateFlow<Map<String, String>> = _biasMap // for NewsViewModel
 
-    //private val newsBiasApi = NewsBiasRetrofitInstance.newsBiasApi
     private val newsBiasApi = NewsBiasApiClient()
-
-    /*init {
-        // load the JSON data as a raw string
-        //val jsonString = loadNewsBiasRatings(context)
-        //Log.d("NewsBiasDebug", "Loaded JSON: $jsonString")
-        // parse the JSON raw string and store it as a map
-        //biasMap = parseNewsBiasRatings(jsonString)
-        //Log.d("NewsBiasDebug", "Bias Map: $biasMap")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            _biasMap.value = fetchBiasData(context)
-        }
-
-    }*/
 
     private val context = context.applicationContext // prevent memory leaks
     suspend fun startFetchingBiasData() {
@@ -79,44 +61,7 @@ class NewsBiasProvider(context: Context) {
         val jsonString = loadNewsBiasFromJson(context)
         return parseNewsBiasFromJson(jsonString)
 
-        /*
-
-        try {
-            //throw IOException("Forced failure") // to test that fallback occurred
-            //val response = newsBiasApiClient.getBiasRatings()
-            val response = newsBiasApi.getBiasRatings()
-
-            if (response.isSuccessful) {
-                response.body()?.let {
-                    Log.d("NewsBiasProvider", "successfully fetched bias data from API")
-                    val parsedNewsBias = parseNewsBiasFromApi(it)
-                    return parsedNewsBias
-                }
-            }
-
-            // API responded but was not successful (API request fails but no exception thrown)
-            Log.w("NewsBiasDebug", "API request failed but no exception thrown")
-
-        } catch (e: IOException) { // network errors
-            Log.e("NewsBiasDebug", "Network error: ${e.message}", e)
-
-        } catch (e: HttpException) { // HTTP errors
-            Log.e("NewsBiasDebug", "API error: ${e.message}", e)
-
-        } catch (e: Exception) { // any errors
-            Log.e("NewsBiasDebug", "Error: ${e.message}", e)
-
-        }
-
-        Log.d("NewsBiasDebug", "Falling back to local JSON")
-        val jsonString = loadNewsBiasFromJson(context)
-        return parseNewsBiasFromJson(jsonString) // fallback to local JSON
-
-         */
-
     }
-
-
 
     // loadNewsBiasFromJson: loads the JSON file from the filepath and stores it in a string (ie raw JSON string)
     private fun loadNewsBiasFromJson(context: Context): String {
@@ -139,7 +84,7 @@ class NewsBiasProvider(context: Context) {
         }
     }
 
-    // parse API response into bias map
+    // parseNewsBiasFromApi: parse API response into bias map
     private fun parseNewsBiasFromApi(response: NewsBiasResponse): Map<String, String> {
         return response.allsides_media_bias_ratings.associate {
             it.publication.source_name to it.publication.media_bias_rating
@@ -150,62 +95,9 @@ class NewsBiasProvider(context: Context) {
     private fun parseNewsBiasFromJson(jsonString: String): Map<String, String> {
         try {
 
-            /*
-
-            // Example: jsonString
-
-            {
-              "allsides_media_bias_ratings": [
-                {
-                  "publication": {
-                    "source_name": "CNN",
-                    "media_bias_rating": "Left"
-                  }
-                },
-                {
-                  "publication": {
-                    "source_name": "Fox News",
-                    "media_bias_rating": "Right"
-                  }
-                }
-              ]
-            }
-
-            */
-
-
             // STEP 1
             // deserialize JSON into a NewsBiasResponse object
             // i.e., convert raw JSON string into structured kotlin objects
-
-            /*
-
-            // Example:
-
-                NewsBiasResponse(
-                    allsides_media_bias_ratings = listOf(
-                        AllSidesData(
-                            publication = Publication(
-                                source_name = "CNN",
-                                media_bias_rating = "Left",
-                                allsides_url = "",  // Other fields exist but are ignored in our mapping
-                                source_type = "",
-                                source_url = ""
-                            )
-                        ),
-                        AllSidesData(
-                            publication = Publication(
-                                source_name = "Fox News",
-                                media_bias_rating = "Right",
-                                allsides_url = "",
-                                source_type = "",
-                                source_url = ""
-                            )
-                        )
-                    )
-                )
-
-             */
 
             val jsonParser = Json { ignoreUnknownKeys = true } // to ignore source_type, source_url, and allsides_url fields
             val parsedData = jsonParser.decodeFromString(NewsBiasResponse.serializer(), jsonString)
@@ -214,22 +106,9 @@ class NewsBiasProvider(context: Context) {
 
             // convert the list into a map
 
-            /*
-
-            // Example:
-
-                {
-                    "CNN" -> "Left",
-                    "Fox News" -> "Right"
-                }
-
-
-             */
-
             return parsedData.allsides_media_bias_ratings.associate {
                 it.publication.source_name to it.publication.media_bias_rating
             }
-
 
         } catch (e: Exception) {
             Log.d("NewsBiasDebug", "Error in parseNewsBiasRatings: ${e.message}, e")
@@ -246,80 +125,15 @@ class NewsBiasProvider(context: Context) {
 
         // EXACT MATCHES
 
-        //return biasMap[sourceName] ?: "Neutral"
-
-        // -----------------------------------------
-
-        // FUZZY MATCHES
-
         val biasData = biasMap.first { it.isNotEmpty() }
 
         // check for exact match
         biasData[sourceName]?.let { return it }
 
-        /*
-
-        // fuzzy match 1
-
-        // if no exact match, check for a fuzzy match
-        val closestMatch = biasMap.keys.find { jsonSource ->
-            sourceName.startsWith(jsonSource, ignoreCase = true) ||
-            jsonSource.startsWith(sourceName, ignoreCase = true) // More refined match
-        }
-
-        // if close match found then return its bias, otherwise return Neutral
-        //return closestMatch?.let { biasMap[it] } ?: "Neutral"
-        return if (closestMatch != null && biasMap.containsKey(closestMatch)) {
-            biasMap[closestMatch]!! // guaranteed to be non-null
-        } else {
-            "Neutral"
-        }
-
-         */
-
-        /*
-
-        // fuzzy match 2
-
-        val sourceWords = sourceName.split(" ").map { it.lowercase() } // Convert to lowercase words
-
-
-        val closestMatch = biasMap.keys.find { jsonSource ->
-            val jsonWords = jsonSource.split(" ").map { it.lowercase() } // Convert JSON source to words
-            sourceWords.any { it in jsonWords } // Check if any word in sourceName exists in JSON keys
-        }
-
-        // return the matched bias, else Neutral
-        return closestMatch?.let { biasMap[it] } ?: "Neutral"
-
-         */
-
-        /*
-
-        // fuzzy match 3
-
-        val sourceWords = sourceName.split(" ").map { it.lowercase() } // Convert to lowercase words
-
-        val closestMatch = biasMap.keys
-            .filter { jsonSource ->
-                val jsonWords = jsonSource.split(" ").map { it.lowercase() }
-                sourceWords.any { it in jsonWords }
-            }
-            .minByOrNull { it.length } // prefers shorter, simplet matches matches
-
-        return closestMatch?.let { biasMap[it] } ?: "Neutral"
-
-         */
-
-        // fuzzy match 4
-
-        // good enough for now
-        // some fuzzy issues like
-        // Minneapolis Star Tribune
-        // NBCSports
+        // FUZZY MATCHES
 
         // tokenized fuzzy catching
-        val sourceWords = sourceName.split(" ").map { it.lowercase() }.toSet() // Convert to lowercase words
+        val sourceWords = sourceName.split(" ").map { it.lowercase() }.toSet() // convert to lowercase words
 
         val closestMatch = biasData.keys.map { jsonSource ->
             val jsonWords = jsonSource.split(" ").map { it.lowercase() }.toSet()
@@ -337,8 +151,6 @@ class NewsBiasProvider(context: Context) {
 
         // return the matched bias, else Neutral
         return closestMatch?.let { biasData[it.first] } ?: "Neutral"
-
     }
-
 
 }

@@ -2,7 +2,14 @@ package com.example.mynews.presentation.views.authentication
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
@@ -23,13 +30,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mynews.presentation.components.*
-import com.example.mynews.presentation.viewmodel.authentication.LoginViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.mynews.presentation.components.AuthButton
+import com.example.mynews.presentation.components.FieldEntry
+import com.example.mynews.presentation.components.HeaderBackground
+import com.example.mynews.presentation.components.NavDestinationHelper
 import com.example.mynews.presentation.theme.BlueGrey
 import com.example.mynews.presentation.theme.BrightBlue
 import com.example.mynews.presentation.theme.CaptainBlue
 import com.example.mynews.presentation.theme.SkyBlue
+import com.example.mynews.presentation.viewmodel.authentication.LoginViewModel
 
 // Source: https://www.youtube.com/watch?v=aCjOmyd_62U&t=0s&ab_channel=KApps
 
@@ -40,7 +50,7 @@ fun LoginScreen(
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
 
-    // Show error dialog if needed
+    // show error dialog if needed
     if (loginViewModel.showErrorDialog) {
         AlertDialog(
             onDismissRequest = { loginViewModel.showErrorDialog = false },

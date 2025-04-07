@@ -5,36 +5,60 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
-import com.example.mynews.presentation.theme.CaptainBlue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.mynews.domain.result.DeleteAccountResult
 import com.example.mynews.presentation.components.LoadingIndicator
 import com.example.mynews.presentation.components.ScreenHeader
-import com.example.mynews.presentation.state.DeleteAccountResult
+import com.example.mynews.presentation.theme.CaptainBlue
+import com.example.mynews.presentation.viewmodel.settings.SettingsViewModel
 
 
 @Composable
@@ -51,8 +75,6 @@ fun SettingsScreen(
     val isDeletingAccount by settingsViewModel.isDeletingAccount.collectAsState()
 
 
-
-
     LaunchedEffect(Unit) {
         settingsViewModel.fetchUsername()
         settingsViewModel.fetchEmail()
@@ -63,7 +85,7 @@ fun SettingsScreen(
     LaunchedEffect(logoutState) {
         if (logoutState == true) {
             onNavigateToAuthScreen()
-            settingsViewModel.resetLogoutState() // reset to avoid retriggers
+            settingsViewModel.resetLogoutState() // reset to avoid re-triggers
         }
     }
 
@@ -74,6 +96,7 @@ fun SettingsScreen(
             settingsViewModel.resetDeleteAccountState()
         }
     }
+
 
     val focusManager = LocalFocusManager.current
 
@@ -100,7 +123,7 @@ fun SettingsScreen(
                 // standardized
 
                 ScreenHeader(
-                    useTopPadding = false, //scaffold already adds system padding
+                    useTopPadding = false,
                     title = "Settings",
                 )
 
@@ -110,8 +133,6 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight() // only takes up as much height as needed
-                        //.padding(innerPadding)
-                        //.background(Color.Cyan)
                 ) {
 
                     Text(
@@ -156,13 +177,10 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(70.dp))
 
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        //.padding(innerPadding)
-                        //.background(Color.Green)
                 ) {
 
                     Text(
@@ -201,8 +219,6 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        //.padding(innerPadding)
-                        //.background(Color.Yellow)
                 ) {
 
                     Text(
@@ -234,7 +250,6 @@ fun SettingsScreen(
                     Button(
                         onClick = {
                             settingsViewModel.logout()
-                            //onNavigateToAuthScreen() // done in launched effect
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -265,9 +280,7 @@ fun SettingsScreen(
 
                     Button(
                         onClick = {
-                            //settingsViewModel.logout()
                             showDeleteDialog = true
-                            //onNavigateToAuthScreen()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -280,9 +293,6 @@ fun SettingsScreen(
                     ) {
                         Text("Delete Account")
                     }
-
-
-
 
                 }
                 Spacer(modifier = Modifier.height(10.dp))
@@ -318,13 +328,6 @@ fun SettingsScreen(
                 ) {}, // consumes clicks
             contentAlignment = Alignment.Center
         ) {
-            /*CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.Center) // Center the loading circle
-                    .size(32.dp),
-                color = Color.White,
-                strokeWidth = 4.dp
-            )*/
             LoadingIndicator(
                 color = Color.White
             )
@@ -352,7 +355,7 @@ fun NumWordsToSummarizeField(
         if (hasLoaded) {
             tempInputNumWordsToSummarize = numWordsToSummarize.toString() // load the value from firestore
             hasInitializedInput = true
-            settingsViewModel.resetHasLoadedNumWordsToSummarize() // change hasLoaded to false so it doesnt keep loading from firestore, lets user type freely
+            settingsViewModel.resetHasLoadedNumWordsToSummarize() // change hasLoaded to false so it doesn't keep loading from firestore, lets user type freely
         }
     }
 
@@ -376,7 +379,7 @@ fun NumWordsToSummarizeField(
                     }
 
                 }
-                // Non-numeric input is silently ignored
+                // non-numeric input is silently ignored
             },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
@@ -426,7 +429,7 @@ fun NumWordsToSummarizeField(
                             Text(
                                 text = "Cancel",
                                 color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.labelLarge, // or bodySmall if you want it smaller
+                                style = MaterialTheme.typography.labelLarge,
                                 modifier = Modifier
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
@@ -475,7 +478,6 @@ fun NumWordsToSummarizeField(
 
                         originalNumWordsToSummarize = null
 
-
                     }
                     wasFocused = nowFocused
                 }
@@ -498,8 +500,6 @@ fun DeleteAccountDialog(
     LaunchedEffect(deleteAccountState) {
         showIncorrectPasswordError = deleteAccountState == DeleteAccountResult.IncorrectPassword
     }
-
-
 
     AlertDialog(
         onDismissRequest = onDismiss,

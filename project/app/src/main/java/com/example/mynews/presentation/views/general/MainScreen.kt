@@ -20,7 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mynews.utils.AuthScreen
 import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.components.BottomNavBar
-import com.example.mynews.domain.entities.BottomNavBarItem
+import com.example.mynews.presentation.components.BottomNavBarItem
 import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
 import com.example.mynews.presentation.viewmodel.home.CondensedNewsArticleViewModel
 import com.example.mynews.presentation.viewmodel.home.HomeViewModel
@@ -52,12 +52,6 @@ fun MainScreen(rootNavController: NavHostController,
     val selectedCategory = rememberSaveable { mutableStateOf<String?>(null) } // Track selected category
     val selectedCountry = rememberSaveable { mutableStateOf<String?>(null) } // Track selected country
     val selectedDateRange = rememberSaveable { mutableStateOf<String?>(null) } // Track selected date range
-
-    // selectedCategory can be null if a user deselects, in which case it should fetch
-    // with just the language parameter and not the category parameter
-    // use rememberSaveable instead of remember for selectedCategory since rememberSaveable stores
-    // state in bundle so it survives configuration changes (like navigation) so even if user
-    // navigates to different tabs, their filtering remains
 
     Scaffold(
         bottomBar = {
@@ -130,7 +124,6 @@ fun MainScreen(rootNavController: NavHostController,
 
 // currentRoute only affects the bottom navigation UI (ie which tab is highlighted), NOT
 // the actual navigation behaviour of which screen is shown -> that is in HomeNavGraph
-
 @Composable
 fun currentRoute(navController: NavHostController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()

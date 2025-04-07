@@ -128,13 +128,25 @@ dependencies {
     implementation("org.jsoup:jsoup:1.18.3")
     implementation("org.json:json:20210307")
 
-    // Unit Testing
+    // Unit Testing - Test
     testImplementation("junit:junit:4.13.2") // JUnit 4
     testImplementation("org.mockito:mockito-core:5.11.0") // Mockito fpr mocking
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1") // Mockito for mocking
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3") // coroutines
     testImplementation("app.cash.turbine:turbine:1.0.0") // flow testing
     testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // Unit Testing - Android Test
+
+    // Required to use JUnit4 runner in androidTest/
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    // Needed for  coroutines in instrumented tests
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    // Firebase for instrumented tests (same versions as main ones)
+    androidTestImplementation("com.google.firebase:firebase-auth:23.2.0")
+    androidTestImplementation("com.google.firebase:firebase-firestore-ktx:25.1.2")
+
+
 
 }
 

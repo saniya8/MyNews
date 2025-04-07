@@ -1,118 +1,132 @@
-package com.example.mynews.presentation.viewmodel.home
-
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.service.news.Article
-import com.example.mynews.service.news.Source
-import com.example.mynews.utils.logger.NoOpLogger
-import com.example.mynews.domain.repositories.HomeRepository
-import com.example.mynews.domain.repositories.UserRepository
-import kotlinx.coroutines.Dispatchers
+import com.example.mynews.domain.entities.Article
+import com.example.mynews.domain.model.home.HomeModel
+import com.example.mynews.domain.model.user.UserModel
+import com.example.mynews.presentation.viewmodel.home.HomeViewModel
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.TestDataFactory
+import com.example.mynews.utils.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.*
-import org.mockito.junit.MockitoJUnitRunner
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.reset
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 
-/*@OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
+
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
 
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    @Mock
-    private lateinit var userRepository: UserRepository
+    private val userModel: UserModel = mock()
+    private val homeModel: HomeModel = mock()
+    private val logger: Logger = mock()
 
-    @Mock
-    private lateinit var homeRepository: HomeRepository
-
-    private lateinit var viewModel: HomeViewModel
-
-    private val testDispatcher = StandardTestDispatcher()
+    private val testUserId = "unittestmock1"
+    private val testArticle: Article = TestDataFactory.createIndexedArticle(1)
 
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher)
-        viewModel = HomeViewModel(
-            userRepository = userRepository,
-            homeRepository = homeRepository,
-            logger = NoOpLogger(),
-        )
+        reset(userModel, homeModel, logger)
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchReaction()
 
     @Test
-    fun `fetchReaction should return correct reaction for article`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val fakeReaction = "like"
-        val fakeArticle = Article(
-            author = "Jane",
-            content = "Test content",
-            description = "Test desc",
-            publishedAt = "2024-04-06",
-            source = Source(id = "source1", name = "TestSource"),
-            title = "Test Article",
-            url = "https://example.com/article",
-            urlToImage = "https://example.com/image.jpg"
-        )
+    fun `init calls trackReactions when user is valid`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-        whenever(homeRepository.getReaction(fakeUserId, fakeArticle)).thenReturn(fakeReaction)
+        val viewModel = HomeViewModel(userModel, homeModel, logger)
+        advanceUntilIdle()
+
+        verify(homeModel).trackReactions(testUserId)
+        verify(logger, never()).e(any(), any())
+    }
+
+    @Test
+    fun `init logs error when user is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
+
+        val viewModel = HomeViewModel(userModel, homeModel, logger)
+        advanceUntilIdle()
+
+        verify(logger).e("HomeViewModel", "No user logged in. User ID is null or empty")
+        verify(homeModel, never()).trackReactions(any())
+    }
+
+    @Test
+    fun `fetchReaction calls model and returns result`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+        whenever(homeModel.getReaction(testUserId, testArticle)).thenReturn("😂")
 
         var result: String? = null
+        val viewModel = HomeViewModel(userModel, homeModel, logger)
 
-        // Act
-        viewModel.fetchReaction(fakeArticle) { reaction ->
+        viewModel.fetchReaction(testArticle) { reaction ->
             result = reaction
         }
-        testDispatcher.scheduler.advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(fakeReaction, result)
+        advanceUntilIdle()
+
+        verify(homeModel).getReaction(testUserId, testArticle)
+        assert(result == "😂")
     }
-
-    // ---------------------------------------------------------
-
-    // TESTING: updateReaction()
 
     @Test
-    fun `updateReaction should call repository with correct userID and reaction`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val fakeReaction = "dislike"
-        val fakeArticle = Article(
-            author = "Author",
-            content = "Some content",
-            description = "Some desc",
-            publishedAt = "2024-04-06",
-            source = Source(id = "source1", name = "TestSource"),
-            title = "Article Title",
-            url = "https://example.com/article",
-            urlToImage = "https://example.com/image.jpg"
-        )
+    fun `fetchReaction logs error when user is null`() = runTest {
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
 
-        // Act
-        viewModel.updateReaction(fakeArticle, fakeReaction)
-        testDispatcher.scheduler.advanceUntilIdle()
+        val viewModel = HomeViewModel(userModel, homeModel, logger)
 
-        // Assert
-        verify(homeRepository).setReaction(fakeUserId, fakeArticle, fakeReaction)
+        var wasCalled = false
+
+        viewModel.fetchReaction(testArticle) { wasCalled = true }
+
+        advanceUntilIdle()
+
+        verify(logger, times(2)).e("HomeViewModel", "No user logged in. User ID is null or empty")
+        verify(homeModel, never()).getReaction(any(), any())
+        assert(!wasCalled)
     }
 
-}
 
- */
+
+    @Test
+    fun `updateReaction calls model with correct data`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+
+        val viewModel = HomeViewModel(userModel, homeModel, logger)
+        viewModel.updateReaction(testArticle, "❤️")
+
+        advanceUntilIdle()
+
+        verify(homeModel).setReaction(testUserId, testArticle, "❤️")
+    }
+
+    @Test
+    fun `updateReaction logs error when user is null`() = runTest {
+
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
+
+        val viewModel = HomeViewModel(userModel, homeModel, logger)
+
+        viewModel.updateReaction(testArticle, "😡")
+
+        advanceUntilIdle()
+
+        verify(logger, times(2)).e("HomeViewModel", "No user logged in. User ID is null or empty")
+        verify(homeModel, never()).setReaction(any(), any(), any())
+    }
+
+
+}

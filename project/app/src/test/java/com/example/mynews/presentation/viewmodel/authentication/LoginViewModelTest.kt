@@ -1,150 +1,164 @@
 package com.example.mynews.presentation.viewmodel.authentication
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.utils.logger.NoOpLogger
-import com.example.mynews.domain.entities.LoginInputValidationType
-import com.example.mynews.domain.repositories.AuthRepository
+import com.example.mynews.domain.model.authentication.LoginModel
+import com.example.mynews.domain.types.LoginInputValidationType
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.logger.Logger
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-// note: validating login inputs is tested in (test) com.example.mynews/domain/use_cases/ValidateLoginInputUseCaseTest
-
-@OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
 class LoginViewModelTest {
 
     @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
+    val mainDispatcherRule = MainDispatcherRule()
 
-    private val testDispatcher = StandardTestDispatcher()
-
-    @Mock
-    private lateinit var authRepository: AuthRepository
-
-    @Mock
-    private lateinit var validateLoginInputUseCase: ValidateLoginInputUseCase
+    private val validateLoginInputUseCase: ValidateLoginInputUseCase = mock()
+    private val loginModel: LoginModel = mock()
+    private val logger: Logger = mock()
 
     private lateinit var viewModel: LoginViewModel
 
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher)
-        viewModel = LoginViewModel(
-            validateLoginInputUseCase = validateLoginInputUseCase,
-            authRepository = authRepository,
-            logger = NoOpLogger()
-        )
+        MockitoAnnotations.openMocks(this)
+        viewModel = LoginViewModel(validateLoginInputUseCase, loginModel, logger)
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: onEmailInputChange()
-
 
     @Test
-    fun `onEmailInputChange should update email and validate input`() = runTest {
-        val testEmail = "test@example.com"
-        val currentPassword = viewModel.loginState.passwordInput
+    fun `onEmailInputChange updates state and triggers validation`() {
+        whenever(validateLoginInputUseCase(any(), any())).thenReturn(LoginInputValidationType.Valid)
 
-        whenever(validateLoginInputUseCase(testEmail, currentPassword))
-            .thenReturn(LoginInputValidationType.Valid)
+        viewModel.onEmailInputChange("test@email.com")
 
-        viewModel.onEmailInputChange(testEmail)
-
-        Assert.assertEquals(testEmail, viewModel.loginState.emailInput)
-        Assert.assertTrue(viewModel.loginState.isInputValid)
-        Assert.assertNull(viewModel.loginState.errorMessageInput)
+        assertEquals("test@email.com", viewModel.loginState.emailInput)
+        assertNull(viewModel.loginState.errorMessageInput)
+        assertTrue(viewModel.loginState.isInputValid)
     }
 
-    // ---------------------------------------------------------
-
-    // TESTING: onPasswordInputChange()
-
     @Test
-    fun `onPasswordInputChange should update password and validate input`() = runTest {
-        val testPassword = "Password123!"
-        val currentEmail = viewModel.loginState.emailInput
+    fun `onPasswordInputChange updates state and triggers validation`() {
+        whenever(validateLoginInputUseCase(any(), any())).thenReturn(LoginInputValidationType.Valid)
 
-        whenever(validateLoginInputUseCase(currentEmail, testPassword))
-            .thenReturn(LoginInputValidationType.Valid)
+        viewModel.onPasswordInputChange("password123")
 
-        viewModel.onPasswordInputChange(testPassword)
-
-        Assert.assertEquals(testPassword, viewModel.loginState.passwordInput)
-        Assert.assertTrue(viewModel.loginState.isInputValid)
-        Assert.assertNull(viewModel.loginState.errorMessageInput)
+        assertEquals("password123", viewModel.loginState.passwordInput)
+        assertNull(viewModel.loginState.errorMessageInput)
+        assertTrue(viewModel.loginState.isInputValid)
     }
 
-    // ---------------------------------------------------------
-
-    // TESTING: onLoginClick()
+    @Test
+    fun `onToggleVisualTransformation toggles isPasswordShown`() {
+        val initialState = viewModel.loginState.isPasswordShown
+        viewModel.onToggleVisualTransformation()
+        assertEquals(!initialState, viewModel.loginState.isPasswordShown)
+    }
 
     @Test
-    fun `onLoginClick with valid input and success should update state to success`() = runTest {
-        val email = "test@example.com"
-        val password = "Password123!"
-
-        // Stub ALL validation input combos
+    fun `onLoginClick sets success state on valid login`() = runTest {
+        // stub validation so valid result is returned
         whenever(validateLoginInputUseCase(any(), any()))
             .thenReturn(LoginInputValidationType.Valid)
 
-        // Stub login result
-        whenever(authRepository.login(email, password)).thenReturn(true)
+        viewModel.onEmailInputChange("test@email.com")
+        viewModel.onPasswordInputChange("pass123")
 
-        // Set inputs
-        viewModel.onEmailInputChange(email)
-        viewModel.onPasswordInputChange(password)
+        // stub login success
+        whenever(loginModel.performLogin(any(), any())).thenReturn(true)
 
-        // Act
         viewModel.onLoginClick()
         advanceUntilIdle()
 
-        // Assert
-        val state = viewModel.loginState
-        Assert.assertTrue(state.isSuccessfullyLoggedIn)
-        Assert.assertFalse(state.isLoading)
-        Assert.assertNull(state.errorMessageLogin)
-        Assert.assertFalse(viewModel.showErrorDialog)
+        assertTrue(viewModel.loginState.isSuccessfullyLoggedIn)
+        assertFalse(viewModel.loginState.isLoading)
+        assertFalse(viewModel.showErrorDialog)
     }
 
-    @Test
-    fun `onLoginClick with valid input and failed login should show error`() = runTest {
-        val email = "test@example.com"
-        val password = "Password123!"
 
-        // Stub validation to always return valid for any input
+    @Test
+    fun `onLoginClick shows error dialog when login fails`() = runTest {
+        // stub validation so valid result returned
         whenever(validateLoginInputUseCase(any(), any()))
             .thenReturn(LoginInputValidationType.Valid)
 
-        // Stub login result to simulate failure
-        whenever(authRepository.login(email, password)).thenReturn(false)
+        viewModel.onEmailInputChange("test@email.com")
+        viewModel.onPasswordInputChange("pass123")
 
-        // Set inputs
-        viewModel.onEmailInputChange(email)
-        viewModel.onPasswordInputChange(password)
+        // stub login failure
+        whenever(loginModel.performLogin(any(), any())).thenReturn(false)
 
-        // Act
         viewModel.onLoginClick()
         advanceUntilIdle()
 
-        // Assert
-        val state = viewModel.loginState
-        Assert.assertFalse(state.isSuccessfullyLoggedIn)
-        Assert.assertFalse(state.isLoading)
-        Assert.assertEquals("Could not login", state.errorMessageLogin)
-        Assert.assertTrue(viewModel.showErrorDialog)
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("Could not login", viewModel.loginState.errorMessageLogin)
+        assertFalse(viewModel.loginState.isSuccessfullyLoggedIn)
+        assertFalse(viewModel.loginState.isLoading)
+    }
+
+    @Test
+    fun `onLoginClick shows error dialog when login throws exception`() = runTest {
+        // stub validation so valid result retuned
+        whenever(validateLoginInputUseCase(any(), any()))
+            .thenReturn(LoginInputValidationType.Valid)
+
+        viewModel.onEmailInputChange("test@email.com")
+        viewModel.onPasswordInputChange("pass123")
+
+        // simulate login crash
+        whenever(loginModel.performLogin(any(), any()))
+            .thenThrow(RuntimeException("Oops"))
+
+        viewModel.onLoginClick()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.showErrorDialog)
+        assertEquals("Could not login", viewModel.loginState.errorMessageLogin)
+        assertFalse(viewModel.loginState.isSuccessfullyLoggedIn)
+        assertFalse(viewModel.loginState.isLoading)
+    }
+
+    @Test
+    fun `checkInputValidation sets error for empty fields`() {
+        whenever(validateLoginInputUseCase(any(), any())).thenReturn(LoginInputValidationType.EmptyField)
+
+        viewModel.onEmailInputChange("")
+        viewModel.onPasswordInputChange("")
+
+        assertFalse(viewModel.loginState.isInputValid)
+        assertEquals("Please fill in empty fields", viewModel.loginState.errorMessageInput)
+    }
+
+    @Test
+    fun `checkInputValidation sets error for invalid email`() {
+        whenever(validateLoginInputUseCase(any(), any())).thenReturn(LoginInputValidationType.InvalidEmail)
+
+        viewModel.onEmailInputChange("invalid-email")
+        viewModel.onPasswordInputChange("password123")
+
+        assertFalse(viewModel.loginState.isInputValid)
+        assertEquals("Please enter a valid email", viewModel.loginState.errorMessageInput)
+    }
+
+    @Test
+    fun `checkInputValidation sets valid state when input is valid`() {
+        whenever(validateLoginInputUseCase(any(), any())).thenReturn(LoginInputValidationType.Valid)
+
+        viewModel.onEmailInputChange("valid@email.com")
+        viewModel.onPasswordInputChange("password123")
+
+        assertTrue(viewModel.loginState.isInputValid)
+        assertNull(viewModel.loginState.errorMessageInput)
     }
 }

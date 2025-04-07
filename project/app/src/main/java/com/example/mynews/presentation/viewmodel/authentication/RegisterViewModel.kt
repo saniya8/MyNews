@@ -5,11 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.utils.logger.Logger
-import com.example.mynews.domain.entities.RegisterInputValidationType
-import com.example.mynews.domain.repositories.AuthRepository
+import com.example.mynews.domain.model.authentication.RegisterModel
+import com.example.mynews.domain.types.RegisterInputValidationType
 import com.example.mynews.domain.use_cases.ValidateRegisterInputUseCase
 import com.example.mynews.presentation.state.RegisterState
+import com.example.mynews.utils.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val validateRegisterInputUseCase: ValidateRegisterInputUseCase,
-    private val authRepository: AuthRepository,
+    private val registerModel: RegisterModel,
     private val logger: Logger,
 ): ViewModel() {
     var showErrorDialog by mutableStateOf(false)
@@ -63,7 +63,6 @@ class RegisterViewModel @Inject constructor(
         )
     }
 
-    // version 2 - works with version 2 of register in AuthRepositoryImpl
     fun onRegisterClick() {
         viewModelScope.launch {
             registerState = registerState.copy(isLoading = true)
@@ -73,7 +72,7 @@ class RegisterViewModel @Inject constructor(
             _isEmailAlreadyUsed.value = false
 
             try {
-                val registerResult = authRepository.register(
+                val registerResult = registerModel.performRegistration(
                     email = registerState.emailInput, // normalized in authRepository.register
                     username = registerState.usernameInput, // normalized in authRepository.register
                     password = registerState.passwordInput,

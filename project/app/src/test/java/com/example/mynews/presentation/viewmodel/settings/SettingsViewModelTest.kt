@@ -1,230 +1,204 @@
 package com.example.mynews.presentation.viewmodel.settings
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.utils.logger.NoOpLogger
-import com.example.mynews.domain.repositories.AuthRepository
-import com.example.mynews.domain.entities.User
-import com.example.mynews.domain.repositories.SettingsRepository
-import com.example.mynews.domain.repositories.UserRepository
-import com.example.mynews.presentation.state.DeleteAccountResult
-import kotlinx.coroutines.Dispatchers
+import com.example.mynews.domain.model.settings.SettingsModel
+import com.example.mynews.domain.model.user.UserModel
+import com.example.mynews.domain.result.DeleteAccountResult
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.*
-import org.mockito.junit.MockitoJUnitRunner
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 
+
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
 class SettingsViewModelTest {
 
     @get:Rule
-    val instantExecutorRule = InstantTaskExecutorRule()
+    val mainDispatcherRule = MainDispatcherRule()
 
-    @Mock
-    private lateinit var authRepository: AuthRepository
-
-    @Mock
-    private lateinit var userRepository: UserRepository
-
-    @Mock
-    private lateinit var settingsRepository: SettingsRepository
+    private val userModel: UserModel = mock()
+    private val settingsModel: SettingsModel = mock()
+    private val logger: Logger = mock()
 
     private lateinit var viewModel: SettingsViewModel
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val testUserId = "mock-user-123"
+    private val testPassword = "securePassword123"
 
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher)
+        whenever(settingsModel.username).thenReturn(MutableStateFlow("TestUser"))
+        whenever(settingsModel.email).thenReturn(MutableStateFlow("test@email.com"))
+        whenever(settingsModel.numWordsToSummarize).thenReturn(MutableStateFlow(100))
 
-        viewModel = SettingsViewModel(
-            authRepository = authRepository,
-            userRepository = userRepository,
-            settingsRepository = settingsRepository,
-            logger = NoOpLogger(),
-        )
+        viewModel = SettingsViewModel(userModel, settingsModel, logger)
+
+        reset(userModel, settingsModel, logger)
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchNumWordsToSummarize()
 
     @Test
-    fun `fetchNumWordsToSummarize should update state with value from repository`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val fakeNumWords = 75
+    fun `fetchNumWordsToSummarize calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
 
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-        whenever(settingsRepository.getNumWordsToSummarize(fakeUserId)).thenReturn(fakeNumWords)
-
-        // Act
         viewModel.fetchNumWordsToSummarize()
-        testDispatcher.scheduler.advanceUntilIdle()
+        advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(fakeNumWords, viewModel.numWordsToSummarize.value)
-        Assert.assertTrue(viewModel.hasLoadedNumWordsToSummarize.value)
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: updateNumWordsToSummarize()
-
-    @Test
-    fun `updateNumWordsToSummarize should update value and call repository when input is valid`() = runTest {
-        // Arrange
-        val initialValue = viewModel.numWordsToSummarize.value
-        val validNewValue = 150
-        val fakeUserId = "user123"
-
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        // Act
-        viewModel.updateNumWordsToSummarize(validNewValue)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        Assert.assertEquals(validNewValue, viewModel.numWordsToSummarize.value)
-        verify(settingsRepository).updateNumWordsToSummarize(fakeUserId, validNewValue)
+        verify(userModel).getCurrentUserId()
+        verify(settingsModel).fetchNumWordsToSummarize(testUserId)
+        assert(viewModel.hasLoadedNumWordsToSummarize.value)
     }
 
     @Test
-    fun `updateNumWordsToSummarize should not update value when input is out of range`() = runTest {
-        // Arrange
-        val initialValue = viewModel.numWordsToSummarize.value
-        val invalidNewValue = 30 // out of range (below 50)
+    fun `fetchNumWordsToSummarize logs error when user is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
 
-        // Act
-        viewModel.updateNumWordsToSummarize(invalidNewValue)
-        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.fetchNumWordsToSummarize()
+        advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(initialValue, viewModel.numWordsToSummarize.value)
-        verify(settingsRepository, never()).updateNumWordsToSummarize(any(), any())
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchUsername()
-
-    @Test
-    fun `fetchUsername should set username from userRepository`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val fakeEmail = "user123@gmailcom"
-        val fakeUsername = "TestUser"
-
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-        whenever(userRepository.getUserById(fakeUserId)).thenReturn(
-            User(email = fakeEmail,
-                 uid = fakeUserId,
-                 username = fakeUsername,
-                 loggedIn = true)
-            )
-
-        // Act
-        viewModel.fetchUsername()
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        Assert.assertEquals(fakeUsername, viewModel.username.value)
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchEmail()
-
-    @Test
-    fun `fetchEmail should set email from userRepository`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val fakeEmail = "user123@gmailcom"
-        val fakeUsername = "TestUser"
-
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-        whenever(userRepository.getUserById(fakeUserId)).thenReturn(
-            User(email = fakeEmail,
-                uid = fakeUserId,
-                username = fakeUsername,
-                loggedIn = true)
+        verify(logger).e(
+            eq("SettingsViewModel"),
+            eq("No user logged in. User ID is null or empty")
         )
+        verify(settingsModel, never()).fetchNumWordsToSummarize(any())
+    }
 
-        // Act
+    @Test
+    fun `updateNumWordsToSummarize calls model with valid user if in range`() = runTest {
+        val newNumWords = 150
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+
+        viewModel.updateNumWordsToSummarize(newNumWords)
+        advanceUntilIdle()
+
+        verify(logger).d("CondensedSettings", "Updated numWordsToSummarize to $newNumWords")
+        verify(settingsModel).updateNumWordsToSummarize(testUserId, newNumWords)
+    }
+
+    @Test
+    fun `updateNumWordsToSummarize logs debug if out of range`() {
+        val outOfRange = 300
+        viewModel.updateNumWordsToSummarize(outOfRange)
+
+        verify(logger).d("SettingsDebug", "Out of range $outOfRange")
+        verifyNoInteractions(userModel, settingsModel)
+    }
+
+    @Test
+    fun `updateNumWordsToSummarize logs error when user is null`() = runTest {
+        val validNumWords = 100
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
+
+        viewModel.updateNumWordsToSummarize(validNumWords)
+        advanceUntilIdle()
+
+        verify(logger).e(
+            eq("SettingsViewModel"),
+            eq("No user logged in. User ID is null or empty")
+        )
+        verify(settingsModel, never()).updateNumWordsToSummarize(any(), any())
+    }
+
+
+    @Test
+    fun `fetchUsername calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+
+        viewModel.fetchUsername()
+        advanceUntilIdle()
+
+        verify(settingsModel).fetchUsername(testUserId)
+    }
+
+    @Test
+    fun `fetchUsername logs error when user is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
+
+        viewModel.fetchUsername()
+        advanceUntilIdle()
+
+        verify(logger).e(
+            eq("SettingsViewModel"),
+            eq("No user logged in. User ID is null or empty")
+        )
+        verify(settingsModel, never()).fetchUsername(any())
+    }
+
+    @Test
+    fun `fetchEmail calls model with valid user`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+
         viewModel.fetchEmail()
-        testDispatcher.scheduler.advanceUntilIdle()
+        advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(fakeEmail, viewModel.email.value)
+        verify(settingsModel).fetchEmail(testUserId)
     }
 
-    // ---------------------------------------------------------
+    @Test
+    fun `fetchEmail logs error when user is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
 
-    // TESTING: logout()
+        viewModel.fetchEmail()
+        advanceUntilIdle()
+
+        verify(logger).e(
+            eq("SettingsViewModel"),
+            eq("No user logged in. User ID is null or empty")
+        )
+        verify(settingsModel, never()).fetchEmail(any())
+    }
 
     @Test
-    fun `logout should update logoutState to true on success`() = runTest {
-        // Arrange
-        whenever(authRepository.logout()).thenReturn(true)
+    fun `logout updates state and logs debug`() = runTest {
+        whenever(settingsModel.logout()).thenReturn(true)
 
-        // Act
         viewModel.logout()
-        testDispatcher.scheduler.advanceUntilIdle()
+        advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(true, viewModel.logoutState.value)
-    }
-
-
-    // ---------------------------------------------------------
-
-    // TESTING: deleteAccount()
-
-    @Test
-    fun `deleteAccount should update deleteAccountState to Success and toggle isDeletingAccount`() = runTest {
-        // Arrange
-        val password = "testPassword"
-        whenever(authRepository.deleteAccount(password)).thenReturn(DeleteAccountResult.Success)
-
-        // Act
-        viewModel.deleteAccount(password)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        Assert.assertEquals(DeleteAccountResult.Success, viewModel.deleteAccountState.value)
-        Assert.assertEquals(false, viewModel.isDeletingAccount.value)
+        assert(viewModel.logoutState.value == true)
+        verify(logger).d("LogoutDebug", "Logout success: true")
     }
 
     @Test
-    fun `deleteAccount should update deleteAccountState to IncorrectPassword`() = runTest {
-        val password = "wrongPassword"
-        whenever(authRepository.deleteAccount(password)).thenReturn(DeleteAccountResult.IncorrectPassword)
+    fun `deleteAccount updates states and logs debug`() = runTest {
+        val expectedResult = DeleteAccountResult.Success
+        whenever(settingsModel.deleteAccount(testPassword)).thenReturn(expectedResult)
 
-        viewModel.deleteAccount(password)
-        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.deleteAccount(testPassword)
+        advanceUntilIdle()
 
-        Assert.assertEquals(DeleteAccountResult.IncorrectPassword, viewModel.deleteAccountState.value)
+        assert(viewModel.isDeletingAccount.value == false)
+        assert(viewModel.deleteAccountState.value == expectedResult)
+        verify(logger).d("LogoutDebug", "Delete account success: $expectedResult")
     }
 
     @Test
-    fun `deleteAccount should update deleteAccountState to Error`() = runTest {
-        val password = "anyPassword"
-        whenever(authRepository.deleteAccount(password)).thenReturn(DeleteAccountResult.Error)
-
-        viewModel.deleteAccount(password)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        Assert.assertEquals(DeleteAccountResult.Error, viewModel.deleteAccountState.value)
+    fun `resetHasLoadedNumWordsToSummarize sets value to false`() {
+        // preset to true
+        viewModel.resetHasLoadedNumWordsToSummarize()
+        assert(!viewModel.hasLoadedNumWordsToSummarize.value)
     }
 
+    @Test
+    fun `resetLogoutState sets logoutState to null`() {
+        viewModel.resetLogoutState()
+        assert(viewModel.logoutState.value == null)
+    }
+
+    @Test
+    fun `resetDeleteAccountState sets deleteAccountState to null`() {
+        viewModel.resetDeleteAccountState()
+        assert(viewModel.deleteAccountState.value == null)
+    }
 }

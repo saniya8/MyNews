@@ -1,18 +1,22 @@
 package com.example.mynews.service.condensednewsarticle
 
 import android.util.Log
-import com.example.mynews.model.Constant
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import io.ktor.client.*
+import com.example.mynews.service.repositories.Constant
+import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
-import io.ktor.client.request.*
-import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.compression.ContentEncoding
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.*
-import io.ktor.client.plugins.compression.ContentEncoding
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -41,8 +45,6 @@ class CondensedNewsArticleApiClient {
                 val apiUrl =
                     "https://api.diffbot.com/v3/article?token=${Constant.DIFFBOT_API_KEY}&url=$url"
 
-                // using ktor
-
                 //  GET request using Ktor and fetch the response body as text
                 val response: HttpResponse = client.get(apiUrl) {
                     headers {
@@ -64,25 +66,6 @@ class CondensedNewsArticleApiClient {
                 Log.d("CondensedNewsApi", "Json response $jsonResponse")
                 val htmlContent = jsonResponse.getJSONArray("objects").getJSONObject(0).getString("html")
                     ?: return@withContext "No article content found in Diffbot response"
-
-                // additional error-checking
-
-               /* val title = jsonResponse.getJSONArray("objects")
-                    .getJSONObject(0)
-                    .optString("title", "Untitled") // Fallback to "Untitled" if missing
-
-                val images = jsonResponse.getJSONArray("objects")
-                    .getJSONObject(0)
-                    .optJSONArray("images") ?: JSONArray()
-
-                Log.d("CondensedNewsApi", "Fetched HTML content: $htmlContent")
-                Log.d("CondensedNewsApi", "Title: $title")
-
-                // check if html is too problematic
-                if (isProblematicHtml(htmlContent, title, images)) {
-                    Log.d("CondensedNewsApi", "Detected problematic HTML - returning error")
-                    return@withContext "Error: Unable to extract meaningful article text"
-                }*/
 
                 Log.d("CondensedNewsApi", "Extracted text: $htmlContent")
 
@@ -171,45 +154,5 @@ class CondensedNewsArticleApiClient {
             Log.e("CondensedNewsApi", "Error summarizing text: ${e.message}", e)
             return@withContext "Error: Unable to summarize text."
         }
-    }
-
-    private fun isProblematicHtml(html: String, title: String, images: JSONArray): Boolean {
-        // extract meaningful text, exclude carousel/sidebars
-        val plainText = html
-            .replace(
-                Regex("<ul.*?>.*?</ul>", RegexOption.DOT_MATCHES_ALL),
-                " "
-            ) // Remove carousel lists
-            .replace(Regex("<h2.*?>.*?</h2>", RegexOption.DOT_MATCHES_ALL), " ") // Remove headings
-            .replace(Regex("<[^>]+>"), " ") // Strip remaining tags
-            .replace(Regex("\\s+"), " ")
-            .trim()
-
-        val problematicMarkers = listOf(
-            "<li data-carousel-id",
-            "<h2>Top Stories</h2>",
-            "<h2>ABC News Live Presents</h2>"
-        )
-        val hasEarlyProblematic = problematicMarkers.any { marker ->
-            val index = html.indexOf(marker)
-            index >= 0 && index < 400 // Wider net for carousel
-        }
-
-        val isTooShort = plainText.length < 20
-
-        val isVideoPageLike =
-            (images.length() > 1 || html.contains("<figure>")) && plainText.length < 100
-
-        val titleWords = title.split(" ").filter { it.length > 3 }.map { it.lowercase() }
-        val textWords = plainText.lowercase()
-        val titleMatch = titleWords.any { it in textWords }
-
-        Log.d("CondensedNewsApi", "Plain text: '$plainText' (length: ${plainText.length})")
-        Log.d("CondensedNewsApi", "Has early problematic: $hasEarlyProblematic")
-        Log.d("CondensedNewsApi", "Title match: $titleMatch")
-        Log.d("CondensedNewsApi", "Is too short: $isTooShort")
-        Log.d("CondensedNewsApi", "Is video page like: $isVideoPageLike")
-
-        return (hasEarlyProblematic && !titleMatch) || (isTooShort && isVideoPageLike)
     }
 }

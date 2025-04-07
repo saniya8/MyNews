@@ -16,10 +16,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.mynews.model.AuthRepositoryImpl
-import com.example.mynews.model.UserRepositoryImpl
-import com.example.mynews.domain.repositories.AuthRepository
-import com.example.mynews.domain.repositories.UserRepository
+import com.example.mynews.service.repositories.authentication.AuthRepositoryImpl
+import com.example.mynews.service.repositories.user.UserRepositoryImpl
+import com.example.mynews.domain.repositories.authentication.AuthRepository
+import com.example.mynews.domain.repositories.user.UserRepository
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import com.example.mynews.presentation.components.LoadingIndicator

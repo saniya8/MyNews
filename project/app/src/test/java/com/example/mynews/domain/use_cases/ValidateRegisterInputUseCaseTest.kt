@@ -3,7 +3,7 @@ package com.example.mynews.domain.use_cases
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import com.example.mynews.domain.entities.RegisterInputValidationType
+import com.example.mynews.domain.types.RegisterInputValidationType
 
 // Tests Cases here are based off of the cases listed in
 // com.example.mynews/domain/model/RegisterInputValidationType

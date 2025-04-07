@@ -17,25 +17,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.style.TextAlign
 import com.example.mynews.presentation.components.LoadingIndicator
 import com.example.mynews.utils.AppScreenRoutes
 
@@ -74,12 +71,6 @@ fun NewsArticleScreen(
             }
 
     ){
-
-        // Still have to test if the Failed to Load Article message appears correctly based off
-        // of the code in AndroidView when either:
-        // a) Initial load fails, or
-        // b) It loads but then fails
-        // Can't test this until API provides an article that actually fails
 
         if (!loadFailed && shouldReloadWebView) {
             AndroidView(factory = { context ->
@@ -166,22 +157,13 @@ fun NewsArticleScreen(
                     loadUrl(urlToLoad)
                      */
 
-
                     webView = this // save reference to enable reload of webview
                 }
             })
         }
 
-
         // Show circular progress indicator while the article is loading
         if (isLoading) {
-            /*CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.Center) // Center the loading circle
-                    .size(32.dp),
-                color = Color.Blue, // Customize color if needed
-                strokeWidth = 4.dp
-            )*/
             LoadingIndicator(
                 color = Color.Blue
             )
@@ -210,7 +192,6 @@ fun NewsArticleScreen(
 
                 Button(onClick = {
                     Log.d("NewsArticleScreen", "Retrying article load...")
-                    //webView?.reload() // retry logic
                     isLoading = true
                     loadFailed = false // this triggers the webview to be recreated
                     shouldReloadWebView = false // temporarily disable

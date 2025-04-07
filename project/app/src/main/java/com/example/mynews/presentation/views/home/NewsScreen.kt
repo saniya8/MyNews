@@ -17,30 +17,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.example.mynews.presentation.viewmodel.home.NewsViewModel
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import com.example.mynews.service.news.Article
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -56,20 +52,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 import com.example.mynews.R
-import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
-import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
 import com.example.mynews.presentation.theme.BiasColors
-import com.example.mynews.presentation.theme.CaptainBlue
 import com.example.mynews.presentation.theme.CaptainBlueLight
+import com.example.mynews.presentation.viewmodel.goals.GoalsViewModel
+import com.example.mynews.presentation.viewmodel.home.NewsViewModel
+import com.example.mynews.presentation.viewmodel.home.SavedArticlesViewModel
+import com.example.mynews.domain.entities.Article
 import com.example.mynews.utils.AppScreenRoutes
 import kotlinx.coroutines.delay
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 @Composable
 fun NewsScreen(
@@ -86,9 +85,6 @@ fun NewsScreen(
 
     val isFiltering by newsViewModel.isFiltering.collectAsState()
 
-    // Observe the articles
-    // now doing this individually in HomeScreen and SavedArticlesScreen
-    //val articles by newsViewModel.articles.observeAsState(emptyList())
     Column(
         modifier = Modifier.fillMaxSize()
     )
@@ -104,7 +100,6 @@ fun NewsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-
                 Text(
                     text = "Your filter did not return \n any news articles",
                     fontSize = 18.sp,
@@ -112,12 +107,7 @@ fun NewsScreen(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
-
-
-
-
             }
-
 
         } else {
 
@@ -129,9 +119,6 @@ fun NewsScreen(
 
             ) {
                 items(articles, key = { it.url }) { article ->
-                    //Text(text = article.title) // for testing
-                    //Text(text = article.urlToImage) // for testing
-                    //Text(text = "----------------") // for testing
                     ArticleItem(
                         navController = navController,
                         newsViewModel = newsViewModel,
@@ -143,17 +130,10 @@ fun NewsScreen(
                         onLongPressRelease = onLongPressRelease, // pass callback to ArticleItem
                         listState = listState,
                     )
-
                 }
-
             }
         }
-
-
-
-
     }
-
 }
 
 
@@ -181,8 +161,6 @@ fun ArticleItem(
     var articleYCoord = 0f
     var articleLayoutCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
 
-
-
     Box(
         modifier = Modifier
             .height(cardHeight)
@@ -192,6 +170,7 @@ fun ArticleItem(
             },
 
         ) {
+
         // Background Save Icon (only visible when swiping)
 
         Box(
@@ -243,7 +222,6 @@ fun ArticleItem(
                 .fillMaxWidth()
                 .offset { IntOffset(swipeOffset.value.roundToInt(), 0) }
                 .onGloballyPositioned { coordinates ->
-                    //articleYCoord = coordinates.positionInRoot().y // store absolute Y-position (but doesn't trigger recomposition)
                     articleLayoutCoordinates = coordinates
                 }
 
@@ -260,9 +238,9 @@ fun ArticleItem(
                             val moveThreshold = 10f
                             var horizontalDrag = 0f
                             var isScrollGesture = false
-                            isTapValid.value = true // Reset at start of new interaction
+                            isTapValid.value = true // reset at start of new interaction
 
-                            // Detect long press with improved cancellation handling
+                            // Detect long press with cancellation handling
                             val longPressJob = scope.launch {
                                 try {
                                     // Standard Android long press timeout
@@ -345,8 +323,6 @@ fun ArticleItem(
                                     }
                                 } while (event.changes.any { it.pressed })
 
-                                // y coord correct for all articles, even on scroll, and also correct for
-                                // top article if partially cut off
                                 if (wasLongPress && !hasMoved) {
                                     Log.d("GestureDebug", "Long press released, showing reaction bar")
 
@@ -371,8 +347,8 @@ fun ArticleItem(
                                         updatedYCoord = minYCoord
                                     } else {
                                         // For articles fully in view, ensure reaction bar is above the article
-                                        // You might subtract a small offset if needed (e.g., reaction bar height)
-                                        updatedYCoord -= 5f // Optional: fine-tune to position "just above"
+                                        // subtract a small offset to show it just above the article
+                                        updatedYCoord -= 5f
                                     }
 
                                     // Ensure it doesn't go below a sensible minimum (safety check)
@@ -449,11 +425,7 @@ fun ArticleItem(
                 modifier = Modifier.fillMaxSize()
             ) {
 
-
                 // political bias flag
-
-                //val bias = newsViewModel.fetchBiasForSource(article.source.name)
-                //val biasColor = BiasColors.getBiasColour(bias)
 
                 var biasColor by remember { mutableStateOf(Color.Black) } // just for initialization
 
@@ -470,9 +442,6 @@ fun ArticleItem(
                         .padding(4.dp) // Small padding from edges
                 )
 
-
-
-
                 Row(
                     modifier = Modifier.fillMaxWidth()
                         .padding(8.dp),
@@ -483,17 +452,11 @@ fun ArticleItem(
 
                     Log.d("CoilDebug", "Loading image URL: ${article.urlToImage}")
 
-                    // correctly handles errors
-                    // for images that starts with http, goes to fallback as expected
-                    // for images that result in error, goes to fallback as expected
-                    // fallback image now added to the project itself rather than retrieved
-                    // from url
                     AsyncImage(
                         model = article.urlToImage,
                         contentDescription = "Article Image",
-                        //placeholder = painterResource(R.drawable.news_placeholder_image),
-                        error = painterResource(R.drawable.news_placeholder_image),
-                        fallback = painterResource(R.drawable.news_placeholder_image),
+                        error = painterResource(R.drawable.news_placeholder_image), // fallback image
+                        fallback = painterResource(R.drawable.news_placeholder_image), // fallback image
                         modifier = Modifier
                             .size(80.dp)
                             .aspectRatio(1f),
@@ -508,12 +471,6 @@ fun ArticleItem(
                             modifier = Modifier.fillMaxSize()
                                 .weight(1f) // makes the text take available space but respects the flag
                                 .padding(start = 8.dp, end = 15.dp) // adds extra space on the right
-                                // start: the space between the article image and the text
-                                // end: the space to the right of the entire column (where column contains
-                                // article title, below it the source and Condensed Article. This ensures the
-                                // text does not overlap with the flag
-
-                            //.padding(start = 8.dp)
                         ) {
 
                             // show the article title

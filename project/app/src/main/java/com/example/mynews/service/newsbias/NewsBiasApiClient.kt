@@ -1,18 +1,21 @@
 package com.example.mynews.service.newsbias
 
-import com.example.mynews.model.Constant
-import io.ktor.client.*
-import io.ktor.client.call.*
+import com.example.mynews.domain.entities.NewsBiasResponse
+import com.example.mynews.service.repositories.Constant
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.DefaultRequest
-import io.ktor.client.request.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.http.ContentType
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
-import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
-import io.ktor.http.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.headers
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 
 // Custom plugin to remove the Accept-Charset header
 val RemoveAcceptCharset = createClientPlugin("RemoveAcceptCharset") {
@@ -28,14 +31,6 @@ class NewsBiasApiClient {
     private val baseUrl = Constant.NEWS_BIAS_API_BASE_URL
     private val userAgent = Constant.USER_AGENT
 
-    /*private val client = HttpClient {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                coerceInputValues = true
-            })
-        }
-    }*/
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -63,9 +58,6 @@ class NewsBiasApiClient {
 
         install(RemoveAcceptCharset)
     }
-
-
-
 
     suspend fun getBiasRatings(): NewsBiasResponse {
         return client.get("${baseUrl}media-bias/json/noncommercial/publications") {

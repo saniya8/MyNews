@@ -3,7 +3,7 @@ package com.example.mynews.domain.use_cases
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.Before
-import com.example.mynews.domain.entities.LoginInputValidationType
+import com.example.mynews.domain.types.LoginInputValidationType
 
 // Tests Cases here are based off of the cases listed in
 // com.example.mynews/domain/model/LoginInputValidationType

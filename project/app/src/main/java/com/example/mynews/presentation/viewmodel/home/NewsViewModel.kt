@@ -1,46 +1,26 @@
 package com.example.mynews.presentation.viewmodel.home
 
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.service.news.Article
-import com.example.mynews.service.news.NewsResponse
+import com.example.mynews.domain.entities.Article
+import com.example.mynews.domain.model.home.NewsModel
 import com.example.mynews.utils.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-import com.example.mynews.domain.repositories.NewsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val newsRepository: NewsRepository,
+    private val newsModel: NewsModel,
     private val logger: Logger,
 ) : ViewModel() {
 
-    private val _articles = MutableLiveData<List<Article>>()
-
-    // Expose the private _articles as articles to the UI so we can observe
-    // articles live data in the UI
-    val articles: LiveData<List<Article>> = _articles
-
-
-    @VisibleForTesting
-    internal val _newsBiasMappings = MutableStateFlow<Map<String, String>>(emptyMap())
-    val newsBiasMappings: StateFlow<Map<String, String>> = _newsBiasMappings
+    val articles: LiveData<List<Article>> = newsModel.articles
 
     private var hasFetchedNews = false // tracks if API call was made
-
-    // Based on: hasFetchedNews usage and LaunchedEffect in MainScreen,
-    // fetchNewsTopHeadlines will trigger (ie do a new request) if:
-    // - Logging in
-    // - Force close app, swipe it out of memory, and then relaunch
-    // fetchNewsTopHeadlines will not trigger (ie not do a new request) if:
-    // - Swiping between tabs like Home, Social, Goals, and Settings
-    // - Close app but do not swipe to clear it from memory
 
     private val _isFiltering = MutableStateFlow(false)
     val isFiltering: StateFlow<Boolean> = _isFiltering
@@ -48,45 +28,24 @@ class NewsViewModel @Inject constructor(
     init {
         // load the bias mappings
         viewModelScope.launch {
-            val fetchJob = launch { newsRepository.startFetchingBiasData() }
+            val fetchJob = launch { newsModel.startFetchingBiasData() }
             fetchJob.join() // wait for fetching to complete before collecting below
-            newsRepository.getAllBiasMappings().collect { biasData ->
-                _newsBiasMappings.value = biasData // update when data changes
-            }
-        }
-        //logger.d("NewsBiasDebug", "NewsViewMode's _newsBiasMappings is: ${newsBiasMappings.value}")
-    }
-
-    // Helper function to handle the NewsResponse and post results
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun handleNewsResponse(
-        newsResponse: NewsResponse,
-    ) {
-        if (newsResponse.status == "ok" && newsResponse.articles.isNotEmpty()) {
-            _articles.postValue(newsResponse.articles)
-        } else {
-            _articles.postValue(emptyList())
+            newsModel.getAllBiasMappings()
         }
     }
-
 
     // for initial news display
     fun fetchTopHeadlines(forceFetch: Boolean = false) {
 
-        if (hasFetchedNews && !forceFetch) return // Prevents duplicate API requests
+        if (hasFetchedNews && !forceFetch) return // prevents duplicate API requests
         hasFetchedNews = true
 
         viewModelScope.launch {
-            // getTopHeadlines is a suspend function, therefore will take time
-            // to load, therefore wrap it in a coroutine using viewModelScope.launch
             try {
                 _isFiltering.value = false
-                val newsResponse = newsRepository.getTopHeadlines() // ktor gives parsed data directly
-                handleNewsResponse(newsResponse) // this will post to _articles
-                //_articles.postValue(newsResponse.articles)
+                newsModel.fetchTopHeadlines()
 
             } catch (e: Exception) {
-                _articles.postValue(emptyList())
                 _isFiltering.value = false
                 logger.e("NewsAPI Error", "Failed to fetch top headlines: ${e.message}", e)
             }
@@ -99,11 +58,8 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isFiltering.value = true
-                val newsResponse = newsRepository.getEverythingBySearch(searchQuery)
-                //_articles.postValue(newsResponse.articles)
-                handleNewsResponse(newsResponse) // this will post to _articles
+                newsModel.fetchEverythingBySearch(searchQuery)
             } catch (e: Exception) {
-                _articles.postValue(emptyList())
                 _isFiltering.value = false
                 logger.e("NewsAPI Error", "Failed to fetch search results: ${e.message}", e)
             }
@@ -115,21 +71,12 @@ class NewsViewModel @Inject constructor(
     // for filtering by category
     fun fetchTopHeadlinesByCategory(category: String) {
 
-        // if category is null, then requires fetching top headlines (since category
-        // being null means category was deselected or never selected)
-        // that is handled in LaunchedEffect(selectedCategory.value) in HomeScreen.kt
-        // so if this function is called, category cannot be null
-
-
         viewModelScope.launch {
 
             try {
                 _isFiltering.value = true
-                val newsResponse = newsRepository.getTopHeadlinesByCategory(category)
-                //_articles.postValue(newsResponse.articles)
-                handleNewsResponse(newsResponse) // this will post to _articles
+                newsModel.fetchTopHeadlinesByCategory(category)
             } catch (e: Exception) {
-                _articles.postValue(emptyList())
                 _isFiltering.value = false
                 logger.e("NewsAPI Error", "Failed to fetch headlines by category: ${e.message}", e)
             }
@@ -139,20 +86,12 @@ class NewsViewModel @Inject constructor(
 
     fun fetchTopHeadlinesByCountry(country: String) {
 
-        // if country is null, then requires fetching top headlines (since category
-        // being null means category was deselected or never selected)
-        // that is handled in LaunchedEffect(selectedCountry.value) in HomeScreen.kt
-        // so if this function is called, category cannot be null
-
         viewModelScope.launch {
 
             try {
                 _isFiltering.value = true
-                val newsResponse = newsRepository.getTopHeadlinesByCountry(country)
-                //_articles.postValue(newsResponse.articles)
-                handleNewsResponse(newsResponse) // this will post to _articles
+                newsModel.fetchTopHeadlinesByCountry(country)
             } catch (e: Exception) {
-                _articles.postValue(emptyList())
                 _isFiltering.value = false
                 logger.e("NewsAPI Error", "Failed to fetch headlines by country: ${e.message}", e)
             }
@@ -165,11 +104,8 @@ class NewsViewModel @Inject constructor(
 
             try {
                 _isFiltering.value = true
-                val newsResponse = newsRepository.getEverythingByDateRange(dateRange)
-                //_articles.postValue(newsResponse.articles)
-                handleNewsResponse(newsResponse) // this will post to _articles
+                newsModel.fetchEverythingByDateRange(dateRange)
             } catch (e: Exception) {
-                _articles.postValue(emptyList())
                 _isFiltering.value = false
                 logger.e("NewsAPI Error", "Failed to fetch headlines by date range: ${e.message}", e)
 
@@ -179,19 +115,8 @@ class NewsViewModel @Inject constructor(
 
     }
 
-
     fun fetchBiasForSource(sourceName: String, onResult: (String) -> Unit) {
-
-        // first heck in cached bias mappings
-        _newsBiasMappings.value[sourceName]?.let {
-            onResult(it)
-        }
-
-        // Otherwise, fetch bias asynchronously
-        viewModelScope.launch {
-            val bias = newsRepository.getBiasForSource(sourceName)
-            onResult(bias) // pass the result back
-        }
+        newsModel.fetchBiasForSource(sourceName, onResult)
     }
 
 }

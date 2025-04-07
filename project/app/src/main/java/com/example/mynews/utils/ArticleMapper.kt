@@ -1,6 +1,6 @@
 package com.example.mynews.utils
 
-import com.example.mynews.service.news.Article
+import com.example.mynews.domain.entities.Article
 
 fun articleToMap(article: Article): Map<String, Any?> {
     return mapOf(

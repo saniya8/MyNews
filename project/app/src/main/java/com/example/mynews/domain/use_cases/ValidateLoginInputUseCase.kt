@@ -1,12 +1,12 @@
 package com.example.mynews.domain.use_cases
 
-import com.example.mynews.domain.entities.LoginInputValidationType
+import com.example.mynews.domain.types.LoginInputValidationType
 
 class ValidateLoginInputUseCase() {
-    operator fun invoke(email: String, password:String):LoginInputValidationType{
+    operator fun invoke(email: String, password:String): LoginInputValidationType {
 
-        // emails and usernames can't have spaces, so can't be blank (empty or whitespaced)
-        // passwords can have spaces, so just check if empty
+        // emails and usernames cannot be empty or have only spaces
+        // passwords can have spaces
         if (email.isBlank() || password.isEmpty()) {
             return LoginInputValidationType.EmptyField
         }

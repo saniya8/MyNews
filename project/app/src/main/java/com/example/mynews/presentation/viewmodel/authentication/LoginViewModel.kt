@@ -5,11 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mynews.utils.logger.Logger
-import com.example.mynews.domain.entities.LoginInputValidationType
-import com.example.mynews.domain.repositories.AuthRepository
+import com.example.mynews.domain.model.authentication.LoginModel
+import com.example.mynews.domain.types.LoginInputValidationType
 import com.example.mynews.domain.use_cases.ValidateLoginInputUseCase
 import com.example.mynews.presentation.state.LoginState
+import com.example.mynews.utils.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val validateLoginInputUseCase: ValidateLoginInputUseCase,
-    private val authRepository: AuthRepository,
+    private val loginModel: LoginModel,
     private val logger: Logger,
 ): ViewModel() {
 
@@ -41,12 +41,11 @@ class LoginViewModel @Inject constructor(
         loginState = loginState.copy(isPasswordShown = !loginState.isPasswordShown)
     }
 
-    // version 4 - works with version 4 of login in AuthRepositoryImpl
     fun onLoginClick() {
         viewModelScope.launch {
             loginState = loginState.copy(isLoading = true)
             try {
-                val loginResult = authRepository.login(
+                val loginResult = loginModel.performLogin(
                     email = loginState.emailInput, // normalized in authRepository.login
                     password = loginState.passwordInput
                 )

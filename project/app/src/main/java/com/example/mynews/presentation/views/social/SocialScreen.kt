@@ -39,7 +39,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -47,10 +46,12 @@ import androidx.navigation.NavHostController
 import com.example.mynews.domain.entities.Reaction
 import com.example.mynews.presentation.components.ScreenHeader
 import com.example.mynews.presentation.theme.CaptainBlue
-import com.example.mynews.utils.AppScreenRoutes
 import com.example.mynews.presentation.viewmodel.social.SocialViewModel
+import com.example.mynews.utils.AppScreenRoutes
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 
@@ -59,10 +60,8 @@ fun SocialScreen(
     navController: NavHostController,
     socialViewModel: SocialViewModel,
 ) {
-    //val friendsIds by socialViewModel.friendsIds.observeAsState(emptyList())
 
     val searchQuery by socialViewModel.searchQuery.collectAsState()
-    //val reactions by socialViewModel.reactions.collectAsState()
     val reactions by socialViewModel.filteredReactions.collectAsState() // implemented dynamic filtering below
     val friendsMap by socialViewModel.friendsMap.collectAsState()
     val isLoading by socialViewModel.isLoading.collectAsState()
@@ -72,21 +71,14 @@ fun SocialScreen(
         socialViewModel.fetchFriends()
     }
 
-
-
     LaunchedEffect(friendsMap) {
-
         if (friendsMap.isNotEmpty()) {
             val friendsIdsList = friendsMap.keys.toList()
             socialViewModel.fetchFriendsReactions(friendsIdsList)
         } else {
             socialViewModel.fetchFriendsReactions(emptyList())
         }
-
-
     }
-
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -100,7 +92,7 @@ fun SocialScreen(
             // standardized
 
             ScreenHeader(
-                useTopPadding = false, //scaffold already adds system padding
+                useTopPadding = false,
                 title = "Friend Activity",
                 rightContent = {
                     IconButton(
@@ -120,8 +112,7 @@ fun SocialScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             SocialSearchBar(searchQuery = searchQuery,
-                            onQueryChanged = { newQuery -> socialViewModel.updateSearchQuery(newQuery)},
-                            onSearchFriendsReactions = {})
+                            onQueryChanged = { newQuery -> socialViewModel.updateSearchQuery(newQuery)})
 
             Spacer(modifier = Modifier.height(7.dp))
 
@@ -135,7 +126,6 @@ fun SocialScreen(
                 // in case 3 and 4, regardless of if the user searched or not, there are reactions, so display them
 
                 val isActuallySearching = searchQuery.isNotEmpty() && searchQuery.trim().isNotEmpty()
-
 
                 // case 1
                 if (reactions.isEmpty() && !isActuallySearching) {
@@ -187,7 +177,6 @@ fun SocialScreen(
                 // cases 3 & 4
                 else { // searchQuery isn't empty or reactions isn't empty
 
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -227,7 +216,6 @@ fun SocialScreen(
 fun SocialSearchBar(
     searchQuery: String,
     onQueryChanged: (String) -> Unit,
-    onSearchFriendsReactions: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -247,24 +235,13 @@ fun SocialSearchBar(
             maxLines = 1,
             placeholder = { Text("Search friends...") },
 
-            /*trailingIcon = {
-                IconButton(
-                    onClick = {
-                        onSearchFriendsReactions()
-                    }
-                ) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "Add friend")
-                }
-            }*/
-
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { onQueryChanged("") }) {
                         Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
                     }
                 } else {
-                    // no search icon because dynamic search so no need
-                    //Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                    // no search icon because dynamic search
                 }
             }
         )
@@ -320,7 +297,6 @@ fun ReactionItem(
                         modifier = Modifier
                             .fillMaxHeight()
                             .weight(0.85f)
-                            //.background(Color.Magenta) // for testing
                     ) {
 
                         Text(
@@ -328,7 +304,6 @@ fun ReactionItem(
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis // cuts off text with "..."
-                            //fontSize = 18.sp
                         )
 
                         Spacer(modifier = Modifier.height(2.dp))
@@ -411,7 +386,6 @@ internal fun getRelativeTimestamp(timestamp: Long): String {
     // "1 day ago" means it happened more than 24 hours ago but not exactly on the previous calendar day,
     // "2 days ago" means it happened 48+ hours ago, regardless of calendar days.
 
-
     return when {
         minutes < 1 -> "Just now"
         minutes < 60 -> "$minutes min ago"
@@ -426,50 +400,6 @@ internal fun getRelativeTimestamp(timestamp: Long): String {
         }
         else -> {
             SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(reactionDate) // e.g., Sep 12, 2023
-        }
-    }
-}
-
-
-// unit test also made for the function but just creating this composable regardless
-@Composable
-@Preview(showBackground = true)
-fun ReactionTimePreview() {
-    val now = System.currentTimeMillis()
-
-    val testReactions = listOf(
-        now, // Just now
-        now - TimeUnit.MINUTES.toMillis(5), // 5 min ago
-        now - TimeUnit.HOURS.toMillis(2),   // 2 hr ago
-        now - TimeUnit.DAYS.toMillis(1),    // Yesterday
-        now - TimeUnit.DAYS.toMillis(3),    // 3 days ago
-        now - TimeUnit.DAYS.toMillis(10),   // 10 days ago
-        Calendar.getInstance().apply {
-            set(Calendar.YEAR, 2023)
-            set(Calendar.MONTH, Calendar.MARCH)
-            set(Calendar.DAY_OF_MONTH, 29)
-            set(Calendar.HOUR_OF_DAY, 14)
-            set(Calendar.MINUTE, 15)
-        }.timeInMillis // Mar 29, 2023
-    )
-
-    val labels = listOf(
-        "Just now",
-        "5 min ago",
-        "2 hr ago",
-        "Yesterday",
-        "3 days ago",
-        "10 days ago",
-        "Last year"
-    )
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        testReactions.forEachIndexed { index, timestamp ->
-            Text(
-                text = "${labels[index]} → ${getRelativeTimestamp(timestamp)}",
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

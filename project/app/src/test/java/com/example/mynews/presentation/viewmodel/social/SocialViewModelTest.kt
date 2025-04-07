@@ -1,162 +1,148 @@
 package com.example.mynews.presentation.viewmodel.social
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.mynews.service.news.Article
-import com.example.mynews.service.news.Source
-import com.example.mynews.utils.logger.NoOpLogger
 import com.example.mynews.domain.entities.Reaction
-import com.example.mynews.domain.repositories.SocialRepository
-import com.example.mynews.domain.repositories.UserRepository
-import kotlinx.coroutines.Dispatchers
+import com.example.mynews.domain.model.social.SocialModel
+import com.example.mynews.domain.model.user.UserModel
+import com.example.mynews.utils.MainDispatcherRule
+import com.example.mynews.utils.TestDataFactory
+import com.example.mynews.utils.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import org.junit.*
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(MockitoJUnitRunner::class)
 class SocialViewModelTest {
 
     @get:Rule
-    val instantExecutorRule = InstantTaskExecutorRule()
+    val mainDispatcherRule = MainDispatcherRule()
 
-    @Mock
-    private lateinit var userRepository: UserRepository
-
-    @Mock
-    private lateinit var socialRepository: SocialRepository
+    private val userModel: UserModel = mock()
+    private val socialModel: SocialModel = mock()
+    private val logger: Logger = mock()
 
     private lateinit var viewModel: SocialViewModel
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val testUserId = "test-user-id"
+    private val testFriendIds = listOf("friend1", "friend2")
+    private val testArticle = TestDataFactory.createIndexedArticle(500)
+    private val testReaction = Reaction(
+        userID = "friend1",
+        article = testArticle,
+        reaction = "👍",
+        timestamp = System.currentTimeMillis()
+    )
 
     @Before
-    fun setUp() {
-        Dispatchers.setMain(testDispatcher)
+    fun setup() {
+        MockitoAnnotations.openMocks(this)
 
-        viewModel = SocialViewModel(
-            userRepository = userRepository,
-            socialRepository = socialRepository,
-            logger = NoOpLogger()
-        )
+        whenever(socialModel.friendsMap).thenReturn(MutableStateFlow(emptyMap()))
+        whenever(socialModel.reactions).thenReturn(MutableStateFlow(emptyList()))
+        whenever(socialModel.searchQuery).thenReturn(MutableStateFlow(""))
+        whenever(socialModel.filteredReactions).thenReturn(MutableStateFlow(emptyList()))
+
+        viewModel = SocialViewModel(userModel, socialModel, logger)
     }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchFriends()
 
     @Test
-    fun `fetchFriends should update friendsMap and leave isLoading true if friends returned`() = runTest {
-        // Arrange
-        val fakeUserId = "user123"
-        val fakeFriendsMap = mapOf("friend1" to "alice", "friend2" to "bob")
-
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        doAnswer { invocation ->
-            val callback = invocation.getArgument<(Map<String, String>) -> Unit>(1)
-            callback(fakeFriendsMap)
-            null
-        }.whenever(socialRepository).getFriends(eq(fakeUserId), any())
-
-        // Act
-        viewModel.fetchFriends()
-        advanceUntilIdle()
-
-        // Assert
-        Assert.assertEquals(fakeFriendsMap, viewModel.friendsMap.value)
-        Assert.assertEquals(true, viewModel.isLoading.value) // stays true until fetchFriendsReactions runs
+    fun `updateSearchQuery delegates to model`() {
+        viewModel.updateSearchQuery("abc")
+        verify(socialModel).updateSearchQuery("abc")
     }
 
-
     @Test
-    fun `fetchFriends should update friendsMap, clear reactions, and set isLoading false if no friends returned`() = runTest {
-        val fakeUserId = "user123"
-        val emptyFriendsMap = emptyMap<String, String>()
-
-        whenever(userRepository.getCurrentUserId()).thenReturn(fakeUserId)
-
-        doAnswer {
-            val callback = it.getArgument<(Map<String, String>) -> Unit>(1)
-            callback(emptyFriendsMap)
-            null
-        }.whenever(socialRepository).getFriends(eq(fakeUserId), any())
+    fun `fetchFriends logs error and sets loading false if user is null`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(null)
 
         viewModel.fetchFriends()
         advanceUntilIdle()
 
-        Assert.assertEquals(emptyFriendsMap, viewModel.friendsMap.value)
-        Assert.assertEquals(emptyList<Reaction>(), viewModel.reactions.value)
-        Assert.assertEquals(false, viewModel.isLoading.value)
+        assertFalse(viewModel.isLoading.value)
+        verify(logger).e(
+            eq("SocialViewModel"),
+            eq("Error: User ID is null, cannot fetch friends")
+        )
+        verify(socialModel, never()).fetchFriends(any())
     }
-
-    // ---------------------------------------------------------
-
-    // TESTING: fetchFriendsReactions()
 
     @Test
-    fun `fetchFriendsReactions should update reactions and set isLoading to false on success`() = runTest {
-        // Arrange
-        val friendIds = listOf("friend1", "friend2")
-        val fakeReactions = listOf(
-            Reaction(
-                userID = "friend1",
-                article = Article(
-                    author = "Author A",
-                    content = "Content A",
-                    description = "Description A",
-                    publishedAt = "2024-04-05",
-                    source = Source(id = "3", name = "Source A"),
-                    title = "Article A",
-                    url = "https://example.com/article-a",
-                    urlToImage = "https://example.com/image-a.jpg"
-                ),
+    fun `fetchFriends calls model with valid user ID`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+        val populatedFriendsMap = mapOf("friend1" to "Alice")
+        whenever(socialModel.friendsMap).thenReturn(MutableStateFlow(populatedFriendsMap))
 
-                reaction = "like",
-                timestamp = 0L
-            ),
-            Reaction(
-                userID = "friend2",
-                article = Article(
-                    author = "Author B",
-                    content = "Content B",
-                    description = "Description B",
-                    publishedAt = "2024-04-06",
-                    source = Source(id = "4", name = "Source B"),
-                    title = "Article B",
-                    url = "https://example.com/article-b",
-                    urlToImage = "https://example.com/image-b.jpg"
-                ),
-                reaction = "love",
-                timestamp = 0L
-            )
-        )
-
-        doAnswer { invocation ->
-            val callback = invocation.getArgument<(List<Reaction>) -> Unit>(1)
-            callback(fakeReactions)
-            null
-        }.whenever(socialRepository).getFriendsReactions(eq(friendIds), any())
-
-        // Act
-        viewModel.fetchFriendsReactions(friendIds)
+        viewModel.fetchFriends()
         advanceUntilIdle()
 
-        // Assert
-        Assert.assertEquals(fakeReactions, viewModel.reactions.value)
-        Assert.assertFalse(viewModel.isLoading.value)
-        Assert.assertNull(viewModel.errorMessage.value)
+        verify(socialModel).fetchFriends(testUserId)
+        // do not assert isLoading here because fetchFriendsReactions might be expected after
     }
 
+    @Test
+    fun `fetchFriends sets loading false if friendMap is empty`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenReturn(testUserId)
+        whenever(socialModel.friendsMap).thenReturn(MutableStateFlow(emptyMap()))
+
+        viewModel.fetchFriends()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isLoading.value)
+    }
+
+    @Test
+    fun `fetchFriends logs exception and sets errorMessage`() = runTest {
+        whenever(userModel.getCurrentUserId()).thenThrow(RuntimeException("unexpected"))
+
+        viewModel.fetchFriends()
+        advanceUntilIdle()
+
+        assertEquals("Failed to fetch friends: unexpected", viewModel.errorMessage.value)
+        assertFalse(viewModel.isLoading.value)
+        verify(logger).e(
+            eq("SocialViewModel"),
+            eq("Error fetching friends: unexpected"),
+            any()
+        )
+    }
+
+    @Test
+    fun `fetchFriendsReactions updates loading and calls model`() = runTest {
+        viewModel.fetchFriendsReactions(testFriendIds)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isLoading.value)
+        assertNull(viewModel.errorMessage.value)
+        verify(socialModel).fetchFriendsReactions(testFriendIds)
+    }
+
+    @Test
+    fun `fetchFriendsReactions logs error and sets errorMessage on exception`() = runTest {
+        doThrow(RuntimeException("reactions fail")).whenever(socialModel).fetchFriendsReactions(any())
+
+        viewModel.fetchFriendsReactions(testFriendIds)
+        advanceUntilIdle()
+
+        assertEquals("Failed to fetch friends' reactions: reactions fail", viewModel.errorMessage.value)
+        assertFalse(viewModel.isLoading.value)
+        verify(logger).e(
+            eq("SocialViewModel"),
+            eq("Error fetching reactions: reactions fail"),
+            any()
+        )
+    }
 }

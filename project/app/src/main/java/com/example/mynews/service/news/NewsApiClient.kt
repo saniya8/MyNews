@@ -1,6 +1,8 @@
 package com.example.mynews.service.news
 
-import com.example.mynews.model.Constant
+import com.example.mynews.domain.entities.NewsResponse
+import com.example.mynews.domain.entities.SourcesResponse
+import com.example.mynews.service.repositories.Constant
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
