@@ -9,7 +9,7 @@ Today, many people in the world feel that they are not up to date on current tre
 Our app pulls in news from all sources, includes political bias flags, and has social gamification features with friends to promote more active news reading.
 
 
-## App Screenshots
+## Video/Screenshots
 Download a quick video demo of how to use MyNews [here](https://git.uwaterloo.ca/m49ye/team-102-5/-/blob/main/project/video/MyNews-Video.mp4)!
 
 For screenshots demonstrating the use of MyNews, check out our [user guide](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/User-Guide)
