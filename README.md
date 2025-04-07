@@ -18,7 +18,7 @@ For screenshots demonstrating the use of MyNews, check out our [user guide](http
 This app supports Android 8.0 or newer. The app was tested on macOS, using a Pixel 5 and Pixel 9 Pro emulator on Android 15 (API 35).
 
 
-Download our installer for MyNews here.
+Download our installer for MyNews [here](https://git.uwaterloo.ca/m49ye/team-102-5/-/blob/main/project/releases/MyNews-Version-1-0-5.apk?ref_type=heads).
 To install the app: 
 1. Download the APK
 2. Open an emulator device in Android Studio
