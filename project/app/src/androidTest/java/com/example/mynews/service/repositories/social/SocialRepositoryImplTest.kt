@@ -14,13 +14,12 @@ package com.example.mynews.service.repositories.social
 
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.mynews.service.repositories.social.SocialRepositoryImpl
 import com.example.mynews.utils.TestAccountManager
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,6 +40,28 @@ class SocialRepositoryImplTest {
         val accountManager = TestAccountManager(testEmail, testPassword)
         userId = accountManager.loginOrRegister().uid
         socialRepository = SocialRepositoryImpl(firestore)
+
+        // clean up all friends first
+        val existingFriends = firestore.collection("friends")
+            .document(userId)
+            .collection("users_friends")
+            .get()
+            .await()
+
+        existingFriends.documents.forEach { it.reference.delete().await() }
+
+        // add expected friends
+        val friendUsernames = listOf("unittest5", "unittest6", "unittest7")
+        for (username in friendUsernames) {
+            val uid = getUidForUsername(username)
+            val friendDoc = mapOf("username" to username)
+            firestore.collection("friends")
+                .document(userId)
+                .collection("users_friends")
+                .document(uid)
+                .set(friendDoc)
+                .await()
+        }
     }
 
     @Test
@@ -78,5 +99,16 @@ class SocialRepositoryImplTest {
         }.toSet()
 
         assertEquals(expectedUsernames, firestoreUsernames)
+    }
+
+    private suspend fun getUidForUsername(username: String): String {
+        return firestore.collection("usernames")
+            .document(username)
+            .collection("private")
+            .document("uid")
+            .get()
+            .await()
+            .getString("uid")
+            ?: throw IllegalStateException("UID not found for username: $username")
     }
 }

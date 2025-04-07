@@ -32,7 +32,7 @@ class FriendsRepositoryImplTest {
         userId = accountManager.loginOrRegister().uid
         friendsRepository = FriendsRepositoryImpl(firestore)
 
-        // 🔄 Clean up all friends before starting
+        // clean up all friends before starting
         val friendsRef = firestore.collection("friends")
             .document(userId)
             .collection("users_friends")
@@ -101,7 +101,7 @@ class FriendsRepositoryImplTest {
         val doc = getFriendDoc(userId, friendUid)
 
         assertTrue(result)
-        assertFalse(doc.exists()) // ✅ Confirm removed
+        assertFalse(doc.exists()) // confirm removed
     }
 
     @Test
