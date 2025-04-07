@@ -1,4 +1,4 @@
-# Team-102-5 - Introducing Project MyNews
+# Team-102-5 - Introducing... MyNews!
 
 The ultimate social news reading platform to keep everyone informed and together!
 
