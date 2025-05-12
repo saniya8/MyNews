@@ -44,9 +44,9 @@ HUGGINGFACE_API_KEY=your_huggingface_api_key
 ```
 
 You can get free API keys from the following: 
-NEWS_API_KEY: [News API](https://newsapi.org/) --> Get API Key --> Developer Plan
-DIFFBOT_API_KEY: [Diffbot API](https://docs.diffbot.com/reference/authentication) --> Get Free Token
-HUGGINGFACE_API_KEY: [Hugging Face API]() --> Access Tokens --> Create New Token --> Token Type is Read
+* NEWS_API_KEY: [News API](https://newsapi.org/) --> Get API Key --> Developer Plan
+* DIFFBOT_API_KEY: [Diffbot API](https://docs.diffbot.com/reference/authentication) --> Get Free Token
+* HUGGINGFACE_API_KEY: [Hugging Face API]() --> Access Tokens --> Create New Token --> Token Type is Read
 
 
 ### Additional Notes
