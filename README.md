@@ -23,7 +23,7 @@ This app supports Android 8.0 or newer. The app was tested on macOS, using a Pix
 
 Download our installer for MyNews [here](https://github.com/saniya8/MyNews/blob/main/project/releases/MyNews-Version-1-0-5.apk).
 
-Download a quick video showing how to install MyNews using the steps below [here](https://github.com/saniya8/MyNews/tree/main/project/video)
+Download a quick video showing how to install MyNews using the steps below [here](https://github.com/saniya8/MyNews/blob/main/project/video/How-To-Install-MyNews-Video.mp4)
 
 To install the app: 
 1. Download the APK
