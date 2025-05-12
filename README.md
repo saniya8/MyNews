@@ -33,9 +33,9 @@ To install the app:
 
 If you would like to run the code locally: 
 
-1. Clone the repository and run the code locally,
-2. Open the project folder within your cloned directory in Android Studio
-3. Ensure to add your own API keys in project/app/local.properties using the following template prior to running:
+1. Clone the repository
+2. Open the ```project``` folder within your cloned directory in Android Studio
+3. Ensure to add your own API keys in ```project/app/local.properties``` using the following template prior to running:
 
 ```
 NEWS_API_KEY=your_news_api_key
@@ -46,7 +46,7 @@ HUGGINGFACE_API_KEY=your_huggingface_api_key
 You can get free API keys from the following: 
 * NEWS_API_KEY: [News API](https://newsapi.org/) --> Get API Key --> Developer Plan
 * DIFFBOT_API_KEY: [Diffbot API](https://docs.diffbot.com/reference/authentication) --> Get Free Token
-* HUGGINGFACE_API_KEY: [Hugging Face API]() --> Access Tokens --> Create New Token --> Token Type is Read
+* HUGGINGFACE_API_KEY: [Hugging Face API](https://huggingface.co/) --> Click on Profile --> Access Tokens --> Create New Token --> Token Type is Read
 
 
 ### Additional Notes
