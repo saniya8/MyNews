@@ -1,4 +1,4 @@
-# Team-102-5 - Introducing... MyNews!
+# Introducing... MyNews!
 
 The ultimate social news reading platform to keep everyone informed and together!
 
@@ -10,9 +10,9 @@ Our app pulls in news from all sources, includes political bias flags, and has s
 
 
 ## Video/Screenshots
-Download a quick video demo of how to use MyNews [here](https://git.uwaterloo.ca/m49ye/team-102-5/-/blob/main/project/video/MyNews-Video.mp4)!
+Download a quick video demo of how to use MyNews [here](https://github.com/saniya8/MyNews/blob/main/project/video/MyNews-Video.mp4)!
 
-For screenshots demonstrating the use of MyNews, check out our [user guide](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/User-Guide)
+For screenshots demonstrating the use of MyNews, check out our [user guide](https://github.com/saniya8/MyNews/wiki/User-Guide)
 
 
 ## Getting Started
@@ -20,7 +20,7 @@ For screenshots demonstrating the use of MyNews, check out our [user guide](http
 This app supports Android 8.0 or newer. The app was tested on macOS, using a Pixel 5 and Pixel 9 Pro emulator on Android 15 (API 35).
 
 
-Download our installer for MyNews [here](https://git.uwaterloo.ca/m49ye/team-102-5/-/blob/main/project/releases/MyNews-Version-1-0-5.apk?ref_type=heads).
+Download our installer for MyNews [here](https://github.com/saniya8/MyNews/blob/main/project/releases/MyNews-Version-1-0-5.apk).
 To install the app: 
 1. Download the APK
 2. Open an emulator device in Android Studio
@@ -38,38 +38,17 @@ It is important to note that MyNews currently uses free versions of APIs. This c
     screen on the app
 - Summary of Articles (Home Screen): each article has a Summary button. To generate the summary, the app uses the Diffbot and Hugging Face API. There is a limit of one request per second. If requests are made too quickly, the API will not be able to return the summary.
 
-
-## Team Details
-
-**Section Number**: 2
-
-**Team Number** : 5
-
-**Team Members**:
-* Jason Kelly (j35kelly@uwaterloo.ca)
-* Michael Ye (m49ye@uwaterloo.ca)
-* Oliver Neish (oneish@uwaterloo.ca)
-* Saniya Kulkarni (s27kulka@uwaterloo.ca)
-
-
 ## Documentation
-* [Project Proposal](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Project-Proposal)
-* [Design Proposal](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Design-Proposal)
-* [User Documentation/Guide](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/User-Guide)
-* [Design Diagrams](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Design-Diagrams)
-
-
-## Project Information
-* [Team Contract](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/home)
-* [Meeting Minutes](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Meeting-Minutes)
-
+* [User Guide](https://github.com/saniya8/MyNews/wiki/User-Guide)
+* [Design Diagrams](https://github.com/saniya8/MyNews/wiki/Design-Diagrams)
+* [Project Proposal](https://github.com/saniya8/MyNews/wiki/Project-Proposal)
 
 ## Releases
-* [Version 1.1.0 Release](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Version-1.1.0-Release)
-* [Version 1.2.0 Release](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Version-1.2.0-Release)
-* [Version 1.3.0 Release](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Version-1.3.0-Release)
-* [Version 1.4.0 Release](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Version-1.4.0-Release)
-* [Version 1.5.0 Release](https://git.uwaterloo.ca/m49ye/team-102-5/-/wikis/Version-1.5.0-Release) → Final Release!
+* [Version 1.1.0 Release](https://github.com/saniya8/MyNews/wiki/Version-1.1.0-Release)
+* [Version 1.2.0 Release](https://github.com/saniya8/MyNews/wiki/Version-1.2.0-Release)
+* [Version 1.3.0 Release](https://github.com/saniya8/MyNews/wiki/Version-1.3.0-Release)
+* [Version 1.4.0 Release](https://github.com/saniya8/MyNews/wiki/Version-1.4.0-Release)
+* [Version 1.5.0 Release](https://github.com/saniya8/MyNews/wiki/Version-1.5.0-Release) → Final Release!
 
 
 ## Attributions
@@ -84,6 +63,6 @@ This app retrieves political biases of news sources from AllSides Media Bias Rat
 
 [AllSides Media Bias Ratings™](https://www.allsides.com/media-bias/media-bias-ratings) by [AllSides.com](https://www.allsides.com/unbiased-balanced-news) are licensed under a [Creative Commons Attribution-NonCommercial 4.0 International License](http://creativecommons.org/licenses/by-nc/4.0/). These ratings may be used for research or noncommercial purposes with attribution.
 
-**Diffbot API**
+**Diffbot & Hugging Face API**
 
 This app generates summaries of articles using [Diffbot Article API](https://docs.diffbot.com/reference/article) and [Hugging Face's BART Large CNN API](https://huggingface.co/facebook/bart-large-cnn)
