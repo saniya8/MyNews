@@ -19,6 +19,7 @@ For screenshots demonstrating the use of MyNews, check out our [user guide](http
 
 This app supports Android 8.0 or newer. The app was tested on macOS, using a Pixel 5 and Pixel 9 Pro emulator on Android 15 (API 35).
 
+### Installing the App
 
 Download our installer for MyNews [here](https://github.com/saniya8/MyNews/blob/main/project/releases/MyNews-Version-1-0-5.apk).
 To install the app: 
@@ -28,6 +29,27 @@ To install the app:
 4. APK installer dialog will appear, and will automatically install the app in the emulator
 5. After installation, you can find the app on your emulator
 
+### Running Code Locally
+
+If you would like to run the code locally: 
+
+1. Clone the repository and run the code locally,
+2. Open the project folder within your cloned directory in Android Studio
+3. Ensure to add your own API keys in project/app/local.properties using the following template prior to running:
+
+```
+NEWS_API_KEY=your_news_api_key
+DIFFBOT_API_KEY=your_diffbot_api_key
+HUGGINGFACE_API_KEY=your_huggingface_api_key
+```
+
+You can get free API keys from the following: 
+NEWS_API_KEY: [News API](https://newsapi.org/) --> Get API Key --> Developer Plan
+DIFFBOT_API_KEY: [Diffbot API](https://docs.diffbot.com/reference/authentication) --> Get Free Token
+HUGGINGFACE_API_KEY: [Hugging Face API]() --> Access Tokens --> Create New Token --> Token Type is Read
+
+
+### Additional Notes
 
 It is important to note that MyNews currently uses free versions of APIs. This comes with limitations on usage:
 - News Articles (Home Screen): these are fetched from NewsAPI. There is a limit of 100 requests per 24 hours, more specifically, 50 requests per 12 hours. If this limit is exceeded, the news articles will not be fetched. On MyNews, one request happens when: 
